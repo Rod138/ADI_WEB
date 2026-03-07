@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADI - Iniciar Sesión</title>
+    <link rel="stylesheet" href="/FrontEnd/CSS/login.css">
+    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./FrontEnd/JS/login.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"></div>
+        <div class="nav-content">Iniciar Sesión</div>
+        <div class="nav-content"><a href="/"><button>Bienvenida</button></a></div>
+    </nav>
+    <br>
+    <div class="form-card">
+        <form id="login-form">
+            <h2>Ingrese sus datos</h2>
+            <label for="email">Correo</label><br>
+            <input type="email" id="email" placeholder="usuario@example.com" required maxlength="320">
+            <br><br>
+            <label for="passw">Contraseña</label><br>
+            <input type="password" id="passw" placeholder="Contraseña" required maxlength="32">
+            <br><br>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+    </div>
+    <br>
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+</body>
+
+</html>

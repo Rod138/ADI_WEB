@@ -21,9 +21,11 @@
   },
   "homepage": "https://github.com/Rod138/ADI_WEB#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.98.0",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "path": "^0.12.7",
+    "sweetalert2": "^11.26.21",
     "url": "^0.11.4"
   }
 }
