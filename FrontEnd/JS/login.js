@@ -1,4 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
+    // Al llegar al login se destruye cualquier sesión activa
+    sessionStorage.removeItem('user');
+
     const email = document.getElementById("email");
     const password = document.getElementById("passw");
     const log_in_form = document.getElementById("login-form");
@@ -121,6 +124,7 @@ async function login(correo, contrasenna) {
         const data = await response.json();
 
         if (data.success) {
+            sessionStorage.setItem('user', JSON.stringify(data.user));
             await Swal.fire({
                 titleText: `Bienvenido, ${data.user.name}`,
                 icon: 'success',

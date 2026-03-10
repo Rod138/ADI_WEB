@@ -1,0 +1,213 @@
+.incident-card {
+    width: 100%;
+    max-width: 800px;
+    background-color: #E5E7EB;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    padding: 2rem;
+    margin-top: 2rem;
+}
+
+.incident-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    background-color: #1E3A8A;
+    color: #F9FAFB;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 0.4rem 1rem;
+    border-radius: 0.5rem;
+}
+
+.status-badge {
+    background-color: #8B5CF6;
+    color: #F9FAFB;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+}
+
+.incident-image {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.incident-image img {
+    width: 100%;
+    max-height: 420px;
+    object-fit: cover;
+    display: block;
+}
+
+.incident-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-row.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #6B7280;
+}
+
+.info-value {
+    font-size: 1rem;
+    color: #111827;
+}
+
+.description {
+    line-height: 1.6;
+    white-space: pre-wrap;
+    background-color: #F9FAFB;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D1D5DB;
+}
+
+.error {
+    color: #DC2626;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* ── Update form ───────────────────────────────────────────── */
+.update-card {
+    width: 100%;
+    max-width: 800px;
+    background-color: #E5E7EB;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    padding: 2rem;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    border-top: 4px solid #8B5CF6;
+}
+
+.update-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1E3A8A;
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.update-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 2rem;
+    margin-bottom: 1.25rem;
+}
+
+.update-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.update-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.update-field label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #374151;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.char-counter {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: #9CA3AF;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.update-field input[type="number"],
+.update-field textarea {
+    padding: 0.6rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1.5px solid #D1D5DB;
+    background-color: #F9FAFB;
+    font-size: 0.95rem;
+    color: #111827;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.update-field input[type="number"]:focus,
+.update-field textarea:focus {
+    outline: none;
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+.checkbox-label {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: #8B5CF6;
+    cursor: pointer;
+}
+
+.update-btn {
+    background-color: #8B5CF6;
+    color: #F9FAFB;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 0;
+    transition: background-color 0.2s;
+}
+
+.update-btn:hover {
+    background-color: #7C3AED;
+}
+
+.update-btn:active {
+    background-color: #EDE9FE;
+    color: #111827;
+}
+

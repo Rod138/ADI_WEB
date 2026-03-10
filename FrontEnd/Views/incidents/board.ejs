@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/FrontEnd/CSS/board.css">
+    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
+    <title>ADI - Tablón</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/board.js" defer></script>
+</head>
+
+<body>
+    <nav>
+        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"><a href=""><img
+                    src="./FrontEnd/IMG/avatar.png" alt="avatar"></a></div>
+        <div class="nav-content">Tablón de Incidencias</div>
+        <div class="nav-content"><a href="/main"><button>Volver al menú principal</button></a></div>
+    </nav>
+    <div class="main-container">
+        <div class="selects">
+            <div class="filter-group">
+                <label for="type">Tipo</label>
+                <select name="type" id="type">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="area">Área</label>
+                <select name="area" id="area">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status">Estado</label>
+                <select name="status" id="status">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="order-by">Ordenar por</label>
+                <select name="order-by" id="order-by">
+                    <option value="timedown">Fecha descendente</option>
+                    <option value="timeup">Fecha ascendente</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-container">
+            <table>
+                    <colgroup>
+                        <col style="width: 75%">
+                        <col style="width: 15%">
+                        <col style="width: 10%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>Información</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="incidents-tbody">
+                        <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+        </div>
+    </div>
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+</body>
+
+</html>

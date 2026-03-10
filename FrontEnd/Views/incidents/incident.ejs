@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/FrontEnd/CSS/board.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/incident.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Incidencia</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+</head>
+<body>
+    <nav>
+        <div class="nav-content"><img src="/FrontEnd/IMG/logo.png" alt="ADI_logo"></div>
+        <div class="nav-content">Detalle de Incidencia</div>
+        <div class="nav-content"><a href="/incident-board"><button>Volver al tablón</button></a></div>
+    </nav>
+
+    <div class="main-container">
+        <div class="incident-card" id="incident-card">
+            <p style="text-align:center">Cargando...</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+
+    <script>
+        (async () => {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const card = document.getElementById('incident-card');
+
+            if (!id) {
+                card.innerHTML = '<p class="error">No se especificó una incidencia.</p>';
+                return;
+            }
+
+            try {
+                const res  = await fetch(`/api/incidents/${encodeURIComponent(id)}`);
+                const data = await res.json();
+
+                if (!data.success) {
+                    card.innerHTML = '<p class="error">No se pudo cargar la incidencia.</p>';
+                    return;
+                }
+
+                const inc = data.incident;
+                const date = inc.created_at
+                    ? new Date(inc.created_at).toLocaleString('es-MX', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    })
+                    : '-';
+
+                const imageUrl = inc.image_url ?? inc.img_url ?? inc.cloudinary_url ?? inc.image ?? null;
+
+                card.innerHTML = `
+                    <div class="incident-header">
+                        <span class="badge">${escapeHtml(data.typeName)}</span>
+                        <span class="status-badge">${escapeHtml(data.statusName)}</span>
+                    </div>
+
+                    ${imageUrl ? `
+                    <div class="incident-image">
+                        <img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia">
+                    </div>` : ''}
+
+                    <div class="incident-body">
+                        <div class="info-row">
+                            <span class="info-label">Área</span>
+                            <span class="info-value">${escapeHtml(data.areaName)}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Fecha</span>
+                            <span class="info-value">${date}</span>
+                        </div>
+                        ${inc.notes ? `
+                        <div class="info-row full-width">
+                            <span class="info-label">Notas</span>
+                            <p class="info-value description">${escapeHtml(inc.notes)}</p>
+                        </div>` : ''}
+                        ${(inc.cost !== null && inc.cost !== undefined) ? `
+                        <div class="info-row">
+                            <span class="info-label">Costo</span>
+                            <span class="info-value">$${parseFloat(inc.cost).toFixed(2)}</span>
+                        </div>` : ''}
+                        ${inc.completed_at ? `
+                        <div class="info-row">
+                            <span class="info-label">Completado el</span>
+                            <span class="info-value">${new Date(inc.completed_at).toLocaleString('es-MX', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}</span>
+                        </div>` : ''}
+                        <div class="info-row full-width">
+                            <span class="info-label">Descripción</span>
+                            <p class="info-value description">${escapeHtml(inc.content ?? inc.description ?? '-')}</p>
+                        </div>
+                    </div>
+                `;
+
+                // Show update form only for rol_id > 2
+                const user = JSON.parse(sessionStorage.getItem('user'));
+                if (user && user.rol_id > 2) {
+                    renderUpdateForm(id, data.statuses, inc.status_id);
+                }
+
+            } catch (e) {
+                card.innerHTML = '<p class="error">Error al cargar la incidencia.</p>';
+            }
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            function renderUpdateForm(incId, statuses, currentStatusId) {
+                const container = document.querySelector('.main-container');
+                const form = document.createElement('div');
+                form.className = 'update-card';
+
+                const sortedStatuses = (statuses ?? []).slice().sort((a, b) => a.id - b.id);
+                const statusOptions = sortedStatuses.map(s => {
+                    const name = escapeHtml(s.name ?? s.status ?? s.id);
+                    const sel = String(s.id) === String(currentStatusId) ? 'selected' : '';
+                    return `<option value="${s.id}" ${sel}>${name}</option>`;
+                }).join('');
+
+                form.innerHTML = `
+                    <h3 class="update-title">Actualizar reporte</h3>
+                    <div class="update-grid">
+                        <div class="update-field">
+                            <label for="upd-status">Estado</label>
+                            <select id="upd-status">${statusOptions}</select>
+                        </div>
+                        <div class="update-field">
+                            <label for="upd-cost">Costo</label>
+                            <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
+                        </div>
+                        <div class="update-field full-width">
+                            <label for="upd-notes">Notas <span class="char-counter" id="char-counter">0 / 150</span></label>
+                            <textarea id="upd-notes" maxlength="150" rows="3" placeholder="Notas adicionales..."></textarea>
+                        </div>
+                        <div class="update-field full-width">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="upd-completed">
+                                Marcar fecha de completado como ahora
+                            </label>
+                        </div>
+                    </div>
+                    <button class="update-btn" id="update-btn">Guardar cambios</button>
+                `;
+                container.appendChild(form);
+
+                const textarea = document.getElementById('upd-notes');
+                const counter  = document.getElementById('char-counter');
+                textarea.addEventListener('input', () => {
+                    counter.textContent = `${textarea.value.length} / 150`;
+                });
+
+                document.getElementById('update-btn').addEventListener('click', async () => {
+                    const status_id       = document.getElementById('upd-status').value;
+                    const notes           = textarea.value.trim();
+                    const costVal         = document.getElementById('upd-cost').value;
+                    const set_completed_at = document.getElementById('upd-completed').checked;
+
+                    if (costVal !== '' && parseFloat(costVal) < 0) {
+                        Swal.fire({ icon: 'error', title: 'Costo inválido', text: 'El costo no puede ser negativo.' });
+                        return;
+                    }
+
+                    const body = { status_id };
+                    if (notes)           body.notes = notes;
+                    if (costVal !== '')   body.cost  = costVal;
+                    if (set_completed_at) body.set_completed_at = true;
+
+                    try {
+                        const r = await fetch(`/api/incidents/${encodeURIComponent(incId)}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(body)
+                        });
+                        const result = await r.json();
+                        if (result.success) {
+                            await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Reporte actualizado correctamente.', timer: 1800, timerProgressBar: true, showConfirmButton: false });
+                            window.location.reload();
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo actualizar.' });
+                        }
+                    } catch {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

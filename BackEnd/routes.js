@@ -2,6 +2,7 @@ import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { login } from './controllers/login.js';
+import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -21,8 +22,23 @@ router.get('/login', (req, res) => {
 router.post('/api/login', login);
 
 router.get('/main', (req, res) => {
-    const indexPath = path.join(rootDir, 'FrontEnd', 'Views', 'main.html');
-    res.sendFile(indexPath);
+    res.render('main');
+});
+
+router.get('/incident-board', (req, res) => {
+    res.render('incidents/board');
+});
+
+router.get('/api/incidents', getIncidents);
+router.get('/api/incidents/:id', getIncidentById);
+router.patch('/api/incidents/:id', updateIncident);
+
+router.get('/incident', (req, res) => {
+    res.render('incidents/incident');
+});
+
+router.get('/departments', (req, res) => {
+    res.render('departments/departments');
 });
 
 export default router;
