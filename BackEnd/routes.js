@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { login } from './controllers/login.js';
 import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
+import { getUsers, getUserById, updateUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -40,5 +41,13 @@ router.get('/incident', (req, res) => {
 router.get('/departments', (req, res) => {
     res.render('departments/departments');
 });
+
+router.get('/api/users', getUsers);
+router.get('/api/users/:id', getUserById);
+router.patch('/api/users/:id', updateUser);
+router.post('/api/users', createUser);
+router.get('/api/roles', getRoles);
+router.get('/api/departments', getDepartments);
+router.patch('/api/departments/:id', updateDepartment);
 
 export default router;

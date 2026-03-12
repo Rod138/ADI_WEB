@@ -51,13 +51,28 @@ export const getIncidentById = async (req, res) => {
         const areasMap    = Object.fromEntries(areaRes.data.map(a => [a.id, a.name ?? a.area ?? a.id]));
         const typesMap    = Object.fromEntries(typeRes.data.map(t => [t.id, t.name ?? t.type ?? t.id]));
 
+        let userName = 'Desconocido';
+        if (incRes.data.usr_id) {
+            const { data: usr } = await supabase
+                .from('users')
+                .select('name, ap')
+                .eq('id', incRes.data.usr_id)
+                .single();
+            if (usr) {
+                userName = (usr.name === '-' && usr.ap === '-')
+                    ? 'Usuario eliminado'
+                    : `${usr.name ?? ''} ${usr.ap ?? ''}`.trim();
+            }
+        }
+
         return res.status(200).json({
             success: true,
             incident: incRes.data,
             statusName: statusesMap[incRes.data.status_id] ?? incRes.data.status_id,
             areaName:   areasMap[incRes.data.area_id]     ?? incRes.data.area_id,
             typeName:   typesMap[incRes.data.type_id]     ?? incRes.data.type_id,
-            statuses:   statusRes.data
+            statuses:   statusRes.data,
+            userName
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno' });

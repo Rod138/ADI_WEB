@@ -4,18 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/FrontEnd/CSS/deps.css">
-    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
     <title>ADI - Departamentos</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/departments.js" defer></script>
 </head>
 <body>
     <nav>
-        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"><a href=""><img
-                    src="./FrontEnd/IMG/avatar.png" alt="avatar"></a></div>
+        <div class="nav-content"><img src="/FrontEnd/IMG/logo.png" alt="ADI_logo"></div>
         <div class="nav-content">Administración de Departamentos</div>
         <div class="nav-content"><a href="/main"><button>Volver al menú principal</button></a></div>
     </nav>
+
+    <div class="main-container">
+        <!-- Search bar -->
+        <div class="search-bar">
+            <div class="filter-group">
+                <label for="dep-select">Departamento</label>
+                <select id="dep-select">
+                    <option value="">— Selecciona un departamento —</option>
+                </select>
+            </div>
+            <div class="filter-group" id="user-filter-group">
+                <label for="user-select">Usuario</label>
+                <select id="user-select" disabled>
+                    <option value="">— Selecciona un usuario —</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Cards row -->
+        <div class="cards-row" id="cards-row" style="display:none">
+
+            <!-- Left card: Department -->
+            <div class="dep-card" id="dep-card">
+                <h3 class="card-title">Departamento</h3>
+                <div class="info-row">
+                    <span class="info-label">Nombre</span>
+                    <span class="info-value" id="dep-name">—</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Estado</span>
+                    <span class="info-value" id="dep-status">—</span>
+                </div>
+
+                <!-- is_in_use edit (only rol > 2) -->
+                <div id="dep-edit-section" style="display:none">
+                    <hr class="divider">
+                    <h4 class="section-subtitle">Actualizar estado</h4>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="dep-in-use-chk">
+                        Departamento en uso
+                    </label>
+                    <label class="checkbox-label confirm-chk">
+                        <input type="checkbox" id="dep-confirm-chk">
+                        Confirmo los cambios
+                    </label>
+                    <p class="warning-text" id="dep-warning" style="display:none">
+                        ⚠️ Al deshabilitar el departamento, los datos del usuario asignado se resetearán.
+                    </p>
+                    <button class="save-btn" id="dep-save-btn">Guardar</button>
+                </div>
+            </div>
+
+            <!-- Right card: User -->
+            <div class="user-card" id="user-card">
+                <div class="card-title-row">
+                    <h3 class="card-title">Usuario</h3>
+                    <button class="create-user-btn" id="create-user-btn" style="display:none">+ Crear usuario</button>
+                </div>
+                <div id="user-view">
+                    <!-- populated by JS -->
+                </div>
+
+                <!-- Edit form (only if rol > 2 OR same user) -->
+                <div id="user-edit-section" style="display:none">
+                    <hr class="divider">
+                    <h4 class="section-subtitle">Editar usuario</h4>
+                    <div class="edit-grid">
+                        <div class="edit-field">
+                            <label for="edit-name">Nombre</label>
+                            <input type="text" id="edit-name">
+                        </div>
+                        <div class="edit-field">
+                            <label for="edit-ap">Apellido paterno</label>
+                            <input type="text" id="edit-ap">
+                        </div>
+                        <div class="edit-field">
+                            <label for="edit-am">Apellido materno</label>
+                            <input type="text" id="edit-am" placeholder="(opcional)">
+                        </div>
+                        <div class="edit-field">
+                            <label for="edit-email">Email</label>
+                            <input type="email" id="edit-email">
+                        </div>
+                        <div class="edit-field">
+                            <label for="edit-phone">Teléfono</label>
+                            <input type="text" id="edit-phone">
+                        </div>
+                        <div class="edit-field" id="edit-rol-field">
+                            <label for="edit-rol">Rol</label>
+                            <select id="edit-rol"></select>
+                        </div>
+                    </div>
+                    <label class="checkbox-label confirm-chk">
+                        <input type="checkbox" id="user-confirm-chk">
+                        Confirmo los cambios
+                    </label>
+                    <button class="save-btn" id="user-save-btn">Guardar cambios</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <footer>
         <p>X-CORP</p>
     </footer>
