@@ -1,20 +1,19 @@
 * {
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    color: #111827;
-    padding: 0;
     margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
 body {
-    background-color: #F9FAFB;
+    background-color: #F7F7F7;
     min-height: 100vh;
 }
 
 nav {
-    background-color: #1E3A8A;
-    color: #F9FAFB;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.25rem;
+    color: #000000;
+    background-color: #F7F7F7;
     padding: 1rem 2rem;
     width: 100%;
     position: sticky;
@@ -28,143 +27,138 @@ nav {
 }
 
 nav img {
-    margin: 0;
-    max-width: 3rem;
     max-height: 3rem;
-    border-radius: 100%;
 }
 
 nav a {
-    margin: 0rem 0.75rem;
-    color: #F9FAFB;
+    margin: 0 0.75rem;
+    color: #000000;
     text-decoration: none;
     font-size: 1rem;
-    font-weight: 600;
 }
 
 nav a:hover {
-    color: #DBEAFE;
-}
-
-nav button {
-    background-color: #8B5CF6;
-    color: #F9FAFB;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1.25rem;
-    font-size: 1rem;
-    cursor: pointer;
+    color: #ED7A13;
 }
 
 h1 {
-    font-weight: 700;
-    font-size: 2rem;
-    font-family: 'Inter', sans-serif;
-    color: #1E3A8A;
-}
-
-h2 {
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    color: #F9FAFB;
+    font-size: 3.5rem;
+    font-family: 'Outfit', sans-serif;
+    color: #FFFFFF;
+    font-weight: 100;
 }
 
 button {
-    background-color: #1E3A8A;
-    color: #F9FAFB;
+    background-color: rgba(255, 231, 135, 0.9);
+    color: #1E3006;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1.25rem;
+    border-radius: 2rem;
+    padding: 1rem 2.5rem;
     cursor: pointer;
-}
-
-button:hover {
-    background-color: #8B5CF6;
-}
-
-button:active {
-    background-color: #EDE9FE;
-    color: #111827;
+    font-size: 1.5rem;
 }
 
 footer {
-    background-color: #1E3A8A;
+    background-color: #1E3006;
     width: 100%;
-    margin: 0;
     padding: 1rem 2rem;
-    text-align: center;
+    text-align: left;
 }
 
 footer p {
-    color: #F9FAFB;
-    font-weight: 600;
-    font-size: 2rem;
+    color: #FFFFFF;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
 }
 
 .nav-content {
-    max-height: fit-content;
+    display: flex;
     align-items: center;
 }
 
-.welcome {
-    font-size: 1.5rem;
-    padding: 5rem 2rem;
-    background-color: #DBEAFE;
+.welcome,
+.proposal-container {
     display: flex;
     justify-content: space-around;
     align-items: center;
     text-align: center;
-    gap: 2rem;
+}
+
+.welcome {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.5rem;
+    padding: 10rem 2rem;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("../IMG/ed1.png");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
 }
 
 .welcome img {
     max-width: 30rem;
-    height: auto;
     border-radius: 1rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.main-container {
-    font-size: 1rem;
-    padding: 5rem 2rem;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    text-align: center;
-    gap: 2rem;
+.welcome p {
+    color: #FFFFFF;
+    font-size: 1.5rem;
 }
 
-.main-container img {
-    max-width: 30rem;
-    height: auto;
+.proposal-container {
+    padding: 6rem 3rem;
+    gap: 1rem;
+}
+
+.proposal-container img {
+    max-height: 25rem;
     border-radius: 1rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.main-container marquee {
-    text-align: center;
-    max-width: 25rem;
-    height: 18.75rem;
-    background-color: #111827;
-    padding: 1rem;
+.proposal-content {
+    font-family: 'Nunito', sans-serif;
+    max-width: 50%;
+    height: 25rem;
+    text-align: left;
+    font-size: 1.25rem;
+    background-color: #6A8042;
+    padding: 2rem;
     border-radius: 1rem;
-
 }
 
-marquee p {
-    color: #F9FAFB;
+.proposal-content h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.5rem;
+    color: #FFFADD;
 }
-.text-container {
-    max-width: 30rem;
-    text-align: justify;
+
+.proposal-content p {
+    color: #FFFADD;
+    font-size: 1.25rem;
+    font-weight: 100;
+}
+
+.aim-container {
+    font-family: 'Nunito', sans-serif;
     font-size: 1.5rem;
+    font-weight: 100;
+    background-color: #ED7A13;
+    color: #FFFADD;
+    margin: 2.5rem 3rem;
+    padding: 2.5rem;
+    text-align: center;
 }
 
-.enterButton {
-    font-size: 1.5rem;
-    padding: 0.75rem 2rem;
-    margin-top: 0.5rem;
+.aim-container h1 {
+    font-size: 2.5rem;
+    color: #FFFADD;
 }
 
-.gray-back {
-    background-color: #E5E7EB;
+.ed2-img {
+    display: block;
+    max-width: 50%;
+    margin: 2rem auto;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }

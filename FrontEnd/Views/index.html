@@ -4,6 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="./Frontend/CSS/index.css">
     <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
     <title>ADI - Bienvenida</title>
@@ -11,11 +16,11 @@
 
 <body>
     <nav>
-        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"></div>
-        <div class="nav-content">
-            <p><a href="#objetivo">Objetivo</a><a href="#propuesta">Propuesta</a><a href="#team">Desarrolladores</a></p>
+        <div class="nav-content"><a href="#main"><img src="./FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo"></a>
         </div>
-        <div class="nav-content"><a href="/login"><button>Ingresar</button></a></div>
+        <div class="nav-content">
+            <p><a href="#objetivo">OBJETIVO</a><a href="#propuesta">PROPUESTA</a></p>
+        </div>
     </nav>
     <div class="welcome" id="main">
         <div>
@@ -23,72 +28,36 @@
             <p>Administrador De Incidencias</p><br>
             <a href="/login"><button class="enterButton">Ingresar al sistema</button></a>
         </div>
-        <div>
-            <img src="./FrontEnd/IMG/ed1.png" alt="edificio">
-        </div>
     </div>
-    <div class="main-container" id="objetivo">
-        <div>
-            <img src="./FrontEnd/IMG/ed2.png" alt="edificio">
-        </div>
-        <div>
-            <h1>Objetivo</h1><br>
-            <div class="text-container">
-                <p>
-                    Implementar un sistema digital para la gestión de incidencias en el "Residencial del Parque" que
-                    permita a los residentes realizar reportes de manera estandarizada y a la administración registrar,
-                    dar seguimiento en tiempo real y evaluar la eficiencia en la resolución de cada caso, con el fin de
-                    reducir la pérdida de información, optimizar la asignación de recursos de mantenimiento y aumentar
-                    la transparencia y satisfacción de los residentes.
-                </p>
-            </div>
-            <br>
-            <a href="#main"><button>Volver</button></a>
-        </div>
+    <div id="objetivo"></div>
+    <div class="aim-container">
+        <h1>Objetivo</h1>
+        <p>
+            Implementar un sistema digital para la gestión de incidencias en el "Residencial del Parque" que
+            permita a los residentes realizar reportes de manera estandarizada y a la administración registrar,
+            dar seguimiento en tiempo real y evaluar la eficiencia en la resolución de cada caso, con el fin de
+            reducir la pérdida de información, optimizar la asignación de recursos de mantenimiento y aumentar
+            la transparencia y satisfacción de los residentes.
+        </p>
     </div>
-    <div class="main-container gray-back" id="propuesta">
+    <img src="./FrontEnd/IMG/ed2.png" alt="edificio" class="ed2-img">
+    <div class="proposal-container" id="propuesta">
         <div>
-            <h1>Propuesta</h1><br>
-            <div class="text-container">
-                <p>
-                    Implementar un sistema digital para la gestión de incidencias en el "Residencial del Parque" que
-                    permita a los residentes realizar reportes de manera estandarizada y a la administración registrar,
-                    dar seguimiento en tiempo real y evaluar la eficiencia en la resolución de cada caso, con el fin de
-                    reducir la pérdida de información, optimizar la asignación de recursos de mantenimiento y aumentar
-                    la transparencia y satisfacción de los residentes.
-                </p>
-            </div>
-            <br>
-            <a href="#main"><button>Volver</button></a>
+            <img src="./FrontEnd/IMG/logo_rectangle_v.png" alt="logo_adi">
         </div>
-        <div>
-            <img src="./FrontEnd/IMG/logo rectangle.png" alt="">
-        </div>
-    </div>
-    <div class="main-container" id="team">
-        <div>
-            <img src="./FrontEnd/IMG/team.png" alt="">
-        </div>
-        <div>
-            <h1>Integrantes</h1><br>
-            <marquee behavior="scroll" direction="down">
-                <p>Analista</p>
-                <h2>Briseño Muñoz Joseph Dylan</h2><br><br>
-                <p>Analista y Desarrollador</p>
-                <h2>Estrada Sevillano Rodrigo</h2><br><br>
-                <p>Diseñador y Desarrollador</p>
-                <h2>García Piedra Edwin Leonardo</h2><br><br>
-                <p>Diseñador</p>
-                <h2>González de Luna Luis Gerardo</h2><br><br>
-                <p>Líder</p>
-                <h2>Ortíz Ávila Miguel Ángel</h2>
-            </marquee>
-            <br><br>
-            <a href="#main"><button>Volver</button></a>
+        <div class="proposal-content">
+            <h1>Propuesta</h1>
+            <p>
+                Implementar un sistema digital para la gestión de incidencias en el "Residencial del Parque" que
+                permita a los residentes realizar reportes de manera estandarizada y a la administración registrar,
+                dar seguimiento en tiempo real y evaluar la eficiencia en la resolución de cada caso, con el fin de
+                reducir la pérdida de información, optimizar la asignación de recursos de mantenimiento y aumentar
+                la transparencia y satisfacción de los residentes.
+            </p>
         </div>
     </div>
     <footer>
-        <p>X-CORP</p>
+        <p>X-CORP @ 2026 All rights reserved</p>
     </footer>
 </body>
 
