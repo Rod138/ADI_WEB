@@ -11,7 +11,7 @@ body {
 
 nav {
     font-family: 'Inter', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.rem;
     color: #000000;
     background-color: #F7F7F7;
     padding: 1rem 2rem;
@@ -23,7 +23,7 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 nav img {
@@ -97,7 +97,7 @@ footer p {
 .welcome img {
     max-width: 30rem;
     border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .welcome p {
@@ -113,29 +113,30 @@ footer p {
 .proposal-container img {
     max-height: 25rem;
     border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .proposal-content {
     font-family: 'Nunito', sans-serif;
     max-width: 50%;
-    height: 25rem;
+    height: auto;
     text-align: left;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     background-color: #6A8042;
     padding: 2rem;
     border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .proposal-content h1 {
     font-family: 'Outfit', sans-serif;
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     color: #FFFADD;
 }
 
 .proposal-content p {
     color: #FFFADD;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 100;
 }
 
@@ -145,13 +146,15 @@ footer p {
     font-weight: 100;
     background-color: #ED7A13;
     color: #FFFADD;
-    margin: 2.5rem 3rem;
-    padding: 2.5rem;
+    margin: 2.5rem 10rem;
+    padding: 2.5rem 3rem;
     text-align: center;
+    border-radius: 2rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .aim-container h1 {
-    font-size: 2.5rem;
+    font-size: 3rem;
     color: #FFFADD;
 }
 
@@ -160,5 +163,5 @@ footer p {
     max-width: 50%;
     margin: 2rem auto;
     border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
