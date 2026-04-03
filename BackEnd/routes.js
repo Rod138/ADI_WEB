@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { login } from './controllers/login.js';
+import { login, forgotPassword } from './controllers/login.js';
 import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 
@@ -21,6 +21,14 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/api/login', login);
+
+// Rutas de recuperación de contraseña
+router.get('/forgot-password', (req, res) => {
+    const forgotPasswordPath = path.join(rootDir, 'FrontEnd', 'Views', 'forgot-password.html');
+    res.sendFile(forgotPasswordPath);
+});
+
+router.post('/api/forgot-password', forgotPassword);
 
 router.get('/main', (req, res) => {
     res.render('main');
