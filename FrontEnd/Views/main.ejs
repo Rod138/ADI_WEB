@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
     <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
     <title>ADI - Menú Principal</title>
@@ -15,22 +16,58 @@
 </head>
 
 <body>
-    <nav>
-        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"><a href=""><img
-                    src="./FrontEnd/IMG/avatar.png" alt="avatar"></a></div>
-        <div class="nav-content">Menú Principal</div>
-        <div class="nav-content"><a id="logout-btn" href="/"><button>Cerrar sesión</button></a></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="./FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">MENÚ PRINCIPAL</div>
+        <div class="nav-actions">
+            <a href="/notifications" class="nav-icon-btn" aria-label="Notificaciones">
+                <span class="material-symbols-outlined">notifications</span>
+            </a>
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn logout-link" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
     </nav>
     <div class="main-container">
         <div class="welcome">
-            <h1>Bienvenido/a <span id="user-name"></span></h1>
+            <h1>BIENVENIDO <span id="user-name">USUARIO</span></h1>
         </div>
-        <a id="incd-btn" href="/incident-board"><button class="button-2" id="incd-b">Administración de incidencias</button></a>
-        <a id="deps-btn" href="/departments"><button class="button-1" id="deps-b">Administración de departamentos</button></a>
+        <section class="cards-grid" aria-label="Accesos del sistema">
+            <a id="incd-btn" class="menu-card button-2" href="/incident-board">
+                <span>ADMINISTRACIÓN DE INCIDENCIAS</span>
+            </a>
+            <a id="deps-btn" class="menu-card button-1" href="/departments">
+                <span>ADMINISTRACIÓN DE DEPARTAMENTOS</span>
+            </a>
+            <a class="menu-card button-3 soon" href="#" data-feature="Reportes">
+                <span>REPORTES</span>
+            </a>
+            <a class="menu-card button-4 soon" href="#" data-feature="Contabilidad">
+                <span>CONTABILIDAD</span>
+            </a>
+        </section>
     </div>
     <footer>
         <p>X-CORP</p>
     </footer>
+    <script>
+        document.querySelectorAll('.soon').forEach(function (card) {
+            card.addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    titleText: this.dataset.feature + ' próximamente',
+                    text: 'Esta sección aún no está disponible.',
+                    icon: 'info',
+                    confirmButtonText: 'Entendido'
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>

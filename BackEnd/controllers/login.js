@@ -100,7 +100,6 @@ export const forgotPassword = async (req, res) => {
 
         const transporter = await buildMailerTransport()
         if (!transporter) {
-            console.error('SMTP no configurado: faltan SMTP_HOST, SMTP_USER o SMTP_PASS')
             return res.status(500).json({
                 success: false,
                 message: 'El servicio de correo no está configurado'
@@ -116,7 +115,6 @@ export const forgotPassword = async (req, res) => {
                 html: `<p>Hola ${user.name || ''},</p><p>Tu contraseña actual es: <b>${user.password}</b></p><p>ADI</p>`
             })
         } catch (mailError) {
-            console.error('Error enviando correo de recuperación:', mailError)
             return res.status(500).json({
                 success: false,
                 message: 'No se pudo enviar el correo de recuperación'

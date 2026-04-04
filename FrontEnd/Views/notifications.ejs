@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/notifications.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Notificaciones</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/notifications.js" defer></script>
+</head>
+
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">CENTRO DE NOTIFICACIONES</div>
+        <div class="nav-actions">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section class="notifications-card">
+            <div class="filters-row">
+                <select id="type-filter" class="pill-select">
+                    <option value="all">TIPO</option>
+                </select>
+                <select id="area-filter" class="pill-select">
+                    <option value="all">ÁREA</option>
+                </select>
+                <select id="state-filter" class="pill-select">
+                    <option value="all">ESTADO</option>
+                    <option value="unread">NO LEÍDA</option>
+                    <option value="read">LEÍDA</option>
+                </select>
+            </div>
+
+            <div id="notifications-list" class="notifications-list"></div>
+        </section>
+
+        <div class="bottom-actions">
+            <a href="/main" class="btn-back">REGRESAR</a>
+        </div>
+    </main>
+</body>
+
+</html>

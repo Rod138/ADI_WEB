@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/profile.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Perfil</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/profile.js" defer></script>
+</head>
+
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">PERFIL</div>
+        <div class="nav-actions">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <div class="profile-card">
+            <h1>Editar Datos de Perfil</h1>
+            <hr>
+
+            <form id="profile-form">
+                <label for="profile-name">Nombre:</label>
+                <input type="text" id="profile-name" maxlength="120" disabled>
+
+                <label for="profile-department">Departamento:</label>
+                <input type="text" id="profile-department" disabled>
+
+                <label for="profile-email">Correo:</label>
+                <input type="email" id="profile-email" maxlength="320" disabled>
+
+                <label for="profile-phone">Teléfono:</label>
+                <input type="text" id="profile-phone" maxlength="40" disabled>
+
+                <label for="profile-password">Nueva contraseña:</label>
+                <input type="password" id="profile-password" maxlength="32" disabled>
+
+                <label for="profile-password-confirm">Confirmar contraseña:</label>
+                <input type="password" id="profile-password-confirm" maxlength="32" disabled>
+
+                <div class="form-actions">
+                    <button type="button" id="edit-save-btn" class="btn-edit">EDITAR</button>
+                    <a href="/main" class="btn-back">VOLVER AL MENÚ</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</body>
+
+</html>

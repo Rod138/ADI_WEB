@@ -1,0 +1,200 @@
+* {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    color: #111111;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #EEEEEE;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-nav {
+    min-height: 5rem;
+    width: 100%;
+    background-color: #F7F7F7;
+    border-bottom: 1px solid #c8c8c8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+}
+
+.nav-title {
+    text-align: center;
+    color: #111111;
+    font-size: 1.75rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nav-icon-btn {
+    color: #111111;
+    text-decoration: none;
+    border: none;
+    background: transparent;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.nav-icon-btn:hover {
+    color: #6A8042;
+}
+
+.material-symbols-outlined {
+    font-size: 1.8rem;
+}
+
+.main-container {
+    width: 100%;
+    padding: 2rem 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.2rem;
+}
+
+.notifications-card {
+    width: 920px;
+    min-height: 480px;
+    background-color: #E8E4C7;
+    border: 4px solid #E9B07B;
+    border-radius: 1.8rem;
+    overflow: hidden;
+}
+
+.filters-row {
+    background-color: #E9B07B;
+    padding: 1rem 1.4rem;
+    display: flex;
+    gap: 0.8rem;
+}
+
+.pill-select {
+    background-color: #E9B07B;
+    color: #FFFADD;
+    border: 1px solid #FFFADD;
+    border-radius: 1rem;
+    padding: 0.25rem 0.95rem;
+    font-size: 1.35rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.notifications-list {
+    padding: 0.6rem 1.25rem 1rem;
+}
+
+.notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    border-bottom: 1px solid #E9B07B;
+}
+
+.notification-left {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.noti-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 2px solid #1E3006;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1E3006;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.notification-content h3 {
+    font-size: 1.8rem;
+    color: #1E3006;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+}
+
+.notification-content p {
+    font-size: 1.45rem;
+    color: #233110;
+}
+
+.notification-content small {
+    font-size: 1.2rem;
+    color: #1E3006;
+}
+
+.notification-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.45rem;
+}
+
+.notification-time {
+    font-size: 1.6rem;
+    color: #1E3006;
+}
+
+.delete-btn {
+    border: none;
+    background: transparent;
+    color: #1E3006;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+}
+
+.delete-btn .material-symbols-outlined {
+    font-size: 1.6rem;
+}
+
+.empty-text {
+    text-align: center;
+    color: #1E3006;
+    font-size: 1.45rem;
+    padding: 2rem 0;
+}
+
+.bottom-actions {
+    width: 920px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-back {
+    background-color: #6A8042;
+    color: #FFFADD;
+    text-decoration: none;
+    border-radius: 0.75rem;
+    width: 160px;
+    height: 2.8rem;
+    line-height: 2.8rem;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
