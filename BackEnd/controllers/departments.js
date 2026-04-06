@@ -29,7 +29,7 @@ export const getRoles = async (req, res) => {
 // POST /api/users  — crear nuevo usuario
 export const createUser = async (req, res) => {
     const { name, ap, am, email, phone, password, rol_id, dep_id } = req.body;
-    if (!name || !ap || !email || !phone || !password || !rol_id || !dep_id) {
+    if (!name || !email || !phone || !password || !rol_id || !dep_id) {
         return res.status(400).json({ success: false, message: 'Faltan campos obligatorios' });
     }
     try {
@@ -44,7 +44,12 @@ export const createUser = async (req, res) => {
 
         const { error } = await supabase.from('users').insert({
             id: newId,
-            name, ap, am: am || null, email, phone, password,
+            name,
+            ap: ap ? String(ap).trim() || null : null,
+            am: am || null,
+            email,
+            phone,
+            password,
             rol_id: parseInt(rol_id, 10),
             dep_id: parseInt(dep_id, 10)
         });

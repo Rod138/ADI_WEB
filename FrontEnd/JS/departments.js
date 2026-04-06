@@ -75,7 +75,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data.users.forEach(u => {
                     const opt = document.createElement('option');
                     opt.value = u.id;
-                    opt.textContent = `${u.name ?? '-'} ${u.ap ?? '-'}`;
+                    const fullName = [u.name, u.ap].filter(v => v && v !== '-').join(' ').trim();
+                    opt.textContent = fullName || (u.name ?? '-');
                     userSelect.appendChild(opt);
                 });
                 if (data.users.length > 0) userSelect.disabled = false;
@@ -176,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="text" id="new-name">
                 </div>
                 <div class="edit-field">
-                    <label>Apellido paterno *</label>
+                    <label>Apellido paterno</label>
                     <input type="text" id="new-ap">
                 </div>
                 <div class="edit-field">
@@ -215,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dep_id:   depId
             };
 
-            if (!body.name || !body.ap || !body.email || !body.phone || !body.password) {
+            if (!body.name || !body.email || !body.phone || !body.password) {
                 Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Completa todos los campos obligatorios.' });
                 return;
             }

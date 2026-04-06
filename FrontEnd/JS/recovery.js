@@ -26,8 +26,20 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify({ email: email.value })
                 });
 
-                const data = await response.json();
-                if (data.success) {
+                const contentType = response.headers.get('content-type') || '';
+                let data = null;
+
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const raw = await response.text();
+                    data = {
+                        success: false,
+                        message: raw && raw.length < 200 ? raw : `Error del servidor (${response.status})`
+                    };
+                }
+
+                if (response.ok && data.success) {
                     await Swal.fire({
                         titleText: 'Solicitud enviada',
                         text: data.message,
@@ -39,8 +51,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     window.location.href = '/login';
                 } else {
                     Swal.fire({
-                        titleText: 'Error',
-                        text: data.message,
+                        titleText: `Error ${response.status}`,
+                        text: data.message || 'No se pudo procesar la solicitud',
                         icon: 'error',
                         timer: 5000,
                         timerProgressBar: true,
@@ -49,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                 }
             } catch (error) {
+                console.error('Error en recuperación de contraseña:', error);
                 Swal.fire({
                     titleText: 'Error de conexión',
                     text: 'No se pudo conectar con el servidor',

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/board.css">
     <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
     <title>ADI - Tablón</title>
@@ -16,11 +17,19 @@
 </head>
 
 <body>
-    <nav>
-        <div class="nav-content"><img src="./FrontEnd/IMG/logo.png" alt="ADI_logo"><a href=""><img
-                    src="./FrontEnd/IMG/avatar.png" alt="avatar"></a></div>
-        <div class="nav-content">Tablón de Incidencias</div>
-        <div class="nav-content"><a href="/main"><button>Volver al menú principal</button></a></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">TABLÓN DE INCIDENCIAS</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
     </nav>
     <div class="main-container">
         <div class="selects">
@@ -69,10 +78,10 @@
                     </tbody>
                 </table>
         </div>
+        <div class="bottom-actions">
+            <a href="/main" class="btn-back">REGRESAR</a>
+        </div>
     </div>
-    <footer>
-        <p>X-CORP</p>
-    </footer>
 </body>
 
 </html>

@@ -84,11 +84,19 @@ export const forgotPassword = async (req, res) => {
             });
         }
 
-        const { data: user } = await supabase
+        const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, name, email, password')
             .eq('email', email)
             .maybeSingle();
+
+        if (userError) {
+            console.error('Error consultando usuario en forgotPassword:', userError)
+            return res.status(500).json({
+                success: false,
+                message: 'No se pudo consultar la base de datos'
+            });
+        }
 
         // Respuesta neutra para no exponer si el correo existe o no.
         if (!user) {
@@ -100,6 +108,7 @@ export const forgotPassword = async (req, res) => {
 
         const transporter = await buildMailerTransport()
         if (!transporter) {
+            console.error('SMTP no configurado. Verifica SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en variables de entorno')
             return res.status(500).json({
                 success: false,
                 message: 'El servicio de correo no está configurado'
@@ -115,6 +124,7 @@ export const forgotPassword = async (req, res) => {
                 html: `<p>Hola ${user.name || ''},</p><p>Tu contraseña actual es: <b>${user.password}</b></p><p>ADI</p>`
             })
         } catch (mailError) {
+            console.error('Error enviando correo en forgotPassword:', mailError)
             return res.status(500).json({
                 success: false,
                 message: 'No se pudo enviar el correo de recuperación'
@@ -126,6 +136,7 @@ export const forgotPassword = async (req, res) => {
             message: 'Se envió tu contraseña al correo registrado'
         });
     } catch (error) {
+        console.error('Error no controlado en forgotPassword:', error)
         return res.status(500).json({
             success: false,
             message: 'Error interno'

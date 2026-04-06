@@ -6,7 +6,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/FrontEnd/CSS/board.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/incident.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
     <title>ADI - Incidencia</title>
@@ -14,27 +14,38 @@
     <script src="/FrontEnd/JS/session_manager.js"></script>
 </head>
 <body>
-    <nav>
-        <div class="nav-content"><img src="/FrontEnd/IMG/logo.png" alt="ADI_logo"></div>
-        <div class="nav-content">Detalle de Incidencia</div>
-        <div class="nav-content"><a href="/incident-board"><button>Volver al tablón</button></a></div>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title" id="nav-title">INSPECCIONAR INCIDENCIA</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
     </nav>
 
     <div class="main-container">
         <div class="incident-card" id="incident-card">
             <p style="text-align:center">Cargando...</p>
         </div>
+        <div class="bottom-actions">
+            <a href="/incident-board" class="btn-back">Regresar</a>
+        </div>
     </div>
-
-    <footer>
-        <p>X-CORP</p>
-    </footer>
 
     <script>
         (async () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             const card = document.getElementById('incident-card');
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const canEdit = user && user.rol_id > 2;
+            document.getElementById('nav-title').textContent = canEdit ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
 
             if (!id) {
                 card.innerHTML = '<p class="error">No se especificó una incidencia.</p>';
@@ -59,57 +70,108 @@
                     : '-';
 
                 const imageUrl = inc.image_url ?? inc.img_url ?? inc.cloudinary_url ?? inc.image ?? null;
+                const costText = (inc.cost !== null && inc.cost !== undefined) ? `$${parseFloat(inc.cost).toFixed(2)}` : '-';
+                const descriptionText = escapeHtml(inc.content ?? inc.description ?? '-');
+                const notesText = escapeHtml(inc.notes ?? '');
+                const sortedStatuses = (data.statuses ?? []).slice().sort((a, b) => a.id - b.id);
+                const statusOptions = sortedStatuses.map(s => {
+                    const name = escapeHtml(s.name ?? s.status ?? s.id);
+                    const sel = String(s.id) === String(inc.status_id) ? 'selected' : '';
+                    return `<option value="${s.id}" ${sel}>${name}</option>`;
+                }).join('');
 
                 card.innerHTML = `
-                    <div class="incident-header">
-                        <span class="badge">${escapeHtml(data.typeName)}</span>
-                        <span class="status-badge">${escapeHtml(data.statusName)}</span>
+                    <div class="section-title">INFORMACIÓN DE LA INCIDENCIA :</div>
+
+                    <div class="image-box">
+                        ${imageUrl
+                            ? `<img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia">`
+                            : `<span class="material-symbols-outlined">image</span>`}
                     </div>
 
-                    ${imageUrl ? `
-                    <div class="incident-image">
-                        <img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia">
-                    </div>` : ''}
+                    <div class="info-grid">
+                        <label>REPORTADO POR :</label>
+                        <input type="text" value="${escapeHtml(data.userName ?? '—')}" readonly>
 
-                    <div class="incident-body">
-                        <div class="info-row">
-                            <span class="info-label">Reportado por</span>
-                            <span class="info-value">${escapeHtml(data.userName ?? '—')}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Área</span>
-                            <span class="info-value">${escapeHtml(data.areaName)}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Fecha</span>
-                            <span class="info-value">${date}</span>
-                        </div>
-                        ${inc.notes ? `
-                        <div class="info-row full-width">
-                            <span class="info-label">Notas</span>
-                            <p class="info-value description">${escapeHtml(inc.notes)}</p>
-                        </div>` : ''}
-                        ${(inc.cost !== null && inc.cost !== undefined) ? `
-                        <div class="info-row">
-                            <span class="info-label">Costo</span>
-                            <span class="info-value">$${parseFloat(inc.cost).toFixed(2)}</span>
-                        </div>` : ''}
-                        ${inc.completed_at ? `
-                        <div class="info-row">
-                            <span class="info-label">Completado el</span>
-                            <span class="info-value">${new Date(inc.completed_at).toLocaleString('es-MX', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}</span>
-                        </div>` : ''}
-                        <div class="info-row full-width">
-                            <span class="info-label">Descripción</span>
-                            <p class="info-value description">${escapeHtml(inc.content ?? inc.description ?? '-')}</p>
-                        </div>
+                        <label>FECHA</label>
+                        <input type="text" value="${date}" readonly>
+
+                        <label>ÁREA</label>
+                        <input type="text" value="${escapeHtml(data.areaName)}" readonly>
+
+                        <label>COSTO</label>
+                        <input type="text" value="${costText}" readonly>
+
+                        <label>DESCRIPCIÓN</label>
+                        <input type="text" value="${descriptionText}" readonly>
                     </div>
+
+                    ${canEdit ? `
+                    <div class="update-section">
+                        <div class="update-title">ACTUALIZAR REPORTE :</div>
+                        <div class="update-row two-cols">
+                            <div>
+                                <label for="upd-status">ESTADO</label>
+                                <select id="upd-status">${statusOptions}</select>
+                            </div>
+                            <div>
+                                <label for="upd-cost">COSTO</label>
+                                <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
+                            </div>
+                        </div>
+                        <div class="update-row">
+                            <label for="upd-notes">NOTAS <span id="char-counter">${notesText.length} / 150</span></label>
+                            <input type="text" id="upd-notes" maxlength="150" value="${notesText}">
+                        </div>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="upd-completed">
+                            MARCAR FECHA DE COMPLETADO COMO AHORA
+                        </label>
+                        <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
+                    </div>
+                    ` : ''}
                 `;
 
-                // Show update form only for rol_id > 2
-                const user = JSON.parse(sessionStorage.getItem('user'));
-                if (user && user.rol_id > 2) {
-                    renderUpdateForm(id, data.statuses, inc.status_id);
+                if (canEdit) {
+                    const notesInput = document.getElementById('upd-notes');
+                    const counter = document.getElementById('char-counter');
+                    notesInput.addEventListener('input', () => {
+                        counter.textContent = `${notesInput.value.length} / 150`;
+                    });
+
+                    document.getElementById('update-btn').addEventListener('click', async () => {
+                        const status_id = document.getElementById('upd-status').value;
+                        const notes = notesInput.value.trim();
+                        const costVal = document.getElementById('upd-cost').value;
+                        const set_completed_at = document.getElementById('upd-completed').checked;
+
+                        if (costVal !== '' && parseFloat(costVal) < 0) {
+                            Swal.fire({ icon: 'error', title: 'Costo inválido', text: 'El costo no puede ser negativo.' });
+                            return;
+                        }
+
+                        const body = { status_id };
+                        if (notes) body.notes = notes;
+                        if (costVal !== '') body.cost = costVal;
+                        if (set_completed_at) body.set_completed_at = true;
+
+                        try {
+                            const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(body)
+                            });
+                            const result = await r.json();
+                            if (result.success) {
+                                await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Reporte actualizado correctamente.', timer: 1800, timerProgressBar: true, showConfirmButton: false });
+                                window.location.reload();
+                            } else {
+                                Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo actualizar.' });
+                            }
+                        } catch {
+                            Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
+                        }
+                    });
                 }
 
             } catch (e) {
@@ -122,85 +184,6 @@
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;');
-            }
-
-            function renderUpdateForm(incId, statuses, currentStatusId) {
-                const container = document.querySelector('.main-container');
-                const form = document.createElement('div');
-                form.className = 'update-card';
-
-                const sortedStatuses = (statuses ?? []).slice().sort((a, b) => a.id - b.id);
-                const statusOptions = sortedStatuses.map(s => {
-                    const name = escapeHtml(s.name ?? s.status ?? s.id);
-                    const sel = String(s.id) === String(currentStatusId) ? 'selected' : '';
-                    return `<option value="${s.id}" ${sel}>${name}</option>`;
-                }).join('');
-
-                form.innerHTML = `
-                    <h3 class="update-title">Actualizar reporte</h3>
-                    <div class="update-grid">
-                        <div class="update-field">
-                            <label for="upd-status">Estado</label>
-                            <select id="upd-status">${statusOptions}</select>
-                        </div>
-                        <div class="update-field">
-                            <label for="upd-cost">Costo</label>
-                            <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
-                        </div>
-                        <div class="update-field full-width">
-                            <label for="upd-notes">Notas <span class="char-counter" id="char-counter">0 / 150</span></label>
-                            <textarea id="upd-notes" maxlength="150" rows="3" placeholder="Notas adicionales..."></textarea>
-                        </div>
-                        <div class="update-field full-width">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="upd-completed">
-                                Marcar fecha de completado como ahora
-                            </label>
-                        </div>
-                    </div>
-                    <button class="update-btn" id="update-btn">Guardar cambios</button>
-                `;
-                container.appendChild(form);
-
-                const textarea = document.getElementById('upd-notes');
-                const counter  = document.getElementById('char-counter');
-                textarea.addEventListener('input', () => {
-                    counter.textContent = `${textarea.value.length} / 150`;
-                });
-
-                document.getElementById('update-btn').addEventListener('click', async () => {
-                    const status_id       = document.getElementById('upd-status').value;
-                    const notes           = textarea.value.trim();
-                    const costVal         = document.getElementById('upd-cost').value;
-                    const set_completed_at = document.getElementById('upd-completed').checked;
-
-                    if (costVal !== '' && parseFloat(costVal) < 0) {
-                        Swal.fire({ icon: 'error', title: 'Costo inválido', text: 'El costo no puede ser negativo.' });
-                        return;
-                    }
-
-                    const body = { status_id };
-                    if (notes)           body.notes = notes;
-                    if (costVal !== '')   body.cost  = costVal;
-                    if (set_completed_at) body.set_completed_at = true;
-
-                    try {
-                        const r = await fetch(`/api/incidents/${encodeURIComponent(incId)}`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(body)
-                        });
-                        const result = await r.json();
-                        if (result.success) {
-                            await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Reporte actualizado correctamente.', timer: 1800, timerProgressBar: true, showConfirmButton: false });
-                            window.location.reload();
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo actualizar.' });
-                        }
-                    } catch {
-                        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
-                    }
-                });
             }
         })();
     </script>
