@@ -16,7 +16,10 @@ const buildMailerTransport = async () => {
         host,
         port,
         secure,
-        auth: { user, pass }
+        auth: { user, pass },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
     })
 }
 
@@ -125,9 +128,13 @@ export const forgotPassword = async (req, res) => {
             })
         } catch (mailError) {
             console.error('Error enviando correo en forgotPassword:', mailError)
+            const code = mailError && typeof mailError === 'object' ? mailError.code : null
+            const timedOut = code === 'ETIMEDOUT' || code === 'ESOCKET' || code === 'ECONNECTION'
             return res.status(500).json({
                 success: false,
-                message: 'No se pudo enviar el correo de recuperación'
+                message: timedOut
+                    ? 'El servicio de correo tardó demasiado en responder. Intenta nuevamente.'
+                    : 'No se pudo enviar el correo de recuperación'
             })
         }
 

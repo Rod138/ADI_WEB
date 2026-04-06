@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (forgotPasswordForm) {
         forgotPasswordForm.addEventListener("submit", async (e) => {
             e.preventDefault();
+            const submitButton = forgotPasswordForm.querySelector('button[type="submit"]');
 
             if (!email || !email.value) {
                 Swal.fire({
@@ -20,11 +21,21 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'ENVIANDO...';
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 20000);
+
                 const response = await fetch('/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email.value })
+                    body: JSON.stringify({ email: email.value }),
+                    signal: controller.signal
                 });
+                clearTimeout(timeoutId);
 
                 const contentType = response.headers.get('content-type') || '';
                 let data = null;
@@ -64,13 +75,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error('Error en recuperación de contraseña:', error);
                 Swal.fire({
                     titleText: 'Error de conexión',
-                    text: 'No se pudo conectar con el servidor',
+                    text: error.name === 'AbortError'
+                        ? 'La solicitud tardó demasiado. Verifica el servidor e intenta de nuevo.'
+                        : 'No se pudo conectar con el servidor',
                     icon: 'error',
                     timer: 5000,
                     timerProgressBar: true,
                     draggable: true,
                     theme: 'auto'
                 });
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'ENVIAR CONTRASEÑA';
+                }
             }
         });
     }
