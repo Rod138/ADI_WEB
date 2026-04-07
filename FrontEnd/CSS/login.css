@@ -28,7 +28,7 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
 }
 
 nav img {
@@ -82,8 +82,8 @@ button {
     background-color: rgba(255, 255, 255, 0.8);
     padding: 2.5rem 0;
     border-radius: 1.5rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-    border: 3px solid #FFFADD;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
+    border: 0.1875rem solid #FFFADD;
     max-width: 60%;
     margin: 5rem auto;
     text-align: center;
@@ -112,10 +112,10 @@ button {
     border-radius: 0.5rem;
     width: 85%;
     font-size: 1.25rem;
-    border: 1px solid #000000;
+    border: 0.0625rem solid #000000;
     background-color: #FFFFFF;
     color: #000000;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
     text-align: left;
     padding-left: 1rem;
     margin-bottom: 0.3rem;

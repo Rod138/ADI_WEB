@@ -54,6 +54,10 @@ body {
     cursor: pointer;
 }
 
+.nav-icon-btn:hover {
+    color: #6a8042;
+}
+
 .material-symbols-outlined {
     font-size: 1.8rem;
 }
@@ -70,22 +74,9 @@ body {
     flex: 1;
 }
 
-.welcome {
-    width: 90%;
-    max-width: 40rem;
-    background-color: #6A8042;
-    border-radius: 1.25rem;
-    text-align: center;
-    padding: 1rem 1.5rem;
-}
-
-.welcome h1,
-.welcome span {
-    color: #fff9dd;
-    font-family: 'Outfit', sans-serif;
-    font-weight: 500;
-    font-size: 2rem;
-    text-transform: uppercase;
+.accounting-page {
+    justify-content: center;
+    gap: 2.2rem;
 }
 
 .cards-grid {
@@ -93,13 +84,13 @@ body {
     display: flex;
     justify-content: center;
     flex-wrap: nowrap;
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: 1.8rem;
+    margin-top: 0;
 }
 
 .menu-card {
-    width: 16.25rem;
-    height: 21rem;
+    width: 18.5rem;
+    height: 23rem;
     border-radius: 1.25rem;
     text-decoration: none;
     display: flex;
@@ -130,8 +121,7 @@ body {
     background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("../IMG/ed2.png");
 }
 
-.button-2,
-.button-4 {
+.button-2 {
     background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("../IMG/ed1.png");
 }
 
@@ -139,12 +129,30 @@ body {
     background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55)), url("../IMG/ed3.png");
 }
 
-.logout-link {
-    color: #111111;
+.bottom-actions {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 0;
 }
 
-.nav-icon-btn:hover {
-    color: #6A8042;
+.btn-back {
+    background-color: #6A8042;
+    color: #fff9dd;
+    padding: 0.65rem 1.9rem;
+    border-radius: 0.7rem;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border: none;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+}
+
+.btn-back:hover {
+    background-color: #5d723b;
 }
 
 footer {
@@ -156,4 +164,20 @@ footer {
 
 footer p {
     display: none;
+}
+
+@media (max-width: 70rem) {
+    .cards-grid {
+        flex-wrap: wrap;
+        gap: 1.2rem;
+    }
+
+    .bottom-actions {
+        justify-content: center;
+    }
+
+    .menu-card {
+        width: 16.25rem;
+        height: 21rem;
+    }
 }

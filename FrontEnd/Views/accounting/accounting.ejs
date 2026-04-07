@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,19 +7,18 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
-    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
-    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
-    <title>ADI - Menú Principal</title>
+    <link rel="stylesheet" href="/FrontEnd/CSS/accounting.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Contabilidad</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
 </head>
-
 <body>
     <nav class="top-nav">
         <div class="nav-brand">
-            <img src="./FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">MENÚ PRINCIPAL</div>
+        <div class="nav-title">CONTABILIDAD</div>
         <div class="nav-actions">
             <a href="/notifications" class="nav-icon-btn" aria-label="Notificaciones">
                 <span class="material-symbols-outlined">notifications</span>
@@ -28,40 +26,41 @@
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
-            <a id="logout-btn" class="nav-icon-btn logout-link" href="/" aria-label="Cerrar sesión">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
     </nav>
-    <div class="main-container">
-        <div class="welcome">
-            <h1>BIENVENIDO <span id="user-name">USUARIO</span></h1>
-        </div>
-        <section class="cards-grid" aria-label="Accesos del sistema">
-            <a id="incd-btn" class="menu-card button-2" href="/incident-board">
-                <span>ADMINISTRACIÓN DE INCIDENCIAS</span>
+
+    <main class="main-container accounting-page">
+        <section class="cards-grid" aria-label="Opciones de contabilidad">
+            <a href="#" class="menu-card button-1 coming-soon" data-feature="Registrar Pago de Cuota">
+                <span>REGISTRAR PAGO DE CUOTA</span>
             </a>
-            <a id="deps-btn" class="menu-card button-1" href="/departments">
-                <span>ADMINISTRACIÓN DE DEPARTAMENTOS</span>
+            <a href="#" class="menu-card button-2 coming-soon" data-feature="Revisar Comprobante de Cuota">
+                <span>REVISAR COMPROBANTE DE CUOTA</span>
             </a>
-            <a class="menu-card button-3 soon" href="#" data-feature="Reportes">
-                <span>REPORTES</span>
-            </a>
-            <a class="menu-card button-4" href="/accounting">
-                <span>CONTABILIDAD</span>
+            <a href="#" class="menu-card button-3 coming-soon" data-feature="Levantar Gasto">
+                <span>LEVANTAR GASTO</span>
             </a>
         </section>
-    </div>
+
+        <div class="bottom-actions">
+            <a href="/main" class="btn-back">REGRESAR</a>
+        </div>
+    </main>
+
     <footer>
         <p>X-CORP</p>
     </footer>
+
     <script>
-        document.querySelectorAll('.soon').forEach(function (card) {
+        document.querySelectorAll('.coming-soon').forEach(function (card) {
             card.addEventListener('click', function (e) {
                 e.preventDefault();
                 Swal.fire({
-                    titleText: this.dataset.feature + ' próximamente',
-                    text: 'Esta sección aún no está disponible.',
+                    titleText: this.dataset.feature + ' proximamente',
+                    text: 'Esta seccion aun no esta disponible.',
                     icon: 'info',
                     confirmButtonText: 'Entendido'
                 });
@@ -69,5 +68,4 @@
         });
     </script>
 </body>
-
 </html>

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const userView         = document.getElementById('user-view');
     const userEditSec      = document.getElementById('user-edit-section');
     const userSaveBtn      = document.getElementById('user-save-btn');
+    const userDeleteBtn    = document.getElementById('user-delete-btn');
     const userConfirmChk   = document.getElementById('user-confirm-chk');
     const createUserBtn    = document.getElementById('create-user-btn');
 
@@ -49,17 +50,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         userSelect.disabled = true;
         cardsRow.style.display = 'none';
         userEditSec.style.display = 'none';
+        userDeleteBtn.style.display = 'none';
         userView.innerHTML = '';
         createUserBtn.style.display = 'none';
 
         if (!depId) return;
 
-        // Show dept card from cache
-        const dep = departmentsCache.find(d => String(d.id) === String(depId));
-        if (dep) {
-            cardsRow.style.display = 'flex';
-            renderDeptCard(dep);
-        }
+        // Refresh dept card from backend so status is always current
+        await loadDeptCard(depId);
 
         // Show create-user button for admins
         if (session && session.rol_id > 2) {
@@ -178,7 +176,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="edit-field">
                     <label>Apellido paterno</label>
-                    <input type="text" id="new-ap">
+                    <input type="text" id="new-ap" placeholder="(opcional)">
                 </div>
                 <div class="edit-field">
                     <label>Apellido materno</label>
@@ -217,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
 
             if (!body.name || !body.email || !body.phone || !body.password) {
-                Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Completa todos los campos obligatorios.' });
+                Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Completa nombre, email, telefono y contrasena. Los apellidos son opcionales.' });
                 return;
             }
 
@@ -230,6 +228,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (result.success) {
                 await Swal.fire({ icon: 'success', title: 'Usuario creado', timer: 1800, timerProgressBar: true, showConfirmButton: false });
                 depSelect.dispatchEvent(new Event('change'));
+                await loadDeptCard(depId);
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: result.message });
             }
@@ -253,6 +252,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderUserCard(user, roles) {
         const canEdit = session && (session.rol_id > 2 || String(session.id) === String(user.id));
+        const canDelete = session && session.rol_id > 2;
 
         const fields = [
             ['Nombre',           user.name],
@@ -273,6 +273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         userEditSec.style.display = 'block';
         userConfirmChk.checked    = false;
+        userDeleteBtn.style.display = canDelete ? 'inline-flex' : 'none';
 
         document.getElementById('edit-name').value     = user.name   ?? '';
         document.getElementById('edit-ap').value       = user.ap     ?? '';
@@ -326,6 +327,40 @@ document.addEventListener('DOMContentLoaded', async () => {
                 await Swal.fire({ icon: 'success', title: 'Guardado', timer: 1600, timerProgressBar: true, showConfirmButton: false });
             } else {
                 Swal.fire({ icon: 'error', title: 'Error', text: result.message });
+            }
+        };
+
+        userDeleteBtn.onclick = async () => {
+            if (!canDelete) return;
+
+            const confirm = await Swal.fire({
+                icon: 'warning',
+                title: 'Eliminar usuario',
+                text: 'Se resetearán los datos del usuario y su dep_id pasará a null. Esta acción no elimina el registro.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            const r = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+                method: 'DELETE'
+            });
+            const result = await r.json();
+
+            if (result.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario eliminado',
+                    timer: 1600,
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+                userSelect.value = '';
+                depSelect.dispatchEvent(new Event('change'));
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo eliminar el usuario.' });
             }
         };
     }

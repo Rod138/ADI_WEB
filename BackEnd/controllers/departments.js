@@ -1,8 +1,46 @@
 import supabase from '../dbconfig.js';
 
+const syncDepartmentStatuses = async () => {
+    const [departmentsRes, usersRes] = await Promise.all([
+        supabase.from('departments').select('id, is_in_use'),
+        supabase.from('users').select('dep_id')
+    ]);
+
+    if (departmentsRes.error) throw departmentsRes.error;
+    if (usersRes.error) throw usersRes.error;
+
+    const userCountByDepartment = new Map();
+    for (const user of usersRes.data ?? []) {
+        if (user.dep_id === null || user.dep_id === undefined) continue;
+        const departmentId = String(user.dep_id);
+        userCountByDepartment.set(departmentId, (userCountByDepartment.get(departmentId) ?? 0) + 1);
+    }
+
+    const updates = [];
+    for (const department of departmentsRes.data ?? []) {
+        const hasUsers = (userCountByDepartment.get(String(department.id)) ?? 0) > 0;
+        if (Boolean(department.is_in_use) !== hasUsers) {
+            updates.push(
+                supabase
+                    .from('departments')
+                    .update({ is_in_use: hasUsers })
+                    .eq('id', department.id)
+            );
+        }
+    }
+
+    if (updates.length > 0) {
+        const results = await Promise.all(updates);
+        const firstError = results.find(result => result.error);
+        if (firstError?.error) throw firstError.error;
+    }
+};
+
 // GET /api/departments  — lista todos los departamentos
 export const getDepartments = async (req, res) => {
     try {
+        await syncDepartmentStatuses();
+
         const { data, error } = await supabase
             .from('departments')
             .select('id, name, is_in_use')
@@ -134,8 +172,28 @@ export const updateUser = async (req, res) => {
     }
 };
 
+// DELETE /api/users/:id  — borrar usuario (resetea datos y desasocia del departamento)
+export const deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { error } = await supabase.from('users').update({
+            name: '-',
+            ap: '-',
+            am: null,
+            email: '-',
+            phone: '-',
+            password: '-',
+            dep_id: null
+        }).eq('id', id);
+        if (error) return res.status(500).json({ success: false, message: 'Error al borrar usuario' });
+        return res.status(200).json({ success: true });
+    } catch {
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+};
+
 // PATCH /api/departments/:id  — actualizar is_in_use
-// Si is_in_use pasa a false, resetea los datos del usuario asignado
+// Si is_in_use pasa a false, desasocia los usuarios del departamento
 export const updateDepartment = async (req, res) => {
     const { id } = req.params;
     const { is_in_use } = req.body;
@@ -151,7 +209,7 @@ export const updateDepartment = async (req, res) => {
 
         if (depError) return res.status(500).json({ success: false, message: 'Error al actualizar departamento' });
 
-        // Si se pone en false, limpiar datos del usuario asignado a ese depa
+        // Si se pone en false, borrar usuarios del departamento
         if (!is_in_use) {
             const { data: users } = await supabase
                 .from('users')
@@ -166,7 +224,8 @@ export const updateDepartment = async (req, res) => {
                     am: null,
                     email: '-',
                     phone: '-',
-                    password: '-'
+                    password: '-',
+                    dep_id: null
                 }).in('id', userIds);
             }
         }

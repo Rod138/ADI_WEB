@@ -18,7 +18,7 @@ body {
     min-height: 5rem;
     width: 100%;
     background-color: #F7F7F7;
-    border-bottom: 1px solid #c8c8c8;
+    border-bottom: 0.0625rem solid #c8c8c8;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -77,9 +77,9 @@ body {
 }
 
 .profile-card {
-    width: 760px;
+    width: 47.5rem;
     background-color: rgba(247, 247, 247, 0.88);
-    border: 2px solid #FFFADD;
+    border: 0.125rem solid #FFFADD;
     border-radius: 0.9rem;
     padding: 1.3rem 2.1rem 1.6rem;
 }
@@ -93,7 +93,7 @@ body {
 
 .profile-card hr {
     border: none;
-    border-top: 1px solid #8E8E8E;
+    border-top: 0.0625rem solid #8E8E8E;
     margin: 0.6rem 0 1rem;
 }
 
@@ -110,7 +110,7 @@ body {
 
 #profile-form input {
     background-color: #F3F3F3;
-    border: 1px solid #BABABA;
+    border: 0.0625rem solid #BABABA;
     border-radius: 0.4rem;
     padding: 0.55rem 0.75rem;
     font-size: 1rem;
@@ -136,7 +136,7 @@ body {
     text-decoration: none;
     text-align: center;
     cursor: pointer;
-    width: 200px;
+    width: 12.5rem;
     height: 2.8rem;
     line-height: 2.8rem;
     font-size: 0.95rem;

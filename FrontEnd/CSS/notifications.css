@@ -18,7 +18,7 @@ body {
     min-height: 5rem;
     width: 100%;
     background-color: #F7F7F7;
-    border-bottom: 1px solid #c8c8c8;
+    border-bottom: 0.0625rem solid #c8c8c8;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -74,10 +74,10 @@ body {
 }
 
 .notifications-card {
-    width: 920px;
-    min-height: 480px;
+    width: 57.5rem;
+    min-height: 30rem;
     background-color: #E8E4C7;
-    border: 4px solid #E9B07B;
+    border: 0.25rem solid #E9B07B;
     border-radius: 1.8rem;
     overflow: hidden;
 }
@@ -92,7 +92,7 @@ body {
 .pill-select {
     background-color: #E9B07B;
     color: #FFFADD;
-    border: 1px solid #FFFADD;
+    border: 0.0625rem solid #FFFADD;
     border-radius: 1rem;
     padding: 0.25rem 0.95rem;
     font-size: 1.35rem;
@@ -109,7 +109,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1rem 0.5rem;
-    border-bottom: 1px solid #E9B07B;
+    border-bottom: 0.0625rem solid #E9B07B;
 }
 
 .notification-left {
@@ -121,7 +121,7 @@ body {
 .noti-icon {
     width: 2.2rem;
     height: 2.2rem;
-    border: 2px solid #1E3006;
+    border: 0.125rem solid #1E3006;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -181,7 +181,7 @@ body {
 }
 
 .bottom-actions {
-    width: 920px;
+    width: 57.5rem;
     display: flex;
     justify-content: flex-end;
 }
@@ -191,7 +191,7 @@ body {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 160px;
+    width: 10rem;
     height: 2.8rem;
     line-height: 2.8rem;
     text-align: center;

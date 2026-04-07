@@ -3,7 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { login, forgotPassword } from './controllers/login.js';
 import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
-import { getUsers, getUserById, updateUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
+import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
 
 const router = Router();
@@ -59,9 +59,14 @@ router.get('/departments', (req, res) => {
     res.render('departments/departments');
 });
 
+router.get('/accounting', (req, res) => {
+    res.render('accounting/accounting');
+});
+
 router.get('/api/users', getUsers);
 router.get('/api/users/:id', getUserById);
 router.patch('/api/users/:id', updateUser);
+router.delete('/api/users/:id', deleteUser);
 router.post('/api/users', createUser);
 router.get('/api/roles', getRoles);
 router.get('/api/departments', getDepartments);

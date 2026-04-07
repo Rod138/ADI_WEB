@@ -18,7 +18,7 @@ body {
     min-height: 5rem;
     width: 100%;
     background-color: #F7F7F7;
-    border-bottom: 1px solid #B6B6B6;
+    border-bottom: 0.0625rem solid #B6B6B6;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -66,7 +66,7 @@ body {
 
 .main-container {
     width: 100%;
-    max-width: 1300px;
+    max-width: 81.25rem;
     margin: 0 auto;
     padding: 2.2rem;
     display: flex;
@@ -77,12 +77,12 @@ body {
 select {
     padding: 0.35rem 2rem 0.35rem 0.9rem;
     border-radius: 1rem;
-    border: 1px solid #F5D8BB;
+    border: 0.0625rem solid #F5D8BB;
     background-color: #EEC9A6;
     color: #5E4B37;
     font-size: 1rem;
     cursor: pointer;
-    min-width: 170px;
+    min-width: 10.625rem;
     appearance: none;
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ED7A13' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -101,11 +101,11 @@ option {
 }
 
 .selects {
-    width: 920px;
+    width: 57.5rem;
     background-color: #F1F1F1;
     padding: 1rem 1.2rem;
     border-radius: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
     display: flex;
     gap: 1rem;
     align-items: flex-end;
@@ -127,18 +127,18 @@ option {
 
 .table-container {
     margin-top: 2.5rem;
-    width: 1000px;
+    width: 62.5rem;
     border: none;
     padding: 1.2rem 1rem 0.9rem;
     background-color: #F7F7F7;
     border-radius: 0.9rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.2);
 }
 
 table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 8px 10px;
+    border-spacing: 0.5rem 0.625rem;
 }
 
 thead tr {
@@ -166,7 +166,7 @@ tbody tr:hover {
 
 tbody td {
     background-color: #EFEFEF;
-    border: 3px solid #EDCCAD;
+    border: 0.1875rem solid #EDCCAD;
     border-radius: 0.9rem;
     padding: 0.7rem 1rem;
     text-align: left;
@@ -199,7 +199,7 @@ tbody td:nth-child(3) {
 }
 
 .bottom-actions {
-    width: 1000px;
+    width: 62.5rem;
     display: flex;
     justify-content: flex-end;
     margin-top: 2rem;
@@ -210,7 +210,7 @@ tbody td:nth-child(3) {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 160px;
+    width: 10rem;
     height: 2.8rem;
     line-height: 2.8rem;
     text-align: center;
