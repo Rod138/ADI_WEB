@@ -7,41 +7,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const typeFilter = document.getElementById('type-filter');
-    const areaFilter = document.getElementById('area-filter');
-    const stateFilter = document.getElementById('state-filter');
+    const orderFilter = document.getElementById('order-filter');
     const list = document.getElementById('notifications-list');
 
     let allNotifications = [];
     let typesMap = {};
 
-    const extractArea = (notification) => {
-        if (notification.area_name) return String(notification.area_name).trim();
-
-        const titleMatch = String(notification.title || '').match(/area\s*:?\s*([a-z0-9]+(?:\s+[a-z0-9]+){0,3})/i);
-        if (titleMatch) return titleMatch[1].trim();
-
-        const descriptionMatch = String(notification.description || '').match(/area\s*:?\s*([a-z0-9]+(?:\s+[a-z0-9]+){0,3})/i);
-        if (descriptionMatch) return descriptionMatch[1].trim();
-
-        return 'Sin área';
-    };
-
     const formatTimeAgo = (isoString) => {
         if (!isoString) return 'Sin fecha';
-        const now = Date.now();
-        const date = new Date(isoString).getTime();
-        if (isNaN(date)) return 'Sin fecha';
-        const diff = Math.max(0, now - date);
-        const minutes = Math.floor(diff / 60000);
-
-        if (minutes < 1) return 'Hace un momento';
-        if (minutes < 60) return `Hace ${minutes} min`;
-
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `Hace ${hours} h`;
-
-        const days = Math.floor(hours / 24);
-        return `Hace ${days} d`;
+        const date = new Date(isoString);
+        if (isNaN(date.getTime())) return 'Sin fecha';
+        return date.toLocaleDateString('es-MX');
     };
 
     const escapeHtml = (str) => {
@@ -52,7 +28,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             .replace(/"/g, '&quot;');
     };
 
-    const populateFilters = () => {
+    const populateTypeFilter = () => {
+        typeFilter.innerHTML = '<option value="all">TIPO</option>';
+
         const typeIds = [...new Set(allNotifications.map(n => n.type_id).filter(v => v !== null && v !== undefined))];
         typeIds.forEach(typeId => {
             const option = document.createElement('option');
@@ -60,46 +38,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             option.textContent = (typesMap[typeId] || `TIPO ${typeId}`).toUpperCase();
             typeFilter.appendChild(option);
         });
-
-        const areas = [...new Set(allNotifications.map(n => extractArea(n)))];
-        areas.forEach(area => {
-            const option = document.createElement('option');
-            option.value = area;
-            option.textContent = area.toUpperCase();
-            areaFilter.appendChild(option);
-        });
     };
 
     const render = () => {
-        const selectedType = typeFilter.value;
-        const selectedArea = areaFilter.value;
-        const selectedState = stateFilter.value;
-
-        let filtered = [...allNotifications];
-
-        if (selectedType !== 'all') {
-            filtered = filtered.filter(n => String(n.type_id) === selectedType);
-        }
-
-        if (selectedArea !== 'all') {
-            filtered = filtered.filter(n => extractArea(n) === selectedArea);
-        }
-
-        if (selectedState === 'read') {
-            filtered = filtered.filter(n => Boolean(n.read));
-        } else if (selectedState === 'unread') {
-            filtered = filtered.filter(n => !Boolean(n.read));
-        }
-
-        if (filtered.length === 0) {
+        if (allNotifications.length === 0) {
             list.innerHTML = '<p class="empty-text">No tiene notificaciones nueva</p>';
             return;
         }
 
-        list.innerHTML = filtered.map(n => {
+        list.innerHTML = allNotifications.map(n => {
             const typeName = escapeHtml(typesMap[n.type_id] || `Tipo ${n.type_id || '-'}`);
             const description = escapeHtml(n.description || 'Sin descripción');
-            const area = escapeHtml(extractArea(n));
             const timeAgo = escapeHtml(formatTimeAgo(n.created_at));
 
             return `
@@ -109,7 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <div class="notification-content">
                             <h3>${typeName.toUpperCase()}</h3>
                             <p>${description}</p>
-                            <small>Área: ${area}</small>
                         </div>
                     </div>
                     <div class="notification-right">
@@ -123,8 +71,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     };
 
-    try {
-        const response = await fetch(`/api/notifications?usr_id=${encodeURIComponent(sessionUser.id)}`);
+    const fetchAndRender = async () => {
+        const params = new URLSearchParams({
+            usr_id: String(sessionUser.id),
+            order: orderFilter.value || 'desc'
+        });
+
+        if (typeFilter.value !== 'all') {
+            params.set('type_id', typeFilter.value);
+        }
+
+        const response = await fetch(`/api/notifications?${params.toString()}`);
         const result = await response.json();
 
         if (!result.success) {
@@ -134,17 +91,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         allNotifications = result.notifications || [];
         typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.name]));
-
-        populateFilters();
+        populateTypeFilter();
+        typeFilter.value = params.get('type_id') || 'all';
         render();
+    };
+
+    try {
+        await fetchAndRender();
     } catch {
         list.innerHTML = '<p class="empty-text">No se pudieron cargar las notificaciones</p>';
         return;
     }
 
-    typeFilter.addEventListener('change', render);
-    areaFilter.addEventListener('change', render);
-    stateFilter.addEventListener('change', render);
+    typeFilter.addEventListener('change', fetchAndRender);
+    orderFilter.addEventListener('change', fetchAndRender);
 
     list.addEventListener('click', async (event) => {
         const btn = event.target.closest('.delete-btn');
@@ -178,7 +138,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             allNotifications = allNotifications.filter(n => String(n.id) !== String(notificationId));
-            render();
+            if (allNotifications.length === 0) {
+                await fetchAndRender();
+            } else {
+                render();
+            }
 
             Swal.fire({
                 icon: 'success',

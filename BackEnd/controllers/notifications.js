@@ -2,6 +2,10 @@ import supabase from '../dbconfig.js';
 
 export const getNotifications = async (req, res) => {
     const usrId = parseInt(req.query.usr_id, 10);
+    const typeId = parseInt(req.query.type_id, 10);
+    const hasTypeFilter = !isNaN(typeId);
+    const order = String(req.query.order || 'desc').toLowerCase();
+    const isAscending = order === 'asc';
 
     if (isNaN(usrId)) {
         return res.status(400).json({ success: false, message: 'usr_id inválido' });
@@ -29,40 +33,43 @@ export const getNotifications = async (req, res) => {
                 .order('id', { ascending: true });
         }
 
-        const areaRes = await supabase
-            .from('areas')
-            .select('*');
-
-        let notiRes = await supabase
-            .from('notifications')
-            .select('*')
-            .eq('usr_id', usrId)
-            .order('created_at', { ascending: false });
-
-        // Compatibilidad si el campo del usuario se llama user_id en la BD.
-        if (notiRes.error) {
-            notiRes = await supabase
+        const queryNotifications = async (userField, typeField) => {
+            let query = supabase
                 .from('notifications')
                 .select('*')
-                .eq('user_id', usrId)
-                .order('created_at', { ascending: false });
+                .eq(userField, usrId)
+                .order('created_at', { ascending: isAscending });
+
+            if (hasTypeFilter) {
+                query = query.eq(typeField, typeId);
+            }
+
+            return query;
+        };
+
+        let notiRes = await queryNotifications('usr_id', 'type_id');
+
+        // Compatibilidad si cambian los campos de usuario/tipo en la BD.
+        if (notiRes.error) {
+            notiRes = await queryNotifications('user_id', 'type_id');
         }
 
-        if (notiRes.error || typeRes.error || areaRes.error) {
+        if (notiRes.error) {
+            notiRes = await queryNotifications('usr_id', 'notification_type_id');
+        }
+
+        if (notiRes.error) {
+            notiRes = await queryNotifications('user_id', 'notification_type_id');
+        }
+
+        if (notiRes.error || typeRes.error) {
             return res.status(500).json({
                 success: false,
-                message: notiRes.error?.message || typeRes.error?.message || areaRes.error?.message || 'Error al obtener notificaciones'
+                message: notiRes.error?.message || typeRes.error?.message || 'Error al obtener notificaciones'
             });
         }
 
-        const areasMap = Object.fromEntries((areaRes.data || []).map(a => [
-            a.id,
-            a.name ?? a.area ?? String(a.id)
-        ]));
-
         const normalizedNotifications = (notiRes.data || []).map(n => ({
-            area_id: n.area_id ?? n.inc_area_id ?? n.area ?? null,
-            area_name: areasMap[n.area_id ?? n.inc_area_id ?? n.area] ?? null,
             id: n.id,
             title: n.title ?? n.name ?? 'Sin titulo',
             description: n.description ?? n.content ?? '',

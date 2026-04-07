@@ -1,26 +1,37 @@
 import supabase from '../dbconfig.js'
-const buildMailerTransport = async () => {
-    const host = process.env.SMTP_HOST
-    const port = Number(process.env.SMTP_PORT || 587)
-    const secure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true'
-    const user = process.env.SMTP_USER
-    const pass = process.env.SMTP_PASS
 
-    if (!host || !user || !pass) {
+const buildGmailClient = async () => {
+    const clientId = process.env.GOOGLE_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET
+    const refreshToken = process.env.GOOGLE_REFRESH_TOKEN
+
+    if (!clientId || !clientSecret || !refreshToken) {
         return null
     }
 
-    const { default: nodemailer } = await import('nodemailer')
+    const { google } = await import('googleapis')
+    const oauth2Client = new google.auth.OAuth2(clientId, clientSecret)
+    oauth2Client.setCredentials({ refresh_token: refreshToken })
 
-    return nodemailer.createTransport({
-        host,
-        port,
-        secure,
-        auth: { user, pass },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000
-    })
+    return { google, oauth2Client }
+}
+
+const buildEmailMessage = (from, to, subject, text, html) => {
+    const message = [
+        `From: ${from}`,
+        `To: ${to}`,
+        'Content-Type: text/html; charset="UTF-8"',
+        'MIME-Version: 1.0',
+        `Subject: ${subject}`,
+        '',
+        html || text
+    ].join('\n')
+
+    return Buffer.from(message)
+        .toString('base64')
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/g, '')
 }
 
 export const login = async (req, res) => {
@@ -109,9 +120,11 @@ export const forgotPassword = async (req, res) => {
             });
         }
 
-        const transporter = await buildMailerTransport()
-        if (!transporter) {
-            console.error('SMTP no configurado. Verifica SMTP_HOST, SMTP_PORT, SMTP_USER y SMTP_PASS en variables de entorno')
+        const gmailConfig = await buildGmailClient()
+        const senderEmail = process.env.GMAIL_SENDER
+
+        if (!gmailConfig || !senderEmail) {
+            console.error('Gmail API no configurada. Verifica GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN y GMAIL_SENDER')
             return res.status(500).json({
                 success: false,
                 message: 'El servicio de correo no está configurado'
@@ -119,22 +132,29 @@ export const forgotPassword = async (req, res) => {
         }
 
         try {
-            await transporter.sendMail({
-                from: process.env.MAIL_FROM || process.env.SMTP_USER,
-                to: user.email,
-                subject: 'ADI - Recuperación de contraseña',
-                text: `Hola ${user.name || ''},\n\nTu contraseña actual es: ${user.password}\n\nADI`,
-                html: `<p>Hola ${user.name || ''},</p><p>Tu contraseña actual es: <b>${user.password}</b></p><p>ADI</p>`
+            const gmail = gmailConfig.google.gmail({ version: 'v1', auth: gmailConfig.oauth2Client })
+            const rawMessage = buildEmailMessage(
+                senderEmail,
+                user.email,
+                'ADI - Recuperación de contraseña',
+                `Hola ${user.name || ''},\n\nTu contraseña actual es: ${user.password}\n\nADI`,
+                `<p>Hola ${user.name || ''},</p><p>Tu contraseña actual es: <b>${user.password}</b></p><p>ADI</p>`
+            )
+
+            const sendResult = await gmail.users.messages.send({
+                userId: 'me',
+                requestBody: {
+                    raw: rawMessage
+                }
             })
+
+            console.log('Gmail API send result:', sendResult.data)
         } catch (mailError) {
             console.error('Error enviando correo en forgotPassword:', mailError)
-            const code = mailError && typeof mailError === 'object' ? mailError.code : null
-            const timedOut = code === 'ETIMEDOUT' || code === 'ESOCKET' || code === 'ECONNECTION'
+            const providerMessage = mailError?.message || mailError?.response?.data?.error?.message || ''
             return res.status(500).json({
                 success: false,
-                message: timedOut
-                    ? 'El servicio de correo tardó demasiado en responder. Intenta nuevamente.'
-                    : 'No se pudo enviar el correo de recuperación'
+                message: providerMessage || 'No se pudo enviar el correo de recuperación'
             })
         }
 
