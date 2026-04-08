@@ -13,8 +13,15 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const rootDir = path.resolve(__dirname, "..")
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+app.use(express.json({ limit: '25mb' }));
+
+app.use((error, req, res, next) => {
+  if (error && error.type === 'entity.too.large') {
+    return res.status(413).json({ success: false, message: 'La imagen es demasiado pesada.' });
+  }
+  return next(error);
+});
 const publicDir = path.join(rootDir, 'FrontEnd');
 app.use(express.static(publicDir));
 app.use('/FrontEnd', express.static(publicDir));

@@ -5,6 +5,7 @@ import { login, forgotPassword } from './controllers/login.js';
 import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
+import { createTowerExpense } from './controllers/accounting.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -62,6 +63,12 @@ router.get('/departments', (req, res) => {
 router.get('/accounting', (req, res) => {
     res.render('accounting/accounting');
 });
+
+router.get('/accounting/expense', (req, res) => {
+    res.render('accounting/expense');
+});
+
+router.post('/api/accounting/expenses', createTowerExpense);
 
 router.get('/api/users', getUsers);
 router.get('/api/users/:id', getUserById);

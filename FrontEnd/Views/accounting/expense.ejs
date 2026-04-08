@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/expense.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Levantar Gasto</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/expense.js" defer></script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">LEVANTAR GASTO</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section class="expense-card">
+            <div class="form-grid">
+                <label for="expense-amount">COSTO :</label>
+                <input id="expense-amount" type="number" min="0.01" step="0.01" placeholder="$100.00" required>
+
+                <div class="obs-row">
+                    <label for="expense-notes">DESCRIPCION</label>
+                    <span id="char-counter">0 / 150</span>
+                </div>
+                <input id="expense-notes" type="text" maxlength="150" placeholder="Describe el gasto" required>
+
+                <label class="upload-box" for="expense-image">
+                    <input id="expense-image" type="file" accept="image/*" hidden>
+                    <img id="preview-image" alt="Vista previa" style="display:none">
+                    <span id="upload-icon" class="material-symbols-outlined">image</span>
+                    <span id="upload-name">Selecciona un comprobante</span>
+                </label>
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="expense-confirm">
+                    HAGA CLICK PARA CONFIRMAR
+                </label>
+            </div>
+        </section>
+
+        <div class="bottom-actions">
+            <button id="save-expense-btn" class="btn-upload">SUBIR</button>
+            <a href="/accounting" class="btn-back">REGRESAR</a>
+        </div>
+    </main>
+</body>
+</html>
