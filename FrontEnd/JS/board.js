@@ -4,11 +4,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const areaSelect = document.getElementById('area');
     const statusSelect = document.getElementById('status');
     const orderSelect = document.getElementById('order-by');
+    const paginationBox = document.getElementById('incidents-pagination');
+    const prevBtn = document.getElementById('inc-prev-btn');
+    const nextBtn = document.getElementById('inc-next-btn');
+    const pageIndicator = document.getElementById('inc-page-indicator');
 
     let allIncidents = [];
+    let filteredIncidents = [];
     let typesMap = {};
     let areasMap = {};
     let statusesMap = {};
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
 
     try {
         const response = await fetch('/api/incidents');
@@ -26,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         allIncidents = data.incidents;
         populateFilters(data.types, data.areas, data.statuses);
-        renderTable(allIncidents);
+        applyFilters();
     } catch (e) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar incidencias</td></tr>';
         return;
@@ -79,8 +86,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             return order === 'timedown' ? db - da : da - db;
         });
 
-        renderTable(filtered);
+        filteredIncidents = filtered;
+        currentPage = 1;
+        renderTable(filteredIncidents);
     }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentPage <= 1) return;
+        currentPage -= 1;
+        renderTable(filteredIncidents);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        const totalPages = Math.max(1, Math.ceil(filteredIncidents.length / PAGE_SIZE));
+        if (currentPage >= totalPages) return;
+        currentPage += 1;
+        renderTable(filteredIncidents);
+    });
 
     tbody.addEventListener('click', (e) => {
         const row = e.target.closest('.clickable-row');
@@ -90,10 +112,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderTable(incidents) {
         if (!incidents.length) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin incidencias</td></tr>';
+            paginationBox.style.display = 'none';
             return;
         }
 
-        tbody.innerHTML = incidents.map(inc => {
+        const totalPages = Math.max(1, Math.ceil(incidents.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = incidents.slice(start, start + PAGE_SIZE);
+
+        paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
+        pageIndicator.textContent = `Pagina ${currentPage} de ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        tbody.innerHTML = pageItems.map(inc => {
 
             const date = inc.created_at
                 ? new Date(inc.created_at).toLocaleString('es-MX', {

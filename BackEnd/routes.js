@@ -5,7 +5,7 @@ import { login, forgotPassword } from './controllers/login.js';
 import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
-import { createTowerExpense } from './controllers/accounting.js';
+import { createTowerExpense, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment } from './controllers/accounting.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -68,7 +68,24 @@ router.get('/accounting/expense', (req, res) => {
     res.render('accounting/expense');
 });
 
+router.get('/accounting/payment', (req, res) => {
+    res.render('accounting/payment');
+});
+
+router.get('/accounting/receipts-board', (req, res) => {
+    res.render('accounting/receipts-board');
+});
+
+router.get('/accounting/receipt', (req, res) => {
+    res.render('accounting/receipt');
+});
+
 router.post('/api/accounting/expenses', createTowerExpense);
+router.get('/api/accounting/receipts', getPaymentReceipts);
+router.get('/api/accounting/receipts/:id', getPaymentReceiptById);
+router.patch('/api/accounting/receipts/:id', updatePaymentReceipt);
+router.get('/api/accounting/payment-data', getQuotaPaymentData);
+router.post('/api/accounting/payment', createQuotaPayment);
 
 router.get('/api/users', getUsers);
 router.get('/api/users/:id', getUserById);

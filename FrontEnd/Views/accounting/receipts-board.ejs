@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/receipts_board.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Tablon de Comprobantes</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/receipts_board.js" defer></script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">TABLON DE COMPROBANTES</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="selects">
+            <div class="filter-group">
+                <label for="validation">Validacion</label>
+                <select id="validation">
+                    <option value="any">Cualquiera</option>
+                    <option value="true">Validado</option>
+                    <option value="false">No validado</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="date">Fecha</label>
+                <select id="date">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="department">Departamento</label>
+                <select id="department">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>VALIDACION</th>
+                        <th>FECHA</th>
+                        <th>DEPARTAMENTO</th>
+                    </tr>
+                </thead>
+                <tbody id="receipts-tbody">
+                    <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination-controls" id="receipts-pagination" style="display:none">
+            <button type="button" class="page-btn" id="rcp-prev-btn">ANTERIOR</button>
+            <span class="page-indicator" id="rcp-page-indicator">Pagina 1 de 1</span>
+            <button type="button" class="page-btn" id="rcp-next-btn">SIGUIENTE</button>
+        </div>
+
+        <div class="bottom-actions">
+            <a href="/accounting" class="btn-back">REGRESAR</a>
+        </div>
+    </div>
+</body>
+</html>

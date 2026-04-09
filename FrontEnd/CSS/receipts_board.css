@@ -80,7 +80,7 @@ select {
     border: 0.0625rem solid #F5D8BB;
     background-color: #EEC9A6;
     color: #5E4B37;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
     min-width: 10.625rem;
     appearance: none;
@@ -91,17 +91,8 @@ select {
     background-size: 0.75rem;
 }
 
-select:focus {
-    outline: none;
-    border-color: #ED7A13;
-}
-
-option {
-    color: #5E4B37;
-}
-
 .selects {
-    width: 57.5rem;
+    width: 45rem;
     background-color: #F1F1F1;
     padding: 1rem 1.2rem;
     border-radius: 1rem;
@@ -119,17 +110,17 @@ option {
 }
 
 .filter-group label {
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     color: #4D5D34;
     text-transform: uppercase;
     margin-left: 0.7rem;
 }
 
 .table-container {
-    margin-top: 2.5rem;
-    width: 62.5rem;
+    margin-top: 2rem;
+    width: 51rem;
     border: none;
-    padding: 1.2rem 1rem 0.9rem;
+    padding: 0.8rem 0.8rem 0.7rem;
     background-color: #F7F7F7;
     border-radius: 0.9rem;
     box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.2);
@@ -138,80 +129,41 @@ option {
 table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0.5rem 0.625rem;
-}
-
-thead tr {
-    background-color: transparent;
+    border-spacing: 0.35rem 0.45rem;
 }
 
 thead th {
     color: #3F4B2C;
     background-color: #EDCCAD;
-    border-radius: 0.8rem;
-    font-size: 0.95rem;
-    padding: 0.85rem 1rem;
+    border-radius: 0.6rem;
+    font-size: 0.7rem;
+    padding: 0.6rem;
     text-align: center;
-    border: none;
-    text-transform: uppercase;
-}
-
-tbody tr {
-    background-color: transparent;
-}
-
-tbody tr:hover {
-    background-color: transparent;
 }
 
 tbody td {
     background-color: #EFEFEF;
-    border: 0.1875rem solid #EDCCAD;
-    border-radius: 0.9rem;
-    padding: 0.7rem 1rem;
+    border: 0.125rem solid #EDCCAD;
+    border-radius: 0.7rem;
+    padding: 0.7rem 0.6rem;
     text-align: left;
-    font-size: 0.95rem;
-}
-
-tbody td h2 {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.55rem;
-    color: #1E3006;
-    margin-bottom: 0.2rem;
-}
-
-tbody td p {
-    font-size: 1.15rem;
-    color: #222222;
-    margin-bottom: 0.1rem;
-}
-
-tbody td small,
-tbody td small strong {
-    font-size: 0.98rem;
-    color: #1E3006;
-}
-
-tbody td:nth-child(2),
-tbody td:nth-child(3) {
-    font-size: 1.25rem;
-    color: #2A2A2A;
+    font-size: 0.8rem;
 }
 
 .bottom-actions {
-    width: 62.5rem;
+    width: 51rem;
     display: flex;
     justify-content: flex-end;
-    margin-top: 2rem;
+    margin-top: 1rem;
 }
 
 .pagination-controls {
-    width: 62.5rem;
+    width: 51rem;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.8rem;
-    margin-top: 1rem;
+    margin-top: 0.8rem;
 }
 
 .page-btn {
@@ -243,9 +195,10 @@ tbody td:nth-child(3) {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 10rem;
-    height: 2.8rem;
-    line-height: 2.8rem;
+    width: 8.5rem;
+    height: 2rem;
+    line-height: 2rem;
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 0.75rem;
+    font-family: 'Outfit', sans-serif;
 }

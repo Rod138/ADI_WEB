@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/payment.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Registrar Pago de Cuota</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/payment.js" defer></script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">REGISTRAR PAGO DE CUOTA</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section class="left-form-panel">
+            <label for="pay-department">Departamento:</label>
+            <select id="pay-department"></select>
+
+            <label for="pay-month">Mes Correspondiente:</label>
+            <select id="pay-month"></select>
+
+            <label for="pay-amount">Cantidad Pagada</label>
+            <input id="pay-amount" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+
+            <label for="pay-expected">Cuanto se debio pagar:</label>
+            <input id="pay-expected" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+
+            <label for="pay-year">Año</label>
+            <input id="pay-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+
+            <button id="save-payment-btn" class="btn-save">GUARDAR</button>
+        </section>
+
+        <section class="right-board-panel">
+            <div class="filters-box">
+                <div class="filter-group">
+                    <label for="flt-department">Departamento</label>
+                    <select id="flt-department">
+                        <option value="any">Cualquiera</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="flt-month">Mes</label>
+                    <select id="flt-month">
+                        <option value="any">Cualquiera</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="flt-year">Año</label>
+                    <select id="flt-year">
+                        <option value="any">Cualquiera</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>AÑO</th>
+                            <th>DEPARTAMENTO</th>
+                            <th>MES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-tbody">
+                        <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-controls" id="payments-pagination" style="display:none">
+                <button type="button" class="page-btn" id="pay-prev-btn">ANTERIOR</button>
+                <span class="page-indicator" id="pay-page-indicator">Pagina 1 de 1</span>
+                <button type="button" class="page-btn" id="pay-next-btn">SIGUIENTE</button>
+            </div>
+        </section>
+    </main>
+
+    <div class="bottom-actions">
+        <button id="download-btn" class="btn-download">DESCARGAR</button>
+        <a href="/accounting" class="btn-back">REGRESAR</a>
+    </div>
+</body>
+</html>
