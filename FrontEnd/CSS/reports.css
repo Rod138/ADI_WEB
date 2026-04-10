@@ -1,0 +1,226 @@
+* {
+    font-family: 'Inter', sans-serif;
+    color: #111111;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #DCDCDC;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.top-nav {
+    min-height: 5rem;
+    width: 100%;
+    background-color: #F7F7F7;
+    border-bottom: 0.0625rem solid #B6B6B6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+}
+
+.nav-title {
+    text-align: center;
+    font-size: 1.55rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nav-icon-btn {
+    color: #111111;
+    text-decoration: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.material-symbols-outlined {
+    font-size: 1.8rem;
+}
+
+.main-container {
+    width: 100%;
+    max-width: 81.25rem;
+    margin: 0 auto;
+    padding: 1.6rem 1.2rem 0.8rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.filters-panel {
+    width: 12rem;
+    background-color: #F1F1F1;
+    border: 0.25rem solid #B2C189;
+    border-radius: 0.7rem;
+    padding: 0.8rem;
+}
+
+.filter-group {
+    margin-bottom: 0.7rem;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.72rem;
+    color: #1E3006;
+    margin-bottom: 0.2rem;
+}
+
+.filter-group select {
+    width: 100%;
+    height: 1.5rem;
+    border-radius: 1rem;
+    border: 0.0625rem solid #C4D1A3;
+    background-color: #DBE2C9;
+    color: #415329;
+    font-size: 0.72rem;
+    padding: 0 0.7rem;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371884d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 0.75rem;
+}
+
+.result-panel {
+    width: 45rem;
+    min-height: 15rem;
+    background-color: #F1F1F1;
+    border: 0.25rem solid #B2C189;
+    border-radius: 0.7rem;
+    padding: 0.7rem;
+}
+
+.chart-wrap {
+    width: 100%;
+    height: 20rem;
+}
+
+#reports-chart {
+    width: 100%;
+    height: 100%;
+}
+
+.table-wrap {
+    width: 100%;
+}
+
+.reports-empty-state {
+    width: 100%;
+    min-height: 20rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #4D5D34;
+    background-color: #E8EDDB;
+    border: 0.125rem dashed #B2C189;
+    border-radius: 0.6rem;
+    padding: 1.2rem;
+}
+
+#reports-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#reports-table th,
+#reports-table td {
+    border: 0.0625rem solid #A3A3A3;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.75rem;
+    text-align: left;
+}
+
+#reports-table th {
+    background-color: #E5E5E5;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.movement-income {
+    color: #315B1D;
+    font-weight: 700;
+}
+
+.movement-expense {
+    color: #B64809;
+    font-weight: 700;
+}
+
+.movement-total-row td {
+    background-color: #E8EDDB;
+    font-weight: 700;
+}
+
+.bottom-actions {
+    width: 58rem;
+    margin: 0.8rem auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.4rem;
+}
+
+.btn-download {
+    width: 9rem;
+    height: 2rem;
+    border-radius: 1rem;
+    border: 0.0625rem solid #ED7A13;
+    background-color: #F7F7F7;
+    color: #ED7A13;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-back {
+    background-color: #6A8042;
+    color: #FFFADD;
+    text-decoration: none;
+    border-radius: 0.75rem;
+    width: 8.75rem;
+    height: 2.2rem;
+    line-height: 2.2rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 62rem) {
+    .main-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .filters-panel,
+    .result-panel,
+    .bottom-actions {
+        width: 100%;
+        max-width: 45rem;
+    }
+
+    .chart-wrap {
+        height: 16rem;
+    }
+}

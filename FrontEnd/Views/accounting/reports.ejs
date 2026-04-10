@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/reports.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Reportes</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/reports.js" defer></script>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">REPORTES</div>
+        <div class="nav-actions">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container reports-page">
+        <section class="filters-panel">
+            <div class="filter-group">
+                <label for="report-type">Tipo:</label>
+                <select id="report-type">
+                    <option value="payments">Pagos de cuota</option>
+                    <option value="balance">Balance</option>
+                    <option value="incident-types">Tipos de incidencia</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="report-year">Año:</label>
+                <select id="report-year">
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="report-month">Mes:</label>
+                <select id="report-month">
+                    <option value="any">Todos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="report-view">Grafica/Tabla:</label>
+                <select id="report-view">
+                    <option value="chart">Grafica</option>
+                    <option value="table">Tabla</option>
+                </select>
+            </div>
+        </section>
+
+        <section class="result-panel">
+            <div class="chart-wrap" id="chart-wrap">
+                <canvas id="reports-chart"></canvas>
+            </div>
+            <div class="table-wrap" id="table-wrap" style="display:none">
+                <table id="reports-table">
+                    <thead id="reports-head"></thead>
+                    <tbody id="reports-body"></tbody>
+                </table>
+            </div>
+            <div id="reports-empty-state" class="reports-empty-state" style="display:none"></div>
+        </section>
+    </main>
+
+    <div class="bottom-actions">
+        <button id="download-report-btn" class="btn-download">DESCARGAR</button>
+        <a href="/main" class="btn-back">REGRESAR</a>
+    </div>
+</body>
+</html>

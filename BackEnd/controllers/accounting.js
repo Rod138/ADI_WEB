@@ -240,3 +240,50 @@ export const createQuotaPayment = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error interno al registrar pago.' });
     }
 };
+
+export const getAccountingReportsData = async (req, res) => {
+    try {
+        const [paymentsRes, expensesRes, quotasRes, departmentsRes, incidentsRes, incidentTypesRes] = await Promise.all([
+            supabase
+                .from('recipes_payment')
+                .select('id, dep_id, year, month, amount_paid, amount_expected, created_at, validated')
+                .order('created_at', { ascending: true }),
+            supabase
+                .from('tower_expenses')
+                .select('id, amount, description, expense_date')
+                .order('expense_date', { ascending: true }),
+            supabase
+                .from('monthly_quota')
+                .select('id, month, year, amount, created_at')
+                .order('created_at', { ascending: true }),
+            supabase
+                .from('departments')
+                .select('id, name')
+                .order('name', { ascending: true }),
+            supabase
+                .from('incidents')
+                .select('*')
+                .order('created_at', { ascending: true }),
+            supabase
+                .from('inc_types')
+                .select('id, name, area_id')
+                .order('id', { ascending: true })
+        ]);
+
+        if (paymentsRes.error || expensesRes.error || quotasRes.error || departmentsRes.error || incidentsRes.error || incidentTypesRes.error) {
+            return res.status(500).json({ success: false, message: 'Error al obtener datos de reportes.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            payments: paymentsRes.data || [],
+            expenses: expensesRes.data || [],
+            quotas: quotasRes.data || [],
+            departments: departmentsRes.data || [],
+            incidents: incidentsRes.data || [],
+            incidentTypes: incidentTypesRes.data || []
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno al generar reportes.' });
+    }
+};
