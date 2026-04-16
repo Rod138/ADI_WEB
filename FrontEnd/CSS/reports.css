@@ -6,8 +6,20 @@
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #DCDCDC;
+    background-color: var(--adi-surface);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -16,23 +28,22 @@ body {
 .top-nav {
     min-height: 5rem;
     width: 100%;
-    background-color: #F7F7F7;
-    border-bottom: 0.0625rem solid #B6B6B6;
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.5rem;
-}
-
-.nav-brand img {
-    max-height: 2.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
 }
 
 .nav-title {
     text-align: center;
     font-size: 1.55rem;
     font-family: 'Outfit', sans-serif;
-    font-weight: 500;
+    font-weight: 600;
+    color: var(--adi-text);
+    letter-spacing: 0.02em;
 }
 
 .nav-actions {
@@ -41,14 +52,65 @@ body {
     gap: 0.8rem;
 }
 
+.role-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    background: rgba(106, 128, 66, 0.12);
+    border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+    border-radius: 1.25rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #5D723B;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+    min-width: 0;
+    max-width: min(15rem, 45vw);
+}
+
+.role-badge span {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--adi-olive);
+}
+
+.role-badge #user-role {
+    display: inline-block;
+    max-width: 10.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .nav-icon-btn {
-    color: #111111;
+    color: var(--adi-text);
     text-decoration: none;
     width: 2.2rem;
     height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border-radius: 0.4rem;
+}
+
+.nav-icon-btn:hover {
+    color: var(--adi-olive);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+    width: auto;
 }
 
 .material-symbols-outlined {
@@ -57,63 +119,77 @@ body {
 
 .main-container {
     width: 100%;
-    max-width: 81.25rem;
+    max-width: 90rem;
     margin: 0 auto;
-    padding: 1.6rem 1.2rem 0.8rem;
+    padding: 1.4rem 1.2rem 0.8rem;
     display: flex;
-    gap: 1rem;
+    gap: 1.2rem;
     align-items: flex-start;
     justify-content: center;
+    flex: 1;
 }
 
 .filters-panel {
-    width: 12rem;
+    width: clamp(14rem, 20vw, 16rem);
     background-color: #F1F1F1;
     border: 0.25rem solid #B2C189;
     border-radius: 0.7rem;
-    padding: 0.8rem;
+    padding: 1rem;
+    height: fit-content;
 }
 
 .filter-group {
-    margin-bottom: 0.7rem;
+    margin-bottom: 0.9rem;
 }
 
 .filter-group label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: #1E3006;
-    margin-bottom: 0.2rem;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
 .filter-group select {
     width: 100%;
-    height: 1.5rem;
+    height: 2rem;
     border-radius: 1rem;
     border: 0.0625rem solid #C4D1A3;
     background-color: #DBE2C9;
     color: #415329;
-    font-size: 0.72rem;
-    padding: 0 0.7rem;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.7rem;
     appearance: none;
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371884d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 0.75rem;
+    transition: border-color 0.2s ease;
+    cursor: pointer;
+}
+
+.filter-group select:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
 }
 
 .result-panel {
-    width: 45rem;
-    min-height: 15rem;
+    flex: 1;
+    max-width: 72rem;
+    min-width: 0;
+    min-height: 18rem;
     background-color: #F1F1F1;
     border: 0.25rem solid #B2C189;
     border-radius: 0.7rem;
-    padding: 0.7rem;
+    padding: 1rem;
 }
 
 .chart-wrap {
     width: 100%;
-    height: 20rem;
+    height: 26rem;
 }
 
 #reports-chart {
@@ -176,35 +252,72 @@ body {
 }
 
 .bottom-actions {
-    width: 58rem;
-    margin: 0.8rem auto 0;
+    width: min(100%, 84rem);
+    margin: 1.2rem auto 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding-bottom: 1.4rem;
+    gap: 1rem;
+}
+
+.download-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
 }
 
 .btn-download {
-    width: 9rem;
-    height: 2rem;
+    width: 14rem;
+    height: 2.3rem;
     border-radius: 1rem;
-    border: 0.0625rem solid #ED7A13;
-    background-color: #F7F7F7;
-    color: #ED7A13;
-    font-size: 0.75rem;
+    border: 0.0625rem solid var(--adi-accent);
+    background-color: var(--adi-surface);
+    color: var(--adi-accent);
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+    text-transform: uppercase;
+}
+
+.btn-download:hover {
+    background-color: var(--adi-accent);
+    color: white;
+    box-shadow: 0 0.25rem 0.5rem rgba(237, 122, 19, 0.3);
 }
 
 .btn-back {
-    background-color: #6A8042;
-    color: #FFFADD;
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 8.75rem;
-    height: 2.2rem;
-    line-height: 2.2rem;
+    width: 11rem;
+    height: 2.3rem;
+    line-height: 2.3rem;
     text-align: center;
     font-size: 0.9rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+    text-transform: uppercase;
+    transition: background-color 0.2s ease;
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+    box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+}
+
+footer p {
+    display: none;
 }
 
 @media (max-width: 62rem) {
@@ -213,14 +326,124 @@ body {
         align-items: center;
     }
 
+    .role-badge {
+        padding: 0.3rem 0.65rem;
+        font-size: 0.625rem;
+    }
+
     .filters-panel,
     .result-panel,
     .bottom-actions {
-        width: 100%;
-        max-width: 45rem;
+        width: min(100%, 52rem);
+        max-width: none;
+    }
+
+    .filters-panel {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem 1rem;
+    }
+
+    .filter-group {
+        margin-bottom: 0;
     }
 
     .chart-wrap {
-        height: 16rem;
+        height: 22rem;
+    }
+}
+
+@media (max-width: 42rem) {
+    .filters-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrap {
+        height: 18rem;
+    }
+
+    .bottom-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.8rem;
+    }
+
+    .download-actions {
+        width: 100%;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .btn-download,
+    .btn-back {
+        width: 100%;
+    }
+}
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
     }
 }

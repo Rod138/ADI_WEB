@@ -1,5 +1,12 @@
+/**
+ * TESINA: Controlador de inicio de sesion y recuperacion de acceso.
+ * Responsabilidad: autenticar usuario y enviar correo de recuperacion.
+ * Integracion: usa Supabase y cliente Gmail OAuth cuando esta configurado.
+ */
+
 import supabase from '../dbconfig.js'
 
+// Construye cliente OAuth para Gmail API cuando existen credenciales de entorno.
 const buildGmailClient = async () => {
     const clientId = process.env.GOOGLE_CLIENT_ID
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET
@@ -16,6 +23,7 @@ const buildGmailClient = async () => {
     return { google, oauth2Client }
 }
 
+// Genera payload RFC822 codificado en base64url para envio via Gmail API.
 const buildEmailMessage = (from, to, subject, text, html) => {
     const message = [
         `From: ${from}`,
@@ -34,6 +42,7 @@ const buildEmailMessage = (from, to, subject, text, html) => {
         .replace(/=+$/g, '')
 }
 
+// Valida credenciales y abre sesion devolviendo datos minimos del usuario.
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -61,6 +70,14 @@ export const login = async (req, res) => {
         }
 
         if (user.rol_id > 0) {
+            // Establecer cookie con el ID del usuario
+            res.cookie('session_user_id', String(user.id), {
+                httpOnly: true,
+                secure: false, // Cambiar a true en producción con HTTPS
+                sameSite: 'lax',
+                maxAge: 24 * 60 * 60 * 1000 // 24 horas
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Inicio de sesión exitoso',
@@ -87,6 +104,7 @@ export const login = async (req, res) => {
     }
 }
 
+// Atiende recuperacion de acceso y envia la clave actual al correo registrado.
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;

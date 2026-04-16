@@ -6,47 +6,70 @@
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #DCDCDC;
+    background-color: var(--adi-surface);
     min-height: 100vh;
 }
 
 .top-nav {
     min-height: 5rem;
     width: 100%;
-    background-color: #F7F7F7;
-    border-bottom: 0.0625rem solid #B6B6B6;
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.5rem;
-}
-
-.nav-brand img {
-    max-height: 2.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
 }
 
 .nav-title {
     text-align: center;
     font-size: 1.75rem;
     font-family: 'Outfit', sans-serif;
-    font-weight: 500;
-}
-
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
+    font-weight: 600;
+    color: var(--adi-text);
+    letter-spacing: 0.02em;
 }
 
 .nav-icon-btn {
-    color: #111111;
+    color: var(--adi-text);
     text-decoration: none;
     width: 2.2rem;
     height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border-radius: 0.4rem;
+}
+
+.nav-icon-btn:hover {
+    color: var(--adi-olive);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+    width: auto;
 }
 
 .material-symbols-outlined {
@@ -61,7 +84,7 @@ body {
 }
 
 .incident-card {
-    width: 43.75rem;
+    width: min(100%, 43.75rem);
     margin: 0 auto;
     background-color: #F1F1F1;
     border-radius: 0.8rem;
@@ -76,7 +99,7 @@ body {
 }
 
 .image-box {
-    width: 26.25rem;
+    width: min(100%, 26.25rem);
     height: 8.125rem;
     margin: 0 auto 1rem;
     border: 0.25rem solid #EFD36A;
@@ -101,7 +124,7 @@ body {
 
 .info-grid,
 .update-section {
-    width: 31.25rem;
+    width: min(100%, 31.25rem);
     margin: 0 auto;
 }
 
@@ -188,11 +211,17 @@ body {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 8.75rem;
-    height: 2.2rem;
-    line-height: 2.2rem;
+    width: 10.5rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-back:hover {
+    background-color: #5d723b;
 }
 
 .error {
@@ -201,3 +230,71 @@ body {
     font-weight: 600;
 }
 
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+}

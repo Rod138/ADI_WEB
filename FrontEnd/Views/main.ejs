@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,15 +13,42 @@
     <title>ADI - Menú Principal</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+        }
+        .role-badge span {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+    </style>
 </head>
 
-<body>
+<body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="./FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">MENÚ PRINCIPAL</div>
         <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <%= user.roleLabel %>
+            </div>
             <a href="/notifications" class="nav-icon-btn" aria-label="Notificaciones">
                 <span class="material-symbols-outlined">notifications</span>
             </a>
@@ -35,21 +62,14 @@
     </nav>
     <div class="main-container">
         <div class="welcome">
-            <h1>BIENVENIDO <span id="user-name">USUARIO</span></h1>
+            <h1>BIENVENIDO <span id="user-name"><%= user.name %></span></h1>
         </div>
-        <section class="cards-grid" aria-label="Accesos del sistema">
-            <a id="incd-btn" class="menu-card button-2" href="/incident-board">
-                <span>ADMINISTRACIÓN DE INCIDENCIAS</span>
-            </a>
-            <a id="deps-btn" class="menu-card button-1" href="/departments">
-                <span>ADMINISTRACIÓN DE DEPARTAMENTOS</span>
-            </a>
-            <a class="menu-card button-3" href="/reports">
-                <span>REPORTES</span>
-            </a>
-            <a class="menu-card button-4" href="/accounting">
-                <span>CONTABILIDAD</span>
-            </a>
+        <section class="cards-grid cards-count-<%= menuItems.length %>" aria-label="Accesos del sistema">
+            <% menuItems.forEach(item => { %>
+                <a class="menu-card <%= item.button_class %>" href="<%= item.href %>">
+                    <span><%= item.title %></span>
+                </a>
+            <% }); %>
         </section>
     </div>
     <footer>
@@ -71,3 +91,7 @@
 </body>
 
 </html>
+
+
+
+

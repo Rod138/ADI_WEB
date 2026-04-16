@@ -1,3 +1,9 @@
+/**
+ * TESINA: Logica de autenticacion en la vista de login.
+ * Responsabilidad: validar campos, enviar credenciales y guardar sesion local.
+ * Seguridad: limpia sesion previa antes de iniciar un nuevo acceso.
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
     // Al llegar al login se destruye cualquier sesión activa
     sessionStorage.removeItem('user');
@@ -114,6 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+// Ejecuta autenticacion remota y persiste sesion local para navegacion protegida.
 async function login(correo, contrasenna) {
     try {
         const response = await fetch('/api/login', {

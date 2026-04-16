@@ -7,8 +7,20 @@
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #dcdcdc;
+    background-color: var(--adi-surface);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -25,8 +37,15 @@ body {
     padding: 0.75rem 1.5rem;
 }
 
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+}
+
 .nav-brand img {
     max-height: 2.5rem;
+    width: auto;
 }
 
 .nav-title {
@@ -124,9 +143,9 @@ select {
     width: 100%;
     padding: 0.45rem 1.85rem 0.45rem 0.75rem;
     border-radius: 0.55rem;
-    border: 0.0625rem solid #f5d8bb;
-    background-color: #eec9a6;
-    color: #5e4b37;
+    border: 0.0625rem solid #E8D4BA;
+    background-color: #EEC9A6;
+    color: #5E4B37;
     font-size: 0.82rem;
     cursor: pointer;
     appearance: none;
@@ -135,11 +154,13 @@ select {
     background-repeat: no-repeat;
     background-position: right 0.7rem center;
     background-size: 0.75rem;
+    transition: border-color 0.2s ease;
 }
 
 select:focus {
     outline: none;
-    border-color: #ed7a13;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
 }
 
 option {
@@ -402,11 +423,11 @@ option {
     color: #fffadd;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 10rem;
-    height: 2.5rem;
-    line-height: 2.5rem;
+    width: 11.5rem;
+    height: 3rem;
+    line-height: 3rem;
     text-align: center;
-    font-size: 0.78rem;
+    font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.02em;
 }
@@ -444,3 +465,71 @@ option {
     }
 }
 
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+}

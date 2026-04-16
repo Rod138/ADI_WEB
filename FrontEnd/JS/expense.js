@@ -1,3 +1,9 @@
+/**
+ * TESINA: Registro de gastos en el modulo contable (cliente).
+ * Responsabilidad: validar formulario, previsualizar evidencia y enviar gasto.
+ * Dato clave: la evidencia se codifica en base64 para su almacenamiento.
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const amountInput = document.getElementById('expense-amount');
     const notesInput = document.getElementById('expense-notes');
@@ -15,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         charCounter.textContent = `${notesInput.value.length} / 150`;
     });
 
+    // Estandariza fecha de registro para persistencia y trazabilidad.
     const getCurrentIsoDate = () => new Date().toISOString();
 
     imageInput.addEventListener('change', () => {

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,17 +12,22 @@
     <title>ADI - Reportes</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/reports.js" defer></script>
 </head>
-<body>
+<body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">REPORTES</div>
         <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <span id="user-role">Rol</span>
+            </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
@@ -40,6 +45,7 @@
                     <option value="payments">Pagos de cuota</option>
                     <option value="balance">Balance</option>
                     <option value="incident-types">Tipos de incidencia</option>
+                    <option value="monthly-financial-pdf">Reporte financiero mensual (PDF)</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -77,8 +83,24 @@
     </main>
 
     <div class="bottom-actions">
-        <button id="download-report-btn" class="btn-download">DESCARGAR</button>
+        <div class="download-actions">
+            <button id="download-pdf-btn" class="btn-download">DESCARGAR</button>
+        </div>
         <a href="/main" class="btn-back">REGRESAR</a>
     </div>
+
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.ADIAuth?.getCurrentUser?.();
+            if (user) {
+                const roleSpan = document.getElementById('user-role');
+                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+            }
+        });
+    </script>
 </body>
 </html>
+

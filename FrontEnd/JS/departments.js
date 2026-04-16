@@ -1,3 +1,9 @@
+/**
+ * TESINA: Logica cliente de administracion de departamentos y usuarios.
+ * Responsabilidad: sincronizar selects, formularios y acciones CRUD visibles.
+ * Regla de interfaz: habilitar controles segun permisos de sesion.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const depSelect        = document.getElementById('dep-select');
     const userFilterGroup  = document.getElementById('user-filter-group');
@@ -60,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await loadDeptCard(depId);
 
         // Show create-user button for admins
-        if (session && session.rol_id > 2) {
+        if (session && Number(session.rol_id) >= 3) {
             createUserBtn.style.display = 'inline-flex';
             createUserBtn.onclick = () => showCreateUserForm(depId);
         }
@@ -95,12 +101,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ── Load dept card ───────────────────────────────────────
 
+    // Refleja en la UI el estado operativo del departamento seleccionado.
     function renderDeptCard(dep) {
         depName.textContent   = dep.name;
         depStatus.textContent = dep.is_in_use ? 'En uso' : 'Desocupado';
         depStatus.className   = 'info-value ' + (dep.is_in_use ? 'status-active' : 'status-inactive');
 
-        if (session && session.rol_id > 2) {
+        if (session && Number(session.rol_id) >= 3) {
             depEditSec.style.display = 'block';
             depInUseChk.checked      = dep.is_in_use;
             depConfirmChk.checked    = false;
@@ -139,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Consulta datos actualizados de departamento antes de pintar la tarjeta.
     async function loadDeptCard(depId) {
         try {
             const res  = await fetch('/api/departments');
@@ -153,6 +161,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ── Create user form (shown after activating dept) ──────
+    // Presenta formulario de alta y envía usuario asociado al departamento activo.
     async function showCreateUserForm(depId) {
         let roles = [];
         try {
@@ -236,6 +245,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ── Load user card ───────────────────────────────────────
+    // Recupera detalle de un usuario para vista/edicion en tarjeta lateral.
     async function loadUserCard(userId) {
         try {
             const res  = await fetch(`/api/users/${encodeURIComponent(userId)}`);
@@ -250,9 +260,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Construye vista de usuario y habilita acciones segun rol del sesionante.
     function renderUserCard(user, roles) {
-        const canEdit = session && (session.rol_id > 2 || String(session.id) === String(user.id));
-        const canDelete = session && session.rol_id > 2;
+        const canEdit = session && (Number(session.rol_id) >= 3 || String(session.id) === String(user.id));
+        const canDelete = session && Number(session.rol_id) >= 3;
 
         const fields = [
             ['Nombre',           user.name],
@@ -365,6 +376,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 
+    // Sanea texto dinamico antes de inyectarlo en HTML.
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

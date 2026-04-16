@@ -1,9 +1,15 @@
+/**
+ * TESINA: Vista detalle de comprobante de pago.
+ * Responsabilidad: cargar comprobante por id y permitir validacion por rol.
+ * Regla: solo roles con permisos administrativos pueden validar.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const card = document.getElementById('receipt-card');
     const params = new URLSearchParams(window.location.search);
     const receiptId = params.get('id');
     const sessionUser = JSON.parse(sessionStorage.getItem('user') || '{}');
-    const canValidate = Number(sessionUser.rol_id) > 2;
+    const canValidate = Number(sessionUser.rol_id) >= 2;
 
     if (!receiptId) {
         card.innerHTML = '<p class="error">No se especifico comprobante.</p>';
@@ -111,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         card.innerHTML = '<p class="error">Error al cargar el comprobante.</p>';
     }
 
+    // Escapa contenido dinamico antes de inyectarlo en el template de detalle.
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

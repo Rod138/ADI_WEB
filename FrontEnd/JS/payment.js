@@ -1,3 +1,9 @@
+/**
+ * TESINA: Logica cliente para registro y consulta de pagos de cuotas.
+ * Responsabilidad: capturar pago, filtrar historial y exportar comprobantes.
+ * Flujo: cargar datos base -> filtrar/paginar -> acciones de descarga.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const depInput = document.getElementById('pay-department');
     const monthInput = document.getElementById('pay-month');
@@ -174,6 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         URL.revokeObjectURL(url);
     });
 
+    // Reconsulta catalogos y movimientos despues de registrar un nuevo pago.
     async function refreshData() {
         const res = await fetch('/api/accounting/payment-data');
         const data = await res.json();
@@ -190,6 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         applyFilters();
     }
 
+    // Limita el selector a departamentos sin pago registrado en mes/anio seleccionado.
     function refreshAvailableDepartments() {
         const month = String(monthInput.value || '').trim();
         const year = parseInt(yearInput.value, 10);
@@ -212,6 +220,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             available.map(dep => `<option value="${dep.id}">${escapeHtml(dep.name)}</option>`).join('');
     }
 
+    // Autocompleta cuota esperada a partir de la configuracion mensual vigente.
     function autoFillExpectedAmount() {
         const month = String(monthInput.value || '').toLowerCase();
         const year = parseInt(yearInput.value, 10);
@@ -221,6 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // Ejecuta filtros combinados por departamento, mes y anio.
     function applyFilters() {
         let rows = [...allRows];
 
@@ -243,6 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredRows);
     }
 
+    // Orden primario por nombre de departamento y secundario por anio descendente.
     function compareRowsByDepartment(a, b) {
         const depA = String(a.department_name || `DEP ${a.dep_id}`);
         const depB = String(b.department_name || `DEP ${b.dep_id}`);
@@ -252,10 +263,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         return Number(b.year || 0) - Number(a.year || 0);
     }
 
+    // Comparador local-aware para nombres de departamento.
     function compareDepartmentNames(a, b) {
         return String(a || '').localeCompare(String(b || ''), 'es', { numeric: true, sensitivity: 'base' });
     }
 
+    // Renderiza pagina de resultados y controles de navegacion.
     function renderTable(rows) {
         if (!rows.length) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin pagos registrados</td></tr>';
@@ -283,6 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         `).join('');
     }
 
+    // Escapa texto de salida para prevenir insercion de HTML no confiable.
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

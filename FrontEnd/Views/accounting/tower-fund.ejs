@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +7,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
-    <link rel="stylesheet" href="/FrontEnd/CSS/notifications.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/tower_fund.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Notificaciones</title>
+    <title>ADI - Fondo Inicial de Torres</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
-    <script src="/FrontEnd/JS/notifications.js" defer></script>
+    <script src="/FrontEnd/JS/tower_fund.js" defer></script>
     <style>
         .role-badge {
             display: flex;
@@ -47,41 +46,45 @@
         }
     </style>
 </head>
-
-<body>
+<body data-min-role="2">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">CENTRO DE NOTIFICACIONES</div>
+        <div class="nav-title">FONDO INICIAL DE TORRES</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
                 <span id="user-role">Rol</span>
             </div>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
     </nav>
 
     <main class="main-container">
-        <section class="notifications-card">
-            <div class="filters-row">
-                <select id="type-filter" class="pill-select">
-                    <option value="all">TIPO</option>
-                </select>
-                <select id="order-filter" class="pill-select">
-                    <option value="desc">FECHA DESC</option>
-                    <option value="asc">FECHA ASC</option>
-                </select>
-            </div>
+        <section class="fund-card">
+            <p class="current-label">Fondo actual configurado</p>
+            <p id="current-fund" class="current-amount">$0.00</p>
+            <p id="updated-at" class="updated-at">Sin actualizaciones registradas</p>
 
-            <div id="notifications-list" class="notifications-list"></div>
+            <label for="fund-amount">Nuevo fondo inicial</label>
+            <input id="fund-amount" type="number" min="0" step="0.01" placeholder="Ej. 25000.00">
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="fund-confirm">
+                HAGA CLICK PARA CONFIRMAR
+            </label>
+
+            <button id="save-fund-btn" class="btn-save">GUARDAR</button>
         </section>
 
         <div class="bottom-actions">
-            <a href="/main" class="btn-back">REGRESAR</a>
+            <a href="/accounting" class="btn-back">REGRESAR</a>
         </div>
     </main>
     <script>
@@ -94,7 +97,6 @@
         });
     </script>
 </body>
-
 </html>
 
 

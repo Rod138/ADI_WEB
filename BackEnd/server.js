@@ -1,6 +1,13 @@
+/**
+ * TESINA: Punto de entrada del servidor Express.
+ * Responsabilidad: configurar middlewares, rutas y archivos estaticos.
+ * Flujo principal: inicializar app -> registrar rutas -> levantar puerto.
+ */
+
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import routes from './routes.js'
 
@@ -15,6 +22,7 @@ const rootDir = path.resolve(__dirname, "..")
 
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 app.use(express.json({ limit: '25mb' }));
+app.use(cookieParser());
 
 app.use((error, req, res, next) => {
   if (error && error.type === 'entity.too.large') {

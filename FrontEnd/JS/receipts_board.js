@@ -1,3 +1,9 @@
+/**
+ * TESINA: Tablero de comprobantes para consulta masiva.
+ * Responsabilidad: aplicar filtros por validacion/fecha/departamento y paginar.
+ * Objetivo: facilitar auditoria y seguimiento de evidencias de pago.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('receipts-tbody');
     const validationSelect = document.getElementById('validation');
@@ -53,6 +59,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    // Carga opciones de filtros de fecha y departamento desde los comprobantes recibidos.
     function populateFilters(receipts, departments) {
         const uniqueDateKeys = [...new Set(
             receipts
@@ -75,6 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Filtra comprobantes por estado, periodo y departamento.
     function applyFilters() {
         let filtered = [...allReceipts];
 
@@ -99,6 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredReceipts);
     }
 
+    // Renderiza la tabla paginada de comprobantes para auditoria operativa.
     function renderTable(receipts) {
         if (!receipts.length) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin comprobantes</td></tr>';
@@ -136,12 +145,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
+    // Normaliza fecha a clave mensual para filtros agrupados.
     function formatMonthYearKey(dateValue) {
         if (!dateValue) return '-';
         const d = new Date(dateValue);
         return d.toLocaleString('es-MX', { month: 'long', year: 'numeric' });
     }
 
+    // Escapa texto para evitar inyeccion de marcado en celdas.
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

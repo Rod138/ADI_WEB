@@ -1,3 +1,9 @@
+/**
+ * TESINA: Logica cliente del tablero de incidencias.
+ * Responsabilidad: cargar incidencias, aplicar filtros y paginar resultados.
+ * Flujo UI: obtener datos -> renderizar tabla -> navegar por paginas.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('incidents-tbody');
     const typeSelect = document.getElementById('type');
@@ -44,6 +50,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusSelect.addEventListener('change', applyFilters);
     orderSelect.addEventListener('change', applyFilters);
 
+    // Llena combos de filtro con catalogos recibidos del backend.
     function populateFilters(types, areas, statuses) {
         (types ?? []).slice().sort((a, b) => a.id - b.id).forEach(type => {
             const opt = document.createElement('option');
@@ -67,6 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    // Aplica filtros activos y ordenamiento temporal sobre el dataset completo.
     function applyFilters() {
         let filtered = [...allIncidents];
 
@@ -109,6 +117,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (row) window.location.href = `/incident?id=${row.dataset.id}`;
     });
 
+    // Renderiza solo la pagina actual y actualiza controles de paginacion.
     function renderTable(incidents) {
         if (!incidents.length) {
             tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin incidencias</td></tr>';
@@ -137,13 +146,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const typeName   = escapeHtml(typesMap[inc.type_id]   ?? inc.type_id   ?? '-');
             const areaName   = escapeHtml(areasMap[inc.area_id]   ?? inc.area_id   ?? '-');
             const statusName = escapeHtml(statusesMap[inc.status_id] ?? inc.status_id ?? '-');
-            const content    = escapeHtml(inc.content ?? inc.description ?? '');
+            const rawContent = String(inc.content ?? inc.description ?? '');
+            const truncatedContent = truncateText(rawContent, 100);
+            const content = escapeHtml(truncatedContent);
+            const fullContentAttr = escapeHtml(rawContent).replace(/"/g, '&quot;');
 
             return `
                 <tr class="clickable-row" data-id="${inc.id}" style="cursor:pointer">
                     <td>
                         <h2>${typeName}</h2>
-                        <p>${content}</p>
+                        <p class="incident-description" title="${fullContentAttr}">${content}</p>
                         <small><strong>Área:</strong> ${areaName}</small>
                     </td>
                     <td>${date}</td>
@@ -152,6 +164,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     }
 
+    // Recorta texto largo para mejorar legibilidad en la tabla.
+    function truncateText(text, maxLength) {
+        if (text.length <= maxLength) return text;
+        return `${text.slice(0, maxLength).trimEnd()}...`;
+    }
+
+    // Escapa caracteres especiales para evitar inyeccion HTML en celdas.
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

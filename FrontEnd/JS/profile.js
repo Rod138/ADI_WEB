@@ -1,3 +1,9 @@
+/**
+ * TESINA: Gestion del perfil de usuario en cliente.
+ * Responsabilidad: mostrar datos de sesion, habilitar edicion y guardar cambios.
+ * Control: alterna modo lectura/edicion para evitar modificaciones accidentales.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const sessionUser = JSON.parse(sessionStorage.getItem('user'));
 
@@ -17,6 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentUserId = sessionUser.id;
     let isEditing = false;
 
+    // Activa o bloquea campos para alternar entre modo consulta y modo edicion.
     const setEditable = (editable) => {
         nameInput.disabled = !editable;
         emailInput.disabled = !editable;
@@ -26,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         editSaveBtn.textContent = editable ? 'GUARDAR' : 'EDITAR';
     };
 
+    // Obtiene perfil completo del usuario logueado y precarga el formulario.
     const loadProfile = async () => {
         const response = await fetch(`/api/users/${encodeURIComponent(currentUserId)}`);
         const result = await response.json();

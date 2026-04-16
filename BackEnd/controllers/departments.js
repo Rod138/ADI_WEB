@@ -1,5 +1,12 @@
+/**
+ * TESINA: Controlador de departamentos y administracion de usuarios.
+ * Responsabilidad: altas, ediciones y sincronizacion de estado de ocupacion.
+ * Regla clave: la disponibilidad del departamento depende de usuarios asociados.
+ */
+
 import supabase from '../dbconfig.js';
 
+// Sincroniza el indicador is_in_use en departamentos con base en la ocupacion real.
 const syncDepartmentStatuses = async () => {
     const [departmentsRes, usersRes] = await Promise.all([
         supabase.from('departments').select('id, is_in_use'),
@@ -54,6 +61,7 @@ export const getDepartments = async (req, res) => {
 };
 
 // GET /api/roles
+// Entrega catalogo de roles para formularios de administracion.
 export const getRoles = async (req, res) => {
     try {
         const { data, error } = await supabase.from('roles').select('*').order('id', { ascending: true });
@@ -65,6 +73,7 @@ export const getRoles = async (req, res) => {
 };
 
 // POST /api/users  — crear nuevo usuario
+// Inserta un usuario con ID incremental y datos normalizados.
 export const createUser = async (req, res) => {
     const { name, ap, am, email, phone, password, rol_id, dep_id } = req.body;
     if (!name || !email || !phone || !password || !rol_id || !dep_id) {
@@ -99,6 +108,7 @@ export const createUser = async (req, res) => {
 };
 
 // GET /api/users?dep_id=X  — usuarios de un departamento (id, name, ap)
+// Lista usuarios activos y omite registros marcados como eliminados logicos.
 export const getUsers = async (req, res) => {
     const { dep_id } = req.query;
     try {
@@ -116,6 +126,7 @@ export const getUsers = async (req, res) => {
 };
 
 // GET /api/users/:id  — usuario completo + su departamento
+// Obtiene un usuario puntual junto con su departamento y roles disponibles.
 export const getUserById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -149,6 +160,7 @@ export const getUserById = async (req, res) => {
 };
 
 // PATCH /api/users/:id  — actualizar datos del usuario
+// Aplica actualizacion parcial permitiendo limpiar campos opcionales con null.
 export const updateUser = async (req, res) => {
     const { id } = req.params;
     const allowed = ['name', 'ap', 'am', 'email', 'phone', 'password', 'rol_id', 'dep_id'];
@@ -173,6 +185,7 @@ export const updateUser = async (req, res) => {
 };
 
 // DELETE /api/users/:id  — borrar usuario (resetea datos y desasocia del departamento)
+// Ejecuta borrado logico para conservar trazabilidad historica en BD.
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
@@ -194,6 +207,7 @@ export const deleteUser = async (req, res) => {
 
 // PATCH /api/departments/:id  — actualizar is_in_use
 // Si is_in_use pasa a false, desasocia los usuarios del departamento
+// Mantiene consistencia entre ocupacion del departamento y asignaciones de usuarios.
 export const updateDepartment = async (req, res) => {
     const { id } = req.params;
     const { is_in_use } = req.body;

@@ -1,8 +1,15 @@
+/**
+ * TESINA: Recuperacion de contrasena desde el cliente.
+ * Responsabilidad: validar correo y solicitar envio de enlace de recuperacion.
+ * UX: bloquea envio repetido mientras la solicitud esta en proceso.
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("email");
     const forgotPasswordForm = document.getElementById("forgot-password-form");
 
     if (forgotPasswordForm) {
+        // Valida correo y dispara solicitud de recuperacion con timeout de seguridad.
         forgotPasswordForm.addEventListener("submit", async (e) => {
             e.preventDefault();
             const submitButton = forgotPasswordForm.querySelector('button[type="submit"]');

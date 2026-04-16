@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,14 +12,50 @@
     <title>ADI - Incidencia</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+            min-width: 0;
+            max-width: min(15rem, 45vw);
+        }
+        .role-badge span {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+        .role-badge #user-role {
+            display: inline-block;
+            max-width: 10.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
-<body>
+<body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title" id="nav-title">INSPECCIONAR INCIDENCIA</div>
         <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <span id="user-role">Rol</span>
+            </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
@@ -39,12 +75,19 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.ADIAuth?.getCurrentUser?.();
+            if (user) {
+                const roleSpan = document.getElementById('user-role');
+                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+            }
+        });
         (async () => {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             const card = document.getElementById('incident-card');
             const user = JSON.parse(sessionStorage.getItem('user'));
-            const canEdit = user && user.rol_id > 2;
+            const canEdit = user && Number(user.rol_id) >= 3;
             document.getElementById('nav-title').textContent = canEdit ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
 
             if (!id) {
@@ -91,7 +134,7 @@
 
                     <div class="info-grid">
                         <label>REPORTADO POR :</label>
-                        <input type="text" value="${escapeHtml(data.userName ?? '—')}" readonly>
+                        <input type="text" value="${escapeHtml(data.userName ?? '�?"')}" readonly>
 
                         <label>FECHA</label>
                         <input type="text" value="${date}" readonly>
@@ -189,3 +232,12 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+

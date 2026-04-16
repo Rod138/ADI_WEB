@@ -1,24 +1,37 @@
 * {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    color: #111827;
+    color: #111111;
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #F7F7F7;
+    background-color: var(--adi-surface);
     background-image: linear-gradient(rgba(21, 21, 21, 0.65)), url("../IMG/ed1.png");
     background-size: cover;
     background-position: center;
     min-height: 100vh;
+    color: var(--adi-text);
 }
 
 nav {
     font-family: 'Inter', sans-serif;
-    background-color: #F7F7F7;
-    color: #000000;
+    background-color: var(--adi-surface);
+    color: var(--adi-text);
     padding: 1rem 2rem;
     width: 100%;
     position: sticky;
@@ -28,34 +41,44 @@ nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
 }
 
 nav img {
     margin: 0;
     max-height: 3rem;
+    width: auto;
+    display: block;
 }
 
 nav a {
     margin: 0rem 0.75rem;
-    color: #000000;
+    color: var(--adi-text);
     text-decoration: none;
     font-size: 1rem;
+    transition: color 0.2s ease;
 }
 
 nav a:hover {
-    color: #ED7A13;
+    color: var(--adi-accent);
 }
 
 button {
-    background-color: #6A8042;
-    color: #FFFADD;
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
     border: none;
     border-radius: 2rem;
     padding: 1rem 5rem;
     cursor: pointer;
     font-size: 1.25rem;
     margin: 1rem 0;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    font-family: 'Outfit', sans-serif;
+}
+
+button:hover {
+    background-color: var(--adi-olive-dark);
 }
 
 .form-card a {
@@ -78,16 +101,17 @@ button {
 }
 
 .form-card {
-    font-family: 'Nunito', sans-serif;
-    background-color: rgba(255, 255, 255, 0.8);
+    font-family: 'Inter', sans-serif;
+    background-color: rgba(255, 255, 255, 0.85);
     padding: 2.5rem 0;
-    border-radius: 1.5rem;
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
-    border: 0.1875rem solid #FFFADD;
-    max-width: 60%;
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+    border: 0.0625rem solid var(--adi-border);
+    max-width: min(90%, 60rem);
+    width: 100%;
     margin: 5rem auto;
     text-align: center;
-    font-weight: 100;
+    font-weight: 400;
 }
 
 .form-card h2 {
@@ -108,15 +132,114 @@ button {
 }
 
 .form-card input {
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     width: 85%;
-    font-size: 1.25rem;
-    border: 0.0625rem solid #000000;
+    font-size: 1rem;
+    border: 0.0625rem solid var(--adi-border);
     background-color: #FFFFFF;
-    color: #000000;
-    box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.1);
+    color: var(--adi-text);
+    box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.08);
     text-align: left;
-    padding-left: 1rem;
     margin-bottom: 0.3rem;
+    transition: border-color 0.2s ease;
+}
+
+.form-card input:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+
+    .form-card {
+        margin: 2rem auto;
+        padding: 1.5rem 0;
+    }
+
+    .form-card h2 {
+        font-size: 2rem;
+    }
+
+    .form-card label {
+        font-size: 1rem;
+        margin-left: 5%;
+    }
+
+    .form-card input {
+        width: 90%;
+        font-size: 0.95rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .form-card button {
+        width: 90%;
+        font-size: 0.9rem;
+    }
 }

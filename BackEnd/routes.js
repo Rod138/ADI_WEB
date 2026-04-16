@@ -1,11 +1,17 @@
+/**
+ * TESINA: Mapa central de endpoints HTTP del sistema ADI_WEB.
+ * Responsabilidad: enlazar vistas y APIs con sus controladores.
+ * Nota: concentra reglas de acceso por rol mediante middlewares de auth.
+ */
+
 import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { login, forgotPassword } from './controllers/login.js';
-import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
+import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
-import { createTowerExpense, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
+import { createTowerExpense, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
+import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -24,6 +30,11 @@ router.get('/login', (req, res) => {
 
 router.post('/api/login', login);
 
+router.post('/api/logout', (req, res) => {
+    res.clearCookie('session_user_id');
+    res.status(200).json({ success: true, message: 'Sesión cerrada' });
+});
+
 // Rutas de recuperación de contraseña
 router.get('/forgot-password', (req, res) => {
     const forgotPasswordPath = path.join(rootDir, 'FrontEnd', 'Views', 'forgot-password.html');
@@ -32,9 +43,7 @@ router.get('/forgot-password', (req, res) => {
 
 router.post('/api/forgot-password', forgotPassword);
 
-router.get('/main', (req, res) => {
-    res.render('main');
-});
+router.get('/main', getMainMenu);
 
 router.get('/profile', (req, res) => {
     res.render('profile');
@@ -50,7 +59,7 @@ router.get('/incident-board', (req, res) => {
 
 router.get('/api/incidents', getIncidents);
 router.get('/api/incidents/:id', getIncidentById);
-router.patch('/api/incidents/:id', updateIncident);
+router.patch('/api/incidents/:id', requireMinRole(3), updateIncident);
 
 router.get('/incident', (req, res) => {
     res.render('incidents/incident');
@@ -66,6 +75,14 @@ router.get('/accounting', (req, res) => {
 
 router.get('/accounting/expense', (req, res) => {
     res.render('accounting/expense');
+});
+
+router.get('/accounting/tower-fund', (req, res) => {
+    res.render('accounting/tower-fund');
+});
+
+router.get('/accounting/monthly-quota', (req, res) => {
+    res.render('accounting/monthly-quota');
 });
 
 router.get('/accounting/payment', (req, res) => {
@@ -84,22 +101,26 @@ router.get('/accounting/receipt', (req, res) => {
     res.render('accounting/receipt');
 });
 
-router.post('/api/accounting/expenses', createTowerExpense);
+router.post('/api/accounting/expenses', requireMinRole(2), createTowerExpense);
+router.get('/api/accounting/tower-fund', getTowerFundConfig);
+router.post('/api/accounting/tower-fund', requireMinRole(2), upsertTowerFundConfig);
+router.get('/api/accounting/monthly-quota', getMonthlyQuotaConfig);
+router.post('/api/accounting/monthly-quota', requireMinRole(2), upsertMonthlyQuotaConfig);
 router.get('/api/accounting/receipts', getPaymentReceipts);
 router.get('/api/accounting/receipts/:id', getPaymentReceiptById);
-router.patch('/api/accounting/receipts/:id', updatePaymentReceipt);
+router.patch('/api/accounting/receipts/:id', requireMinRole(2), updatePaymentReceipt);
 router.get('/api/accounting/payment-data', getQuotaPaymentData);
-router.post('/api/accounting/payment', createQuotaPayment);
+router.post('/api/accounting/payment', requireMinRole(2), createQuotaPayment);
 router.get('/api/accounting/reports-data', getAccountingReportsData);
 
 router.get('/api/users', getUsers);
 router.get('/api/users/:id', getUserById);
-router.patch('/api/users/:id', updateUser);
-router.delete('/api/users/:id', deleteUser);
-router.post('/api/users', createUser);
+router.patch('/api/users/:id', requireSelfOrMinRole(3), updateUser);
+router.delete('/api/users/:id', requireMinRole(3), deleteUser);
+router.post('/api/users', requireMinRole(3), createUser);
 router.get('/api/roles', getRoles);
 router.get('/api/departments', getDepartments);
-router.patch('/api/departments/:id', updateDepartment);
+router.patch('/api/departments/:id', requireMinRole(3), updateDepartment);
 
 router.get('/api/notifications', getNotifications);
 router.delete('/api/notifications/:id', deleteNotification);

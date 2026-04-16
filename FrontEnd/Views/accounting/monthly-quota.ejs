@@ -1,6 +1,5 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +7,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
-    <link rel="stylesheet" href="/FrontEnd/CSS/board.css">
-    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
-    <title>ADI - Tablón</title>
+    <link rel="stylesheet" href="/FrontEnd/CSS/monthly_quota.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Configuracion de Cuotas Mensuales</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
-    <script src="/FrontEnd/JS/board.js" defer></script>
+    <script src="/FrontEnd/JS/monthly_quota.js" defer></script>
     <style>
         .role-badge {
             display: flex;
@@ -47,13 +46,12 @@
         }
     </style>
 </head>
-
-<body data-min-role="1">
+<body data-min-role="2">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">TABLÓN DE INCIDENCIAS</div>
+        <div class="nav-title">CUOTA MENSUAL</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -62,67 +60,56 @@
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
     </nav>
-    <div class="main-container">
-        <div class="selects">
-            <div class="filter-group">
-                <label for="type">Tipo</label>
-                <select name="type" id="type">
-                    <option value="any">Cualquiera</option>
-                </select>
+
+    <main class="main-container">
+        <section class="quota-panel">
+            <div class="form-grid">
+                <label for="quota-month">Mes</label>
+                <select id="quota-month"></select>
+
+                <label for="quota-year">Año</label>
+                <input id="quota-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+
+                <label for="quota-amount">Monto de cuota</label>
+                <input id="quota-amount" type="number" min="0.01" step="0.01" placeholder="Ej. 1200.00">
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="quota-confirm">
+                    HAGA CLICK PARA CONFIRMAR
+                </label>
+
+                <button id="save-quota-btn" class="btn-save">GUARDAR</button>
             </div>
-            <div class="filter-group">
-                <label for="area">Área</label>
-                <select name="area" id="area">
-                    <option value="any">Cualquiera</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="status">Estado</label>
-                <select name="status" id="status">
-                    <option value="any">Cualquiera</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="order-by">Ordenar por</label>
-                <select name="order-by" id="order-by">
-                    <option value="timedown">Fecha descendente</option>
-                    <option value="timeup">Fecha ascendente</option>
-                </select>
-            </div>
-        </div>
-        <div class="table-container">
-            <table>
-                    <colgroup>
-                        <col style="width: 75%">
-                        <col style="width: 15%">
-                        <col style="width: 10%">
-                    </colgroup>
+        </section>
+
+        <section class="history-panel">
+            <h2>Configuracion actual</h2>
+            <div class="table-container">
+                <table>
                     <thead>
                         <tr>
-                            <th>Información</th>
-                            <th>Fecha</th>
-                            <th>Estado</th>
+                            <th>AÑO</th>
+                            <th>MES</th>
+                            <th>CUOTA</th>
+                            <th>ACTUALIZADO</th>
                         </tr>
                     </thead>
-                    <tbody id="incidents-tbody">
-                        <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                    <tbody id="quota-tbody">
+                        <tr><td colspan="4" style="text-align:center">Cargando...</td></tr>
                     </tbody>
                 </table>
-        </div>
-        <div class="pagination-controls" id="incidents-pagination" style="display:none">
-            <button type="button" class="page-btn" id="inc-prev-btn">ANTERIOR</button>
-            <span class="page-indicator" id="inc-page-indicator">Pagina 1 de 1</span>
-            <button type="button" class="page-btn" id="inc-next-btn">SIGUIENTE</button>
-        </div>
+            </div>
+        </section>
+
         <div class="bottom-actions">
-            <a href="/main" class="btn-back">REGRESAR</a>
+            <a href="/accounting" class="btn-back">REGRESAR</a>
         </div>
-    </div>
+    </main>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const user = window.ADIAuth?.getCurrentUser?.();
@@ -133,8 +120,8 @@
         });
     </script>
 </body>
-
 </html>
+
 
 
 

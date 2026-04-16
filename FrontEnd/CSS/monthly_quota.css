@@ -1,0 +1,228 @@
+* {
+    font-family: 'Inter', sans-serif;
+    color: #111111;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+}
+
+body {
+    background-color: var(--adi-surface);
+    min-height: 100vh;
+}
+
+.top-nav {
+    min-height: 5rem;
+    width: 100%;
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+    width: auto;
+}
+
+.nav-title {
+    text-align: center;
+    font-size: 1.65rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.nav-icon-btn {
+    color: #111111;
+    text-decoration: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.material-symbols-outlined {
+    font-size: 1.8rem;
+}
+
+.main-container {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.1rem 1rem 2rem;
+}
+
+.quota-panel,
+.history-panel {
+    background-color: #F1F1F1;
+    border-radius: 0.8rem;
+    padding: 1rem 1.1rem;
+}
+
+.quota-panel {
+    margin-bottom: 1rem;
+}
+
+.form-grid {
+    width: 100%;
+    max-width: 30rem;
+    margin: 0 auto;
+}
+
+.form-grid label {
+    display: block;
+    font-size: 0.75rem;
+    color: #6A744F;
+    margin-bottom: 0.2rem;
+    margin-top: 0.5rem;
+}
+
+.form-grid input,
+.form-grid select {
+    width: 100%;
+    height: 2rem;
+    border-radius: 1rem;
+    border: 0.125rem solid #EFD36A;
+    background-color: #E8E4C7;
+    color: #1E3006;
+    padding: 0 0.8rem;
+    font-size: 0.95rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+    font-size: 0.74rem;
+    color: #4D5D34;
+}
+
+.checkbox-label input {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
+.btn-save {
+    margin-top: 0.6rem;
+    width: 8.5rem;
+    height: 2.2rem;
+    border-radius: 1rem;
+    border: 0.0625rem solid var(--adi-accent);
+    color: var(--adi-accent);
+    background-color: transparent;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+.history-panel h2 {
+    font-size: 1.05rem;
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 0.7rem;
+}
+
+.table-container {
+    max-height: 18rem;
+    overflow: auto;
+    border-radius: 0.6rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #FFFFFF;
+}
+
+th,
+td {
+    padding: 0.55rem 0.6rem;
+    border: 0.0625rem solid #D8D8D8;
+    font-size: 0.86rem;
+}
+
+th {
+    background-color: #EFEFEF;
+    color: #5A5A5A;
+}
+
+.bottom-actions {
+    width: 100%;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+    text-decoration: none;
+    border-radius: 0.75rem;
+    width: 10.5rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+.nav-icon-btn:hover {
+    color: var(--adi-accent);
+}
+
+.btn-save,
+.btn-back,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        padding: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+
+    .bottom-actions {
+        justify-content: center;
+    }
+}

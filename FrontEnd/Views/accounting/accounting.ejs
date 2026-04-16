@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,14 +12,50 @@
     <title>ADI - Contabilidad</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+            min-width: 0;
+            max-width: min(15rem, 45vw);
+        }
+        .role-badge span {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+        .role-badge #user-role {
+            display: inline-block;
+            max-width: 10.5rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
 </head>
-<body>
+<body data-min-role="2">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">CONTABILIDAD</div>
         <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <span id="user-role">Rol</span>
+            </div>
             <a href="/notifications" class="nav-icon-btn" aria-label="Notificaciones">
                 <span class="material-symbols-outlined">notifications</span>
             </a>
@@ -42,6 +78,12 @@
             </a>
             <a href="/accounting/expense" class="menu-card button-3">
                 <span>LEVANTAR GASTO</span>
+            </a>
+            <a href="/accounting/tower-fund" class="menu-card button-4">
+                <span>CONFIGURAR FONDO INICIAL</span>
+            </a>
+            <a href="/accounting/monthly-quota" class="menu-card button-5">
+                <span>CONFIGURAR CUOTA MENSUAL</span>
             </a>
         </section>
 
@@ -69,3 +111,10 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+

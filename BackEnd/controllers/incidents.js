@@ -1,4 +1,12 @@
+/**
+ * TESINA: Controlador para gestion de incidencias.
+ * Responsabilidad: listar incidencias y cat�logos, consultar detalle y actualizar.
+ * Flujo: consumir tablas de soporte (estado, area, tipo) para vista completa.
+ */
+
 import supabase from "../dbconfig.js";
+
+// Obtiene incidencias y catalogos auxiliares para construir filtros en el cliente.
 export const getIncidents = async (req, res) => {
     try {
         const [incRes, statusRes, areaRes, typeRes] = await Promise.all([
@@ -30,6 +38,7 @@ export const getIncidents = async (req, res) => {
     }
 }
 
+// Recupera el detalle completo de una incidencia y resuelve etiquetas descriptivas.
 export const getIncidentById = async (req, res) => {
     const { id } = req.params;
     try {
@@ -79,6 +88,7 @@ export const getIncidentById = async (req, res) => {
     }
 }
 
+// Actualiza campos operativos de una incidencia (estado, notas, costo y cierre).
 export const updateIncident = async (req, res) => {
     const { id } = req.params;
     const { status_id, notes, cost, set_completed_at } = req.body;

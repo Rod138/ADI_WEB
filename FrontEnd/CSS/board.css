@@ -7,8 +7,20 @@
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #DCDCDC;
+    background-color: var(--adi-surface);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -17,24 +29,33 @@ body {
 .top-nav {
     min-height: 5rem;
     width: 100%;
-    background-color: #F7F7F7;
-    border-bottom: 0.0625rem solid #B6B6B6;
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
 }
 
 .nav-brand img {
     max-height: 2.5rem;
+    width: auto;
 }
 
 .nav-title {
     text-align: center;
-    color: #111111;
+    color: var(--adi-text);
     font-size: 1.75rem;
     font-family: 'Outfit', sans-serif;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 .nav-actions {
@@ -44,7 +65,7 @@ body {
 }
 
 .nav-icon-btn {
-    color: #111111;
+    color: var(--adi-text);
     text-decoration: none;
     border: none;
     background: transparent;
@@ -54,10 +75,12 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: color 0.2s ease;
+    border-radius: 0.4rem;
 }
 
 .nav-icon-btn:hover {
-    color: #6A8042;
+    color: var(--adi-olive);
 }
 
 .material-symbols-outlined {
@@ -66,9 +89,9 @@ body {
 
 .main-container {
     width: 100%;
-    max-width: 81.25rem;
+    max-width: 90rem;
     margin: 0 auto;
-    padding: 2.2rem;
+    padding: 1.4rem 1.2rem 1.8rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -77,7 +100,7 @@ body {
 select {
     padding: 0.35rem 2rem 0.35rem 0.9rem;
     border-radius: 1rem;
-    border: 0.0625rem solid #F5D8BB;
+    border: 0.0625rem solid #E8D4BA;
     background-color: #EEC9A6;
     color: #5E4B37;
     font-size: 1rem;
@@ -89,11 +112,13 @@ select {
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 0.75rem;
+    transition: border-color 0.2s ease;
 }
 
 select:focus {
     outline: none;
-    border-color: #ED7A13;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
 }
 
 option {
@@ -101,7 +126,7 @@ option {
 }
 
 .selects {
-    width: 57.5rem;
+    width: min(100%, 76rem);
     background-color: #F1F1F1;
     padding: 1rem 1.2rem;
     border-radius: 1rem;
@@ -110,12 +135,14 @@ option {
     gap: 1rem;
     align-items: flex-end;
     justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    flex: 1 1 11rem;
 }
 
 .filter-group label {
@@ -127,7 +154,7 @@ option {
 
 .table-container {
     margin-top: 2.5rem;
-    width: 62.5rem;
+    width: min(100%, 76rem);
     border: none;
     padding: 1.2rem 1rem 0.9rem;
     background-color: #F7F7F7;
@@ -186,6 +213,12 @@ tbody td p {
     margin-bottom: 0.1rem;
 }
 
+.incident-description {
+    line-height: 1.35;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
 tbody td small,
 tbody td small strong {
     font-size: 0.98rem;
@@ -199,14 +232,14 @@ tbody td:nth-child(3) {
 }
 
 .bottom-actions {
-    width: 62.5rem;
+    width: min(100%, 76rem);
     display: flex;
     justify-content: flex-end;
     margin-top: 2rem;
 }
 
 .pagination-controls {
-    width: 62.5rem;
+    width: min(100%, 76rem);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -243,9 +276,110 @@ tbody td:nth-child(3) {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 10rem;
-    height: 2.8rem;
-    line-height: 2.8rem;
+    width: 11.5rem;
+    height: 3rem;
+    line-height: 3rem;
     text-align: center;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
+}
+
+@media (max-width: 64rem) {
+    .main-container {
+        padding: 1.1rem 0.9rem 1.4rem;
+    }
+
+    .table-container {
+        margin-top: 1.2rem;
+    }
+
+    .bottom-actions {
+        margin-top: 1.2rem;
+    }
+}
+
+@media (max-width: 42rem) {
+    .selects {
+        padding: 0.8rem;
+    }
+
+    .filter-group {
+        flex: 1 1 100%;
+    }
+
+    .bottom-actions {
+        justify-content: center;
+    }
+
+    .btn-back {
+        width: 100%;
+        max-width: 12rem;
+    }
+}
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
 }

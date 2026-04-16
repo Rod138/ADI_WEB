@@ -1,5 +1,12 @@
+/**
+ * TESINA: Controlador de notificaciones de usuario.
+ * Responsabilidad: listar, filtrar y eliminar notificaciones por usuario.
+ * Detalle: soporta variantes de nombre de tabla para compatibilidad.
+ */
+
 import supabase from '../dbconfig.js';
 
+// Lista notificaciones del usuario con filtros opcionales de tipo y orden temporal.
 export const getNotifications = async (req, res) => {
     const usrId = parseInt(req.query.usr_id, 10);
     const typeId = parseInt(req.query.type_id, 10);
@@ -33,6 +40,7 @@ export const getNotifications = async (req, res) => {
                 .order('id', { ascending: true });
         }
 
+        // Ejecuta consulta tolerante a variaciones de nombres de columnas.
         const queryNotifications = async (userField, typeField) => {
             let query = supabase
                 .from('notifications')
@@ -89,6 +97,7 @@ export const getNotifications = async (req, res) => {
     }
 };
 
+// Elimina una notificacion validando pertenencia por usuario autenticado.
 export const deleteNotification = async (req, res) => {
     const id = parseInt(req.params.id, 10);
     const usrId = parseInt(req.body.usr_id, 10);

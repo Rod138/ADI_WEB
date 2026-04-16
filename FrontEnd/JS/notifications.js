@@ -1,3 +1,9 @@
+/**
+ * TESINA: Vista cliente para bandeja de notificaciones.
+ * Responsabilidad: cargar notificaciones, filtrar por tipo y ordenar por fecha.
+ * UX: formatea fechas y sanea texto para render seguro en HTML.
+ */
+
 document.addEventListener('DOMContentLoaded', async () => {
     const sessionUser = JSON.parse(sessionStorage.getItem('user'));
 
@@ -13,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let allNotifications = [];
     let typesMap = {};
 
+    // Convierte marca temporal en etiqueta legible para la bandeja.
     const formatTimeAgo = (isoString) => {
         if (!isoString) return 'Sin fecha';
         const date = new Date(isoString);
@@ -20,6 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return date.toLocaleDateString('es-MX');
     };
 
+    // Escapa contenido de notificaciones antes de renderizarlo.
     const escapeHtml = (str) => {
         return String(str)
             .replace(/&/g, '&amp;')
@@ -28,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             .replace(/"/g, '&quot;');
     };
 
+    // Reconstruye el selector de tipos segun el conjunto de resultados actual.
     const populateTypeFilter = () => {
         typeFilter.innerHTML = '<option value="all">TIPO</option>';
 
@@ -40,6 +49,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     };
 
+    // Pinta lista de tarjetas de notificacion en el estado de filtros activo.
     const render = () => {
         if (allNotifications.length === 0) {
             list.innerHTML = '<p class="empty-text">No tiene notificaciones nueva</p>';
@@ -71,6 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }).join('');
     };
 
+    // Consulta backend con filtros activos y refresca la vista de notificaciones.
     const fetchAndRender = async () => {
         const params = new URLSearchParams({
             usr_id: String(sessionUser.id),

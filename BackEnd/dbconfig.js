@@ -1,3 +1,9 @@
+/**
+ * TESINA: Configuracion de acceso a Supabase para todo el backend.
+ * Responsabilidad: leer variables de entorno y exponer un cliente unico.
+ * Impacto: cualquier fallo aqui impide operaciones de base de datos.
+ */
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 

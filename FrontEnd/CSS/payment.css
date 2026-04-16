@@ -6,47 +6,70 @@
     box-sizing: border-box;
 }
 
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-text-light: #8A8A8A;
+    --adi-border: #c8c8c8;
+    --adi-green-dark: #1E3006;
+}
+
 body {
-    background-color: #DCDCDC;
+    background-color: var(--adi-surface);
     min-height: 100vh;
 }
 
 .top-nav {
     min-height: 5rem;
     width: 100%;
-    background-color: #F7F7F7;
-    border-bottom: 0.0625rem solid #B6B6B6;
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.75rem 1.5rem;
-}
-
-.nav-brand img {
-    max-height: 2.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
 }
 
 .nav-title {
     text-align: center;
     font-size: 1.55rem;
     font-family: 'Outfit', sans-serif;
-    font-weight: 500;
-}
-
-.nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
+    font-weight: 600;
+    color: var(--adi-text);
+    letter-spacing: 0.02em;
 }
 
 .nav-icon-btn {
-    color: #111111;
+    color: var(--adi-text);
     text-decoration: none;
     width: 2.2rem;
     height: 2.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border-radius: 0.4rem;
+}
+
+.nav-icon-btn:hover {
+    color: var(--adi-olive);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    height: 5rem;
+}
+
+.nav-brand img {
+    max-height: 2.5rem;
+    width: auto;
 }
 
 .material-symbols-outlined {
@@ -104,12 +127,13 @@ body {
 .btn-save {
     margin-top: 1rem;
     width: 100%;
-    height: 1.7rem;
+    height: 2rem;
     border-radius: 1rem;
     border: 0.0625rem solid #ED7A13;
     background-color: #F7F7F7;
     color: #ED7A13;
-    font-size: 0.68rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     cursor: pointer;
 }
 
@@ -221,12 +245,13 @@ tbody td {
 }
 
 .bottom-actions {
-    width: 60.5rem;
+    width: min(100%, 60.5rem);
     margin: 0.8rem auto 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-bottom: 1.4rem;
+    padding: 0 1.2rem 1.4rem;
+    gap: 1rem;
 }
 
 .btn-download {
@@ -245,9 +270,121 @@ tbody td {
     color: #FFFADD;
     text-decoration: none;
     border-radius: 0.75rem;
-    width: 8.75rem;
-    height: 2.2rem;
-    line-height: 2.2rem;
+    width: 10.5rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-back:hover {
+    background-color: #5d723b;
+}
+
+/* === ADI Light Refresh === */
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+}
+
+body {
+    color: var(--adi-text);
+}
+
+.top-nav,
+nav {
+    background-color: var(--adi-surface);
+}
+
+.nav-title {
+    font-family: 'Outfit', sans-serif;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+    }
+
+    .main-container {
+        padding: 1rem 0.8rem 0.8rem;
+        gap: 0.8rem;
+    }
+
+    .left-form-panel {
+        width: 100%;
+        margin-bottom: 0.8rem;
+    }
+
+    .content-panel {
+        flex-direction: column;
+    }
+
+    .search-bar {
+        width: 100%;
+    }
+
+    .bottom-actions {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1rem 1.2rem;
+    }
+
+    .btn-download,
+    .btn-back {
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.7rem;
+    }
+
+    th,
+    td {
+        padding: 0.4rem 0.3rem;
+    }
 }
