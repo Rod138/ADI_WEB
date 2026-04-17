@@ -36,7 +36,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const data = await response.json();
 
         if (!data.success) {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudieron cargar los reportes.' });
+            Swal.fire({
+                title: 'Error al cargar',
+                text: data.message || 'No se pudieron cargar los reportes.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -55,7 +61,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncMonthFilterRules();
         render();
     } catch (error) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red al cargar reportes.' });
+        Swal.fire({
+            title: 'Error de conexión',
+            text: 'Fallo de red al cargar reportes.',
+            icon: 'error',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Aceptar'
+        });
         return;
     }
 
@@ -90,12 +102,24 @@ document.addEventListener('DOMContentLoaded', async () => {
             link.click();
         } else {
             if (!lastRenderedRows.length) {
-                Swal.fire({ icon: 'info', title: 'Sin datos', text: 'No hay datos para descargar.' });
+                Swal.fire({
+                    title: 'Sin datos',
+                    text: 'No hay datos para descargar.',
+                    icon: 'info',
+                    confirmButtonColor: '#0099ff',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
             if (typeof html2canvas === 'undefined') {
-                Swal.fire({ icon: 'warning', title: 'No disponible', text: 'Descarga de tabla como PNG no está disponible.' });
+                Swal.fire({
+                    title: 'No disponible',
+                    text: 'Descarga de tabla como PNG no está disponible.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
@@ -135,8 +159,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Define filtros iniciales para ofrecer una primera vista util.
     function applyDefaultFilters() {
         const now = new Date();
-        typeSelect.value = 'payments';
-        viewSelect.value = 'table';
+        typeSelect.value = 'balance';
+        viewSelect.value = 'monthly-financial-pdf';
         monthSelect.value = String(now.getMonth() + 1);
 
         const currentYear = String(now.getFullYear());
@@ -146,21 +170,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Identifica si el modo activo corresponde al reporte mensual formal PDF.
     function isMonthlyPdfType() {
-        return typeSelect.value === 'monthly-financial-pdf';
+        return viewSelect.value === 'monthly-financial-pdf';
     }
 
     // Ajusta controles de interfaz segun restricciones del tipo de reporte.
     function syncControlsForType() {
         const monthlyPdf = isMonthlyPdfType();
-        const viewGroup = viewSelect.closest('.filter-group');
 
+        typeSelect.disabled = monthlyPdf;
         if (monthlyPdf) {
-            viewSelect.value = 'table';
-            viewSelect.disabled = true;
-            if (viewGroup) viewGroup.style.display = 'none';
-        } else {
-            viewSelect.disabled = false;
-            if (viewGroup) viewGroup.style.display = '';
+            typeSelect.value = 'balance';
         }
     }
 
@@ -281,6 +300,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: false,
                     plugins: {
                         legend: { display: false }
                     },
@@ -313,6 +333,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
                 plugins: {
                     legend: { position: 'top' }
                 },
@@ -712,12 +733,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Orquesta validaciones y descarga del reporte mensual en PDF.
     async function handlePdfDownload() {
         if (typeof html2pdf === 'undefined') {
-            Swal.fire({ icon: 'warning', title: 'No disponible', text: 'La exportacion PDF no esta disponible en este navegador.' });
+            Swal.fire({
+                title: 'No disponible',
+                text: 'La exportación PDF no está disponible en este navegador.',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (monthSelect.value === 'any') {
-            Swal.fire({ icon: 'info', title: 'Selecciona un mes', text: 'Para el reporte PDF mensual necesitas elegir un mes especifico.' });
+            Swal.fire({
+                title: 'Selecciona un mes',
+                text: 'Para el reporte PDF mensual necesitas elegir un mes específico.',
+                icon: 'info',
+                confirmButtonColor: '#0099ff',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -725,7 +758,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedMonth = Number(monthSelect.value);
 
         if (!selectedYear || !selectedMonth) {
-            Swal.fire({ icon: 'info', title: 'Filtros incompletos', text: 'Selecciona ano y mes para descargar el PDF.' });
+            Swal.fire({
+                title: 'Filtros incompletos',
+                text: 'Selecciona año y mes para descargar el PDF.',
+                icon: 'info',
+                confirmButtonColor: '#0099ff',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -749,7 +788,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 .save();
         } catch (error) {
             console.error('Error al exportar PDF:', error);
-            Swal.fire({ icon: 'error', title: 'No se pudo generar el PDF', text: 'Intenta nuevamente. Si persiste, recarga la pagina.' });
+            Swal.fire({
+                title: 'No se pudo generar el PDF',
+                text: 'Intenta nuevamente. Si persiste, recarga la página.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         }
     }
 

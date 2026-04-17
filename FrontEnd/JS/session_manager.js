@@ -58,6 +58,35 @@ function showUserMessage(title, message, icon = 'warning') {
     return Promise.resolve();
 }
 
+// Desactiva las animaciones de SweetAlert2 para mantener la interfaz estática.
+function disableSwalAnimations() {
+    if (typeof Swal === 'undefined' || !Swal || typeof Swal.fire !== 'function') return;
+    if (window.__adiSwalAnimationsDisabled) return;
+
+    const nativeFire = Swal.fire.bind(Swal);
+    Swal.fire = (...args) => {
+        if (!args.length) {
+            return nativeFire({
+                showClass: { popup: '' },
+                hideClass: { popup: '' }
+            });
+        }
+
+        const firstArg = args[0];
+        if (firstArg && typeof firstArg === 'object' && !Array.isArray(firstArg)) {
+            return nativeFire({
+                showClass: { popup: '' },
+                hideClass: { popup: '' },
+                ...firstArg
+            });
+        }
+
+        return nativeFire(...args);
+    };
+
+    window.__adiSwalAnimationsDisabled = true;
+}
+
 // Intercepta fetch para adjuntar encabezado de sesion en llamadas API internas.
 function patchApiFetchHeaders() {
     if (window.__adiFetchPatched) return;
@@ -126,6 +155,7 @@ window.ADIAuth = {
 };
 
 patchApiFetchHeaders();
+disableSwalAnimations();
 
 window.addEventListener('pageshow', async function () {
     const user = safeParseUserSession();

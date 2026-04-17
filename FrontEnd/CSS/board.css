@@ -24,6 +24,7 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    color: var(--adi-text);
 }
 
 .top-nav {
@@ -32,16 +33,19 @@ body {
     background-color: var(--adi-surface);
     border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0.75rem 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
     height: 5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .nav-brand img {
@@ -56,12 +60,22 @@ body {
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100% - 16rem);
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 
 .nav-icon-btn {
@@ -75,12 +89,11 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: color 0.2s ease;
     border-radius: 0.4rem;
 }
 
 .nav-icon-btn:hover {
-    color: var(--adi-olive);
+    color: var(--adi-accent);
 }
 
 .material-symbols-outlined {
@@ -91,50 +104,23 @@ body {
     width: 100%;
     max-width: 90rem;
     margin: 0 auto;
-    padding: 1.4rem 1.2rem 1.8rem;
+    padding: 1.5rem 1.2rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-select {
-    padding: 0.35rem 2rem 0.35rem 0.9rem;
-    border-radius: 1rem;
-    border: 0.0625rem solid #E8D4BA;
-    background-color: #EEC9A6;
-    color: #5E4B37;
-    font-size: 1rem;
-    cursor: pointer;
-    min-width: 10.625rem;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ED7A13' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 0.75rem;
-    transition: border-color 0.2s ease;
-}
-
-select:focus {
-    outline: none;
-    border-color: var(--adi-accent);
-    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
-}
-
-option {
-    color: #5E4B37;
-}
-
 .selects {
     width: min(100%, 76rem);
-    background-color: #F1F1F1;
+    background-color: #F5F5F5;
     padding: 1rem 1.2rem;
     border-radius: 1rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+    border: 0.0625rem solid #E1E1E1;
+    box-shadow: 0 0.125rem 0.45rem rgba(0, 0, 0, 0.08);
     display: flex;
     gap: 1rem;
     align-items: flex-end;
-    justify-content: space-between;
+    justify-content: flex-start;
     flex-wrap: wrap;
 }
 
@@ -152,23 +138,84 @@ option {
     margin-left: 0.7rem;
 }
 
+select {
+    padding: 0.35rem 2rem 0.35rem 0.9rem;
+    border-radius: 1rem;
+    border: 0.0625rem solid #E8D4BA;
+    background-color: #EEC9A6;
+    color: #5E4B37;
+    font-size: 1rem;
+    cursor: pointer;
+    min-width: 10.625rem;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ED7A13' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.75rem;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+option {
+    color: #5E4B37;
+}
+
+.btn-create-incident {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.5rem;
+    padding: 0.55rem 1.15rem;
+    margin-left: auto;
+    background-color: #EFE4D8;
+    color: #5E4B37;
+    text-decoration: none;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 0.0625rem solid #DFC6AB;
+    white-space: nowrap;
+}
+
+.btn-create-incident:hover {
+    background-color: #E8D5C3;
+    border-color: #D5B18E;
+    transform: translateY(-0.08rem);
+}
+
+.btn-create-incident .material-symbols-outlined {
+    font-size: 1.25rem;
+}
+
 .table-container {
-    margin-top: 2.5rem;
+    margin-top: 1.6rem;
     width: min(100%, 76rem);
-    border: none;
-    padding: 1.2rem 1rem 0.9rem;
-    background-color: #F7F7F7;
+    padding: 1rem 0.9rem 0.9rem;
+    background-color: #FAFAFA;
     border-radius: 0.9rem;
-    box-shadow: 0 0.125rem 0.625rem rgba(0, 0, 0, 0.2);
+    border: 0.0625rem solid #E4E4E4;
+    box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.08);
 }
 
 table {
     width: 100%;
     border-collapse: separate;
-    border-spacing: 0.5rem 0.625rem;
+    border-spacing: 0.5rem 0.5rem;
 }
 
-thead tr {
+thead tr,
+tbody tr {
     background-color: transparent;
 }
 
@@ -183,21 +230,18 @@ thead th {
     text-transform: uppercase;
 }
 
-tbody tr {
-    background-color: transparent;
-}
-
-tbody tr:hover {
-    background-color: transparent;
-}
-
 tbody td {
-    background-color: #EFEFEF;
-    border: 0.1875rem solid #EDCCAD;
+    background-color: #F2F2F2;
+    border: 0.125rem solid #E9D4BE;
     border-radius: 0.9rem;
-    padding: 0.7rem 1rem;
+    padding: 0.75rem 1rem;
     text-align: left;
     font-size: 0.95rem;
+}
+
+tbody tr.clickable-row:hover td {
+    background-color: #F8EFE5;
+    border-color: #E2BE98;
 }
 
 tbody td h2 {
@@ -208,7 +252,7 @@ tbody td h2 {
 }
 
 tbody td p {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     color: #222222;
     margin-bottom: 0.1rem;
 }
@@ -217,6 +261,7 @@ tbody td p {
     line-height: 1.35;
     word-break: break-word;
     overflow-wrap: anywhere;
+    color: #2F2F2F;
 }
 
 tbody td small,
@@ -227,15 +272,10 @@ tbody td small strong {
 
 tbody td:nth-child(2),
 tbody td:nth-child(3) {
-    font-size: 1.25rem;
-    color: #2A2A2A;
-}
-
-.bottom-actions {
-    width: min(100%, 76rem);
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 2rem;
+    font-size: 1.05rem;
+    color: #2C2C2C;
+    text-align: center;
+    font-weight: 500;
 }
 
 .pagination-controls {
@@ -259,6 +299,11 @@ tbody td:nth-child(3) {
     cursor: pointer;
 }
 
+.page-btn:hover:not(:disabled) {
+    background-color: #E7BC92;
+    border-color: #E8C7A6;
+}
+
 .page-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
@@ -271,9 +316,16 @@ tbody td:nth-child(3) {
     text-align: center;
 }
 
+.bottom-actions {
+    width: min(100%, 76rem);
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 2rem;
+}
+
 .btn-back {
-    background-color: #6A8042;
-    color: #FFFADD;
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
     text-decoration: none;
     border-radius: 0.75rem;
     width: 11.5rem;
@@ -283,17 +335,37 @@ tbody td:nth-child(3) {
     font-size: 1.2rem;
 }
 
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
 @media (max-width: 64rem) {
     .main-container {
         padding: 1.1rem 0.9rem 1.4rem;
     }
 
     .table-container {
-        margin-top: 1.2rem;
+        margin-top: 1rem;
     }
 
     .bottom-actions {
         margin-top: 1.2rem;
+    }
+}
+
+@media (max-width: 48rem) {
+    .top-nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+        max-width: calc(100% - 8rem);
+    }
+
+    .nav-actions {
+        gap: 0.45rem;
     }
 }
 
@@ -306,6 +378,12 @@ tbody td:nth-child(3) {
         flex: 1 1 100%;
     }
 
+    .btn-create-incident {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.1rem;
+    }
+
     .bottom-actions {
         justify-content: center;
     }
@@ -313,73 +391,5 @@ tbody td:nth-child(3) {
     .btn-back {
         width: 100%;
         max-width: 12rem;
-    }
-}
-
-/* === ADI Light Refresh === */
-:root {
-    --adi-olive: #6A8042;
-    --adi-olive-dark: #5D723B;
-    --adi-accent: #ED7A13;
-    --adi-cream: #FFFADD;
-    --adi-surface: #F7F7F7;
-    --adi-text: #111111;
-}
-
-body {
-    color: var(--adi-text);
-}
-
-.top-nav,
-nav {
-    background-color: var(--adi-surface);
-}
-
-.nav-title {
-    font-family: 'Outfit', sans-serif;
-}
-
-.nav-icon-btn:hover,
-nav a:hover {
-    color: var(--adi-accent);
-}
-
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
-}
-
-.btn-back {
-    background-color: var(--adi-olive);
-    color: var(--adi-cream);
-}
-
-.btn-back:hover {
-    background-color: var(--adi-olive-dark);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--adi-accent);
-    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
-}
-
-@media (max-width: 48rem) {
-    .top-nav,
-    nav {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .nav-title {
-        font-size: 1.2rem;
     }
 }

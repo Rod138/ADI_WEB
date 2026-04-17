@@ -6,6 +6,29 @@
 
 import supabase from '../dbconfig.js';
 
+const parseSessionUserId = (req) => {
+    const raw = req.get('x-session-user-id') || req.cookies?.session_user_id;
+    const parsed = parseInt(raw, 10);
+    if (Number.isNaN(parsed) || parsed <= 0) {
+        return null;
+    }
+    return parsed;
+};
+
+const getSessionUser = async (req) => {
+    const userId = parseSessionUserId(req);
+    if (!userId) return null;
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('id, rol_id, dep_id')
+        .eq('id', userId)
+        .single();
+
+    if (error || !data) return null;
+    return data;
+};
+
 // Registra un gasto operativo de torre con evidencia visual obligatoria.
 export const createTowerExpense = async (req, res) => {
     try {
@@ -312,6 +335,9 @@ export const updatePaymentReceipt = async (req, res) => {
 // Compone dataset base (departamentos, cuotas y comprobantes) para el modulo de pagos.
 export const getQuotaPaymentData = async (req, res) => {
     try {
+        const sessionUser = await getSessionUser(req);
+        const isManager = Number(sessionUser?.rol_id || 0) >= 2;
+
         const [departmentsRes, quotasRes, receiptsRes] = await Promise.all([
             supabase
                 .from('departments')
@@ -332,16 +358,24 @@ export const getQuotaPaymentData = async (req, res) => {
         }
 
         const departmentsMap = Object.fromEntries((departmentsRes.data || []).map(d => [d.id, d.name]));
-        const receipts = (receiptsRes.data || []).map(r => ({
+        const allReceipts = (receiptsRes.data || []).map(r => ({
             ...r,
             department_name: departmentsMap[r.dep_id] || `DEP ${r.dep_id}`
         }));
 
+        const visibleDepartments = isManager
+            ? (departmentsRes.data || [])
+            : (departmentsRes.data || []).filter(d => Number(d.id) === Number(sessionUser?.dep_id));
+
+        const visibleReceipts = isManager
+            ? allReceipts
+            : allReceipts.filter(r => Number(r.dep_id) === Number(sessionUser?.dep_id));
+
         return res.status(200).json({
             success: true,
-            departments: departmentsRes.data || [],
+            departments: visibleDepartments,
             quotas: quotasRes.data || [],
-            receipts
+            receipts: visibleReceipts
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno.' });
@@ -352,8 +386,12 @@ export const getQuotaPaymentData = async (req, res) => {
 export const createQuotaPayment = async (req, res) => {
     try {
         const { dep_id, year, month, amount_paid, amount_expected } = req.body;
+        const sessionUser = await getSessionUser(req);
+        const isManager = Number(sessionUser?.rol_id || 0) >= 2;
 
-        const depIdNum = parseInt(dep_id, 10);
+        const depIdNum = isManager
+            ? parseInt(dep_id, 10)
+            : parseInt(sessionUser?.dep_id, 10);
         const yearNum = parseInt(year, 10);
         const amountPaidNum = parseFloat(amount_paid);
         const amountExpectedNum = parseFloat(amount_expected);

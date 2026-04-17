@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -28,21 +28,15 @@
             color: #5D723B;
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
-            min-width: 0;
-            max-width: min(15rem, 45vw);
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
             background: #6A8042;
         }
         .role-badge #user-role {
-            display: inline-block;
-            max-width: 10.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
     </style>
 </head>
@@ -51,7 +45,7 @@
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">ADMINISTRACIÓN DE DEPARTAMENTOS</div>
+        <div class="nav-title">DEPARTAMENTOS</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -72,13 +66,13 @@
                 <div class="filter-group">
                     <label for="dep-select">Departamento</label>
                     <select id="dep-select">
-                        <option value="">— Selecciona un departamento —</option>
+                        <option value="">- Selecciona un departamento -</option>
                     </select>
                 </div>
                 <div class="filter-group" id="user-filter-group">
                     <label for="user-select">Usuario</label>
                     <select id="user-select" disabled>
-                        <option value="">— Selecciona un usuario —</option>
+                        <option value="">- Selecciona un usuario -</option>
                     </select>
                 </div>
             </div>
@@ -88,11 +82,11 @@
                     <h3 class="card-title">Departamento</h3>
                     <div class="info-row">
                         <span class="info-label">Nombre</span>
-                        <span class="info-value" id="dep-name">�?"</span>
+                        <span class="info-value" id="dep-name">-</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Estado</span>
-                        <span class="info-value" id="dep-status">�?"</span>
+                        <span class="info-value" id="dep-status">-</span>
                     </div>
 
                     <div id="dep-edit-section" style="display:none">
@@ -116,7 +110,7 @@
                 <div class="user-card" id="user-card">
                     <div class="card-title-row">
                         <h3 class="card-title">Usuario</h3>
-                        <button class="create-user-btn" id="create-user-btn" style="display:none">+ Crear usuario</button>
+                        <button class="create-user-btn" id="create-user-btn" style="display:none">+ Crear residente</button>
                     </div>
                     <div id="user-view">
                         <!-- populated by JS -->

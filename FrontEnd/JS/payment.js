@@ -82,27 +82,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         const amountExpected = parseFloat(amountExpectedInput.value);
 
         if (!depId) {
-            Swal.fire({ icon: 'warning', title: 'Sin departamentos disponibles', text: 'Solo puedes registrar departamentos que no han pagado en ese mes y año.' });
+            Swal.fire({
+                title: 'Sin departamentos',
+                text: 'No hay departamentos pendientes de pago en ese mes y año',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (!month) {
-            Swal.fire({ icon: 'warning', title: 'Falta mes', text: 'Selecciona el mes correspondiente.' });
+            Swal.fire({
+                title: 'Mes faltante',
+                text: 'Selecciona el mes correspondiente',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (isNaN(year) || year < 2000) {
-            Swal.fire({ icon: 'warning', title: 'Año inválido', text: 'Ingresa un año válido.' });
+            Swal.fire({
+                title: 'Año inválido',
+                text: 'Ingresa un año válido (desde 2000)',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (isNaN(amountPaid) || amountPaid < 0) {
-            Swal.fire({ icon: 'warning', title: 'Cantidad pagada invalida', text: 'Ingresa una cantidad pagada valida.' });
+            Swal.fire({
+                title: 'Cantidad inválida',
+                text: 'Ingresa una cantidad pagada válida',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (isNaN(amountExpected) || amountExpected <= 0) {
-            Swal.fire({ icon: 'warning', title: 'Cantidad esperada invalida', text: 'Ingresa la cuota esperada.' });
+            Swal.fire({
+                title: 'Cantidad esperada inválida',
+                text: 'Ingresa la cuota esperada.',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -123,22 +153,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const result = await r.json();
             if (!result.success) {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message || 'No se pudo guardar el pago.' });
+                Swal.fire({
+                    title: 'Error al guardar',
+                    text: result.message || 'No se pudo guardar el pago.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
             await Swal.fire({
-                icon: 'success',
                 title: 'Pago guardado',
-                text: 'El pago de cuota se registro correctamente.',
+                text: 'El pago de cuota se registró correctamente.',
+                icon: 'success',
                 timer: 1600,
                 timerProgressBar: true,
-                showConfirmButton: false
+                showConfirmButton: false,
+                confirmButtonColor: '#6A8042'
             });
 
             refreshData();
         } catch (error) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red al guardar.' });
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo guardar el pago.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         } finally {
             saveBtn.disabled = false;
         }

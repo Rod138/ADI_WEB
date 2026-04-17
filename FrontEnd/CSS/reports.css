@@ -31,10 +31,11 @@ body {
     background-color: var(--adi-surface);
     border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0.75rem 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 
 .nav-title {
@@ -44,12 +45,22 @@ body {
     font-weight: 600;
     color: var(--adi-text);
     letter-spacing: 0.02em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100% - 16rem);
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+    margin-left: auto;
 }
 
 .role-badge {
@@ -66,11 +77,9 @@ body {
     color: #5D723B;
     text-transform: uppercase;
     letter-spacing: 0.03125rem;
-    min-width: 0;
-    max-width: min(15rem, 45vw);
 }
 
-.role-badge span {
+.role-badge > span:first-child {
     width: 0.5rem;
     height: 0.5rem;
     border-radius: 50%;
@@ -78,11 +87,7 @@ body {
 }
 
 .role-badge #user-role {
-    display: inline-block;
-    max-width: 10.5rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
 }
 
 .nav-icon-btn {
@@ -94,7 +99,6 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: color 0.2s ease;
     border-radius: 0.4rem;
 }
 
@@ -106,6 +110,8 @@ body {
     display: flex;
     align-items: center;
     height: 5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .nav-brand img {
@@ -166,7 +172,6 @@ body {
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 0.75rem;
-    transition: border-color 0.2s ease;
     cursor: pointer;
 }
 
@@ -277,7 +282,6 @@ body {
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
     font-family: 'Outfit', sans-serif;
     text-transform: uppercase;
 }
@@ -301,7 +305,6 @@ body {
     font-weight: 700;
     font-family: 'Outfit', sans-serif;
     text-transform: uppercase;
-    transition: background-color 0.2s ease;
 }
 
 .btn-back:hover {
@@ -416,7 +419,6 @@ nav a:hover {
 .update-btn,
 .page-btn,
 button {
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
 .btn-back {
@@ -445,5 +447,11 @@ textarea:focus {
 
     .nav-title {
         font-size: 1.2rem;
+    }
+}
+
+@media (max-width: 48rem) {
+    .nav-title {
+        max-width: calc(100% - 8rem);
     }
 }

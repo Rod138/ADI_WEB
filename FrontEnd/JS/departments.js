@@ -44,7 +44,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
     } catch {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo cargar la lista de departamentos.' });
+        Swal.fire({
+            title: 'Error al cargar',
+            text: 'No se pudo cargar la lista de departamentos',
+            icon: 'error',
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Aceptar'
+        });
     }
 
     // ── On department select change ──────────────────────────
@@ -86,7 +92,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (data.users.length > 0) userSelect.disabled = false;
             }
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los usuarios.' });
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudieron cargar los usuarios.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         }
     });
 
@@ -119,7 +131,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             depSaveBtn.onclick = async () => {
                 if (!depConfirmChk.checked) {
-                    Swal.fire({ icon: 'warning', title: 'Confirmación requerida', text: 'Marca el checkbox de confirmación antes de guardar.' });
+                    Swal.fire({
+                        title: 'Confirmación requerida',
+                        text: 'Marca el checkbox de confirmación antes de guardar.',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
                     return;
                 }
                 const activating = depInUseChk.checked && !dep.is_in_use;
@@ -130,7 +148,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 const result = await r.json();
                 if (result.success) {
-                    await Swal.fire({ icon: 'success', title: 'Actualizado', timer: 1600, timerProgressBar: true, showConfirmButton: false });
+                    await Swal.fire({
+                        title: 'Actualizado',
+                        text: 'Departamento actualizado correctamente.',
+                        icon: 'success',
+                        timer: 1600,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        confirmButtonColor: '#6A8042'
+                    });
                     // Full refresh in both cases
                     depSelect.dispatchEvent(new Event('change'));
                     if (activating) {
@@ -138,7 +164,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                         await showCreateUserForm(dep.id);
                     }
                 } else {
-                    Swal.fire({ icon: 'error', title: 'Error', text: result.message });
+                    Swal.fire({
+                        title: 'Error',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
                 }
             };
         } else {
@@ -163,17 +195,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Create user form (shown after activating dept) ──────
     // Presenta formulario de alta y envía usuario asociado al departamento activo.
     async function showCreateUserForm(depId) {
-        let roles = [];
-        try {
-            const r = await fetch('/api/roles');
-            const d = await r.json();
-            if (d.success) roles = d.roles;
-        } catch { /* silent */ }
-
-        const rolesOptions = roles.map(r =>
-            `<option value="${r.id}">${escapeHtml(r.name ?? String(r.id))}</option>`
-        ).join('');
-
         cardsRow.style.display = 'flex';
         userEditSec.style.display = 'none';
         userView.innerHTML = `
@@ -203,12 +224,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <label>Contraseña *</label>
                     <input type="password" id="new-password">
                 </div>
-                <div class="edit-field">
-                    <label>Rol *</label>
-                    <select id="new-rol">${rolesOptions}</select>
-                </div>
             </div>
-            <button class="save-btn" id="new-user-submit-btn">Crear usuario</button>
+            <button class="save-btn" id="new-user-submit-btn">Crear residente</button>
         `;
 
         document.getElementById('new-user-submit-btn').onclick = async () => {
@@ -219,12 +236,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 email:    document.getElementById('new-email').value.trim(),
                 phone:    document.getElementById('new-phone').value.trim(),
                 password: document.getElementById('new-password').value,
-                rol_id:   parseInt(document.getElementById('new-rol').value, 10),
+                rol_id:   1,
                 dep_id:   depId
             };
 
             if (!body.name || !body.email || !body.phone || !body.password) {
-                Swal.fire({ icon: 'warning', title: 'Campos requeridos', text: 'Completa nombre, email, telefono y contrasena. Los apellidos son opcionales.' });
+                Swal.fire({
+                    title: 'Campos requeridos',
+                    text: 'Completa nombre, email, teléfono y contraseña. Los apellidos son opcionales.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
@@ -235,34 +258,59 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             const result = await r.json();
             if (result.success) {
-                await Swal.fire({ icon: 'success', title: 'Usuario creado', timer: 1800, timerProgressBar: true, showConfirmButton: false });
+                await Swal.fire({
+                    title: 'Usuario creado',
+                    text: 'El nuevo usuario se creó correctamente.',
+                    icon: 'success',
+                    timer: 1800,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    confirmButtonColor: '#6A8042'
+                });
                 depSelect.dispatchEvent(new Event('change'));
                 await loadDeptCard(depId);
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message });
+                Swal.fire({
+                    title: 'Error',
+                    text: result.message,
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
             }
         };
     }
 
     // ── Load user card ───────────────────────────────────────
-    // Recupera detalle de un usuario para vista/edicion en tarjeta lateral.
+    // Recupera detalle de un usuario para vista detallada en tarjeta lateral.
     async function loadUserCard(userId) {
         try {
             const res  = await fetch(`/api/users/${encodeURIComponent(userId)}`);
             const data = await res.json();
             if (!data.success) {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message,
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
             renderUserCard(data.user, data.roles);
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
+            Swal.fire({
+                title: 'Error',
+                text: 'Fallo de red.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         }
     }
 
     // Construye vista de usuario y habilita acciones segun rol del sesionante.
     function renderUserCard(user, roles) {
-        const canEdit = session && (Number(session.rol_id) >= 3 || String(session.id) === String(user.id));
         const canDelete = session && Number(session.rol_id) >= 3;
 
         const fields = [
@@ -280,74 +328,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
         `).join('');
 
-        if (!canEdit) { userEditSec.style.display = 'none'; return; }
+        if (!canDelete) {
+            userEditSec.style.display = 'none';
+            return;
+        }
 
         userEditSec.style.display = 'block';
-        userConfirmChk.checked    = false;
-        userDeleteBtn.style.display = canDelete ? 'inline-flex' : 'none';
+        userSaveBtn.style.display = 'none';
+        userDeleteBtn.style.display = 'inline-flex';
 
-        document.getElementById('edit-name').value     = user.name   ?? '';
-        document.getElementById('edit-ap').value       = user.ap     ?? '';
-        document.getElementById('edit-am').value       = user.am     ?? '';
-        document.getElementById('edit-email').value    = user.email  ?? '';
-        document.getElementById('edit-phone').value    = user.phone  ?? '';
-
-        const rolSelect = document.getElementById('edit-rol');
-        rolSelect.innerHTML = (roles ?? []).map(r =>
-            `<option value="${r.id}" ${r.id === user.rol_id ? 'selected' : ''}>${escapeHtml(r.name ?? String(r.id))}</option>`
-        ).join('');
-
-        userSaveBtn.onclick = async () => {
-            if (!userConfirmChk.checked) {
-                Swal.fire({ icon: 'warning', title: 'Confirmación requerida', text: 'Marca el checkbox de confirmación antes de guardar.' });
-                return;
-            }
-
-            const body = {
-                name:   document.getElementById('edit-name').value.trim()  || null,
-                ap:     document.getElementById('edit-ap').value.trim()    || null,
-                am:     document.getElementById('edit-am').value.trim()    || null,
-                email:  document.getElementById('edit-email').value.trim() || null,
-                phone:  document.getElementById('edit-phone').value.trim() || null,
-                rol_id: parseInt(document.getElementById('edit-rol').value, 10),
-            };
-
-            const r = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const result = await r.json();
-            if (result.success) {
-                // Update view immediately with new values
-                const updatedUser = { ...user, ...body };
-                const fields = [
-                    ['Nombre',           updatedUser.name],
-                    ['Apellido paterno', updatedUser.ap],
-                    ['Apellido materno', updatedUser.am ?? '—'],
-                    ['Email',            updatedUser.email],
-                    ['Teléfono',         updatedUser.phone],
-                ];
-                userView.innerHTML = fields.map(([label, val]) => `
-                    <div class="info-row">
-                        <span class="info-label">${escapeHtml(label)}</span>
-                        <span class="info-value">${escapeHtml(val ?? '—')}</span>
-                    </div>
-                `).join('');
-                userConfirmChk.checked = false;
-                await Swal.fire({ icon: 'success', title: 'Guardado', timer: 1600, timerProgressBar: true, showConfirmButton: false });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message });
-            }
-        };
+        const editGrid = userEditSec.querySelector('.edit-grid');
+        const subtitle = userEditSec.querySelector('.section-subtitle');
+        const confirmLabel = userConfirmChk.closest('label');
+        if (editGrid) editGrid.style.display = 'none';
+        if (subtitle) subtitle.textContent = 'Administrar usuario';
+        if (confirmLabel) confirmLabel.style.display = 'none';
 
         userDeleteBtn.onclick = async () => {
             if (!canDelete) return;
 
             const confirm = await Swal.fire({
                 icon: 'warning',
-                title: 'Eliminar usuario',
-                text: 'Se resetearán los datos del usuario y su dep_id pasará a null. Esta acción no elimina el registro.',
+                title: 'Eliminar residente',
+                text: 'El residente se desasignará del departamento. Esta acción no elimina el registro.',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, eliminar',
                 cancelButtonText: 'Cancelar'
@@ -362,16 +365,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (result.success) {
                 await Swal.fire({
-                    icon: 'success',
                     title: 'Usuario eliminado',
+                    text: 'El usuario se eliminó correctamente.',
+                    icon: 'success',
                     timer: 1600,
                     timerProgressBar: true,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    confirmButtonColor: '#6A8042'
                 });
                 userSelect.value = '';
                 depSelect.dispatchEvent(new Event('change'));
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo eliminar el usuario.' });
+                Swal.fire({
+                    title: 'Error',
+                    text: result.message ?? 'No se pudo eliminar el usuario.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
             }
         };
     }

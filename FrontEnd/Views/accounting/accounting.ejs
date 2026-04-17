@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,25 +27,19 @@
             color: #5D723B;
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
-            min-width: 0;
-            max-width: min(15rem, 45vw);
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
             background: #6A8042;
         }
         .role-badge #user-role {
-            display: inline-block;
-            max-width: 10.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
     </style>
 </head>
-<body data-min-role="2">
+<body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
@@ -70,19 +64,27 @@
 
     <main class="main-container accounting-page">
         <section class="cards-grid" aria-label="Opciones de contabilidad">
-            <a href="/accounting/payment" class="menu-card button-1">
-                <span>REGISTRAR PAGO DE CUOTA</span>
+            <a href="#" class="menu-card button-2" id="card-my-quota" onclick="handleMyQuota(event)">
+                <span>MIS CUOTAS</span>
             </a>
-            <a href="/accounting/receipts-board" class="menu-card button-2">
-                <span>REVISAR COMPROBANTE DE CUOTA</span>
+
+            <a href="/accounting/expense" class="menu-card button-3" id="card-expense-manage" data-admin-only="true">
+                <span>GASTOS DEL CONDOMINIO</span>
             </a>
-            <a href="/accounting/expense" class="menu-card button-3">
-                <span>LEVANTAR GASTO</span>
+
+            <a href="#" class="menu-card button-3 coming-soon" id="card-expense-resident" data-feature="Gastos del condominio" style="display:none">
+                <span>GASTOS DEL CONDOMINIO</span>
             </a>
-            <a href="/accounting/tower-fund" class="menu-card button-4">
+
+            <a href="/accounting/receipts-board" class="menu-card button-4" data-admin-only="true">
+                <span>CUOTAS DE RESIDENTES</span>
+            </a>
+
+            <a href="/accounting/tower-fund" class="menu-card button-4" data-admin-only="true">
                 <span>CONFIGURAR FONDO INICIAL</span>
             </a>
-            <a href="/accounting/monthly-quota" class="menu-card button-5">
+
+            <a href="/accounting/monthly-quota" class="menu-card button-5" data-admin-only="true">
                 <span>CONFIGURAR CUOTA MENSUAL</span>
             </a>
         </section>
@@ -97,14 +99,45 @@
     </footer>
 
     <script>
+        function handleMyQuota(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'En desarrollo',
+                text: 'Esta funcionalidad está siendo desarrollada',
+                icon: 'info',
+                confirmButtonColor: '#0099ff',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.ADIAuth?.getCurrentUser?.();
+            const canManage = user && Number(user.rol_id) >= 2;
+
+            if (user) {
+                const roleSpan = document.getElementById('user-role');
+                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+            }
+
+            document.querySelectorAll('[data-admin-only="true"]').forEach((el) => {
+                el.style.display = canManage ? '' : 'none';
+            });
+
+            const residentExpenseCard = document.getElementById('card-expense-resident');
+            if (residentExpenseCard) {
+                residentExpenseCard.style.display = canManage ? 'none' : '';
+            }
+        });
+
         document.querySelectorAll('.coming-soon').forEach(function (card) {
             card.addEventListener('click', function (e) {
                 e.preventDefault();
                 Swal.fire({
-                    titleText: this.dataset.feature + ' proximamente',
-                    text: 'Esta seccion aun no esta disponible.',
+                    title: this.dataset.feature + ' próximamente',
+                    text: 'Esta sección aún no está disponible',
                     icon: 'info',
-                    confirmButtonText: 'Entendido'
+                    confirmButtonColor: '#0099ff',
+                    confirmButtonText: 'Aceptar'
                 });
             });
         });

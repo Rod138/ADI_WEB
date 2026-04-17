@@ -4,6 +4,14 @@
  * Seguridad: limpia sesion previa antes de iniciar un nuevo acceso.
  */
 
+// Estilos consistentes de alerta para toda la aplicación
+const AlertConfig = {
+    error: { icon: 'error', confirmButtonColor: '#d33' },
+    success: { icon: 'success', confirmButtonColor: '#6A8042' },
+    warning: { icon: 'warning', confirmButtonColor: '#ED7A13' },
+    info: { icon: 'info', confirmButtonColor: '#0099ff' }
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     // Al llegar al login se destruye cualquier sesión activa
     sessionStorage.removeItem('user');
@@ -20,12 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (this.value.length > 320) {
                 this.value = this.value.slice(0, 320);
                 Swal.fire({
-                    text: "Debe ingresar máximo 320 carácteres",
-                    icon: "error",
-                    timer: 5000,
+                    title: 'Límite de caracteres',
+                    text: "Máximo 320 carácteres en el correo",
+                    ...AlertConfig.warning,
+                    timer: 3000,
                     timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    showConfirmButton: false
                 });
             }
         });
@@ -37,12 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (this.value.length > 32) {
                 this.value = this.value.slice(0, 32);
                 Swal.fire({
-                    text: "Debe ingresar máximo 32 carácteres",
-                    icon: "error",
-                    timer: 5000,
+                    title: 'Límite de caracteres',
+                    text: "Máximo 32 carácteres en la contraseña",
+                    ...AlertConfig.warning,
+                    timer: 3000,
                     timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    showConfirmButton: false
                 });
             }
         });
@@ -57,34 +65,26 @@ document.addEventListener("DOMContentLoaded", () => {
             // Correo
             if (!email.value || email.value === "") {
                 Swal.fire({
-                    titleText: "Campo vacío",
-                    text: "Debe llenar el campo del correo electrónico",
-                    icon: "error",
-                    timer: 5000,
-                    timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    title: "Campo vacío",
+                    text: "Ingresa tu correo electrónico",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
             } else if (!email_regex.test(email.value)) {
                 Swal.fire({
-                    titleText: "Correo inválido",
-                    text: "Ingrese un correo electrónico válido",
-                    icon: "error",
-                    timer: 5000,
-                    timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    title: "Correo inválido",
+                    text: "El correo no tiene un formato válido",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
             } else if (email.value.length > 320) {
                 Swal.fire({
-                    text: "Debe ingresar máximo 320 carácteres en el campo del correo electrónico",
-                    icon: "error",
-                    timer: 5000,
-                    timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    title: "Correo muy largo",
+                    text: "Máximo 320 carácteres",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
             }
@@ -92,23 +92,18 @@ document.addEventListener("DOMContentLoaded", () => {
             // Contraseña
             if (!password.value || password.value === "") {
                 Swal.fire({
-                    titleText: "Campo vacío",
-                    text: "Debe llenar el campo de la contraseña",
-                    icon: "error",
-                    timer: 5000,
-                    timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    title: "Campo vacío",
+                    text: "Ingresa tu contraseña",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
             } else if (password.value.length > 32) {
                 Swal.fire({
-                    text: "Debe ingresar máximo 32 carácteres en el campo de la contraseña",
-                    icon: "error",
-                    timer: 5000,
-                    timerProgressBar: true,
-                    draggable: true,
-                    theme: 'auto'
+                    title: "Contraseña muy larga",
+                    text: "Máximo 32 carácteres",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
             }
@@ -133,33 +128,27 @@ async function login(correo, contrasenna) {
         if (data.success) {
             sessionStorage.setItem('user', JSON.stringify(data.user));
             await Swal.fire({
-                titleText: `Bienvenido, ${data.user.name}`,
-                icon: 'success',
+                title: `¡Bienvenido, ${data.user.name}!`,
+                ...AlertConfig.success,
                 timer: 2000,
                 timerProgressBar: true,
-                theme: 'auto'
+                showConfirmButton: false
             });
             window.location.href = '/main';
         } else {
             Swal.fire({
-                titleText: 'Error',
-                text: data.message,
-                icon: 'error',
-                timer: 5000,
-                timerProgressBar: true,
-                draggable: true,
-                theme: 'auto'
+                title: 'Error de autenticación',
+                text: data.message || 'Correo o contraseña incorrectos',
+                ...AlertConfig.error,
+                confirmButtonText: 'Reintentar'
             });
         }
     } catch (error) {
         Swal.fire({
-            titleText: 'Error de conexión',
+            title: 'Error de conexión',
             text: 'No se pudo conectar con el servidor',
-            icon: 'error',
-            timer: 5000,
-            timerProgressBar: true,
-            draggable: true,
-            theme: 'auto'
+            ...AlertConfig.error,
+            confirmButtonText: 'Aceptar'
         });
     }
 }

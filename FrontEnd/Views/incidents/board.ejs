@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -29,21 +29,15 @@
             color: #5D723B;
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
-            min-width: 0;
-            max-width: min(15rem, 45vw);
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
             background: #6A8042;
         }
         .role-badge #user-role {
-            display: inline-block;
-            max-width: 10.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
     </style>
 </head>
@@ -94,6 +88,17 @@
                     <option value="timeup">Fecha ascendente</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label for="creator-filter">Creador</label>
+                <select name="creator-filter" id="creator-filter">
+                    <option value="any">Todos</option>
+                    <option value="mine">Mis incidencias</option>
+                </select>
+            </div>
+            <a href="/incident-create" class="btn-create-incident" aria-label="Crear incidencia">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>CREAR</span>
+            </a>
         </div>
         <div class="table-container">
             <table>

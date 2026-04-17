@@ -94,20 +94,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                     const patchData = await patchRes.json();
                     if (!patchData.success) {
-                        Swal.fire({ icon: 'error', title: 'Error', text: patchData.message || 'No se pudo actualizar.' });
+                        Swal.fire({
+                            title: 'Error al actualizar',
+                            text: patchData.message || 'No se pudo actualizar.',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Aceptar'
+                        });
                         return;
                     }
 
                     await Swal.fire({
-                        icon: 'success',
                         title: 'Comprobante actualizado',
-                        text: check.checked ? 'El comprobante quedo validado.' : 'El comprobante quedo marcado como no validado.',
+                        text: check.checked ? 'El comprobante quedó validado.' : 'El comprobante quedó marcado como no validado.',
+                        icon: 'success',
                         timer: 1600,
                         timerProgressBar: true,
-                        showConfirmButton: false
+                        showConfirmButton: false,
+                        confirmButtonColor: '#6A8042'
                     });
                 } catch (error) {
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
+                    Swal.fire({
+                        title: 'Error de conexión',
+                        text: 'Fallo de red.',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
                 } finally {
                     saveBtn.disabled = false;
                 }

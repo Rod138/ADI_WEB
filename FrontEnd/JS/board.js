@@ -10,10 +10,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const areaSelect = document.getElementById('area');
     const statusSelect = document.getElementById('status');
     const orderSelect = document.getElementById('order-by');
+    const creatorSelect = document.getElementById('creator-filter');
     const paginationBox = document.getElementById('incidents-pagination');
     const prevBtn = document.getElementById('inc-prev-btn');
     const nextBtn = document.getElementById('inc-next-btn');
     const pageIndicator = document.getElementById('inc-page-indicator');
+    const currentUser = window.ADIAuth?.getCurrentUser?.();
 
     let allIncidents = [];
     let filteredIncidents = [];
@@ -49,6 +51,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     areaSelect.addEventListener('change', applyFilters);
     statusSelect.addEventListener('change', applyFilters);
     orderSelect.addEventListener('change', applyFilters);
+    if (creatorSelect) creatorSelect.addEventListener('change', applyFilters);
 
     // Llena combos de filtro con catalogos recibidos del backend.
     function populateFilters(types, areas, statuses) {
@@ -86,6 +89,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const status = statusSelect.value;
         if (status !== 'any') filtered = filtered.filter(i => String(i.status_id) === String(status));
+
+        // Permite mostrar solo incidencias creadas por el usuario autenticado.
+        const creator = creatorSelect?.value ?? 'any';
+        if (creator === 'mine' && currentUser?.id) {
+            filtered = filtered.filter(i => String(i.usr_id) === String(currentUser.id));
+        }
 
         const order = orderSelect.value;
         filtered.sort((a, b) => {

@@ -7,7 +7,7 @@
 import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident } from './controllers/incidents.js';
+import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
 import { createTowerExpense, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
@@ -57,9 +57,21 @@ router.get('/incident-board', (req, res) => {
     res.render('incidents/board');
 });
 
+router.get('/incident-create', (req, res) => {
+    const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+    const cloudinaryUploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
+
+    res.render('incidents/create', {
+        cloudinaryCloudName,
+        cloudinaryUploadPreset
+    });
+});
+
 router.get('/api/incidents', getIncidents);
 router.get('/api/incidents/:id', getIncidentById);
-router.patch('/api/incidents/:id', requireMinRole(3), updateIncident);
+router.post('/api/incidents', requireMinRole(1), createIncident);
+router.patch('/api/incidents/:id', requireMinRole(1), updateIncident);
+router.delete('/api/incidents/:id', requireMinRole(1), deleteIncident);
 
 router.get('/incident', (req, res) => {
     res.render('incidents/incident');
@@ -110,7 +122,7 @@ router.get('/api/accounting/receipts', getPaymentReceipts);
 router.get('/api/accounting/receipts/:id', getPaymentReceiptById);
 router.patch('/api/accounting/receipts/:id', requireMinRole(2), updatePaymentReceipt);
 router.get('/api/accounting/payment-data', getQuotaPaymentData);
-router.post('/api/accounting/payment', requireMinRole(2), createQuotaPayment);
+router.post('/api/accounting/payment', requireMinRole(1), createQuotaPayment);
 router.get('/api/accounting/reports-data', getAccountingReportsData);
 
 router.get('/api/users', getUsers);

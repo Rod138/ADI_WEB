@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/receipts_board.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Tablon de Comprobantes</title>
+    <title>ADI - Tablón de Comprobantes</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/receipts_board.js" defer></script>
@@ -28,21 +28,15 @@
             color: #5D723B;
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
-            min-width: 0;
-            max-width: min(15rem, 45vw);
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
             background: #6A8042;
         }
         .role-badge #user-role {
-            display: inline-block;
-            max-width: 10.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
     </style>
 </head>
@@ -51,7 +45,7 @@
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">TABLON DE COMPROBANTES</div>
+        <div class="nav-title">TABLÓN DE COMPROBANTES</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>

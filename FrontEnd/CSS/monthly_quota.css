@@ -28,15 +28,18 @@ body {
     background-color: var(--adi-surface);
     border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0.75rem 1.5rem;
+    position: relative;
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
     height: 5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .nav-brand img {
@@ -49,12 +52,22 @@ body {
     font-size: 1.65rem;
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100% - 16rem);
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+    margin-left: auto;
 }
 
 .nav-icon-btn {
@@ -203,7 +216,6 @@ th {
 .btn-save,
 .btn-back,
 button {
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
 input:focus,
@@ -224,5 +236,11 @@ select:focus {
 
     .bottom-actions {
         justify-content: center;
+    }
+}
+
+@media (max-width: 48rem) {
+    .nav-title {
+        max-width: calc(100% - 8rem);
     }
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
-    <link rel="icon" type="image/png" href="./FrontEnd/IMG/favicon.png">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
     <title>ADI - Menú Principal</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
@@ -29,7 +29,7 @@
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
@@ -41,7 +41,7 @@
 <body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
-            <img src="./FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">MENÚ PRINCIPAL</div>
         <div class="nav-actions">
@@ -67,7 +67,12 @@
         <section class="cards-grid cards-count-<%= menuItems.length %>" aria-label="Accesos del sistema">
             <% menuItems.forEach(item => { %>
                 <a class="menu-card <%= item.button_class %>" href="<%= item.href %>">
-                    <span><%= item.title %></span>
+                    <div class="card-content">
+                        <h3 class="card-title"><%= item.title %></h3>
+                        <% if (item.subtitle) { %>
+                            <p class="card-subtitle"><%= item.subtitle %></p>
+                        <% } %>
+                    </div>
                 </a>
             <% }); %>
         </section>
@@ -80,10 +85,11 @@
             card.addEventListener('click', function (e) {
                 e.preventDefault();
                 Swal.fire({
-                    titleText: this.dataset.feature + ' próximamente',
+                    title: this.dataset.feature + ' próximamente',
                     text: 'Esta sección aún no está disponible.',
                     icon: 'info',
-                    confirmButtonText: 'Entendido'
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#6A8042'
                 });
             });
         });

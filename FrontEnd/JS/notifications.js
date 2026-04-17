@@ -144,7 +144,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const result = await response.json();
 
             if (!result.success) {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message || 'No se pudo borrar' });
+                Swal.fire({
+                    title: 'Error al borrar',
+                    text: result.message || 'No se pudo borrar.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
@@ -156,13 +162,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             Swal.fire({
+                title: 'Notificación eliminada',
+                text: 'La notificación se eliminó correctamente.',
                 icon: 'success',
-                title: 'Eliminada',
                 timer: 1200,
-                showConfirmButton: false
+                timerProgressBar: true,
+                showConfirmButton: false,
+                confirmButtonColor: '#6A8042'
             });
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo borrar' });
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo borrar la notificación.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         }
     });
 });

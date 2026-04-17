@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/incident.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Crear Incidencia</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+        }
+        .role-badge > span:first-child {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+        .role-badge #user-role {
+            white-space: normal;
+        }
+    </style>
+</head>
+
+<body
+    data-min-role="1"
+    data-cloudinary-cloud-name="<%= cloudinaryCloudName || '' %>"
+    data-cloudinary-upload-preset="<%= cloudinaryUploadPreset || '' %>">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">CREAR INCIDENCIA</div>
+        <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <span id="user-role">Rol</span>
+            </div>
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <form id="create-form" class="incident-card">
+            <div class="section-title">REPORTAR INCIDENCIA</div>
+
+            <div class="form-group">
+                <label for="description">DESCRIPCIÓN *</label>
+                <textarea id="description" name="description" maxlength="500" rows="5" placeholder="Describe el problema..." required></textarea>
+                <small id="desc-counter">0/500</small>
+            </div>
+
+            <div class="form-group">
+                <label for="type">TIPO DE INCIDENCIA *</label>
+                <select id="type" name="type" required>
+                    <option value="">Selecciona un tipo...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="area">ÁREA *</label>
+                <select id="area" name="area" required>
+                    <option value="">Selecciona un área...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="image">IMAGEN (Opcional)</label>
+                <div class="image-upload-box">
+                    <input type="file" id="image" name="image" accept="image/*" style="display:none">
+                    <div id="image-preview" class="image-preview-placeholder">
+                        <span class="material-symbols-outlined">image</span>
+                        <p>Clic para seleccionar imagen</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="button" id="cancel-btn" class="btn-back">CANCELAR</button>
+                <button type="submit" class="btn-submit">ENVIAR REPORTE</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.ADIAuth?.getCurrentUser?.();
+            if (user) {
+                const roleSpan = document.getElementById('user-role');
+                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+            }
+        });
+
+        const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
+        const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
+        const CLOUDINARY_IMAGE_UPLOAD_URL = CLOUDINARY_CLOUD_NAME
+            ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+            : '';
+
+        let typesCatalog = [];
+        let areasCatalog = [];
+
+        (async () => {
+            const form = document.getElementById('create-form');
+            const typeSelect = document.getElementById('type');
+            const areaSelect = document.getElementById('area');
+            const imageInput = document.getElementById('image');
+            const imagePreview = document.getElementById('image-preview');
+            const descTextarea = document.getElementById('description');
+            const descCounter = document.getElementById('desc-counter');
+            const cancelBtn = document.getElementById('cancel-btn');
+
+            // Load catalogs
+            try {
+                const res = await fetch('/api/incidents');
+                const data = await res.json();
+                if (!data.success) throw new Error('No se pudieron cargar los catálogos');
+
+                typesCatalog = data.types || [];
+                areasCatalog = data.areas || [];
+
+                // Populate selects
+                typesCatalog.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.id;
+                    opt.textContent = t.name || t.type || t.id;
+                    typeSelect.appendChild(opt);
+                });
+
+                areasCatalog.forEach(a => {
+                    const opt = document.createElement('option');
+                    opt.value = a.id;
+                    opt.textContent = a.name || a.area || a.id;
+                    areaSelect.appendChild(opt);
+                });
+            } catch (e) {
+                Swal.fire({
+                    title: 'Error al cargar',
+                    text: 'No se pudieron cargar los catálogos',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+
+            // Image upload
+            imagePreview.addEventListener('click', () => imageInput.click());
+            imageInput.addEventListener('change', (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        imagePreview.innerHTML = `<img src="${evt.target.result}" alt="preview" style="max-width:100%;max-height:150px;border-radius:0.5rem;">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Description counter
+            descTextarea.addEventListener('input', () => {
+                descCounter.textContent = `${descTextarea.value.length}/500`;
+            });
+
+            // Cancel
+            cancelBtn.addEventListener('click', () => window.history.back());
+
+            // Submit
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const description = descTextarea.value.trim();
+                const typeId = typeSelect.value;
+                const areaId = areaSelect.value;
+                const imageFile = imageInput.files?.[0];
+
+                if (!description || !typeId || !areaId) {
+                    Swal.fire({
+                        title: 'Validación',
+                        text: 'Completa todos los campos requeridos',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                try {
+                    let imageUrl = null;
+
+                    // Upload image to Cloudinary like mobile flow.
+                    if (imageFile) {
+                        const formData = new FormData();
+                        formData.append('file', imageFile, imageFile.name);
+                        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                        formData.append('folder', 'incidencias');
+
+                        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+                            throw new Error('Cloudinary no está configurado en el servidor.');
+                        }
+
+                        const cloudinaryResponse = await fetch(CLOUDINARY_IMAGE_UPLOAD_URL, {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const cloudinaryData = await cloudinaryResponse.json();
+
+                        if (!cloudinaryResponse.ok || !cloudinaryData?.secure_url) {
+                            throw new Error(cloudinaryData?.error?.message || 'No se pudo subir la imagen a Cloudinary.');
+                        }
+
+                        imageUrl = cloudinaryData.secure_url;
+                    }
+
+                    const response = await fetch('/api/incidents', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            description,
+                            type_id: parseInt(typeId),
+                            area_id: parseInt(areaId),
+                            image_url: imageUrl
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Éxito!',
+                            text: 'Incidencia reportada correctamente',
+                            timer: 2000
+                        }).then(() => {
+                            window.location.href = '/incident-board';
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: result.message || 'No se pudo crear la incidencia',
+                            icon: 'error',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Aceptar'
+                        });
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo crear la incidencia',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

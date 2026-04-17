@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -27,21 +27,15 @@
             color: #5D723B;
             text-transform: uppercase;
             letter-spacing: 0.03125rem;
-            min-width: 0;
-            max-width: min(15rem, 45vw);
         }
-        .role-badge span {
+        .role-badge > span:first-child {
             width: 0.5rem;
             height: 0.5rem;
             border-radius: 50%;
             background: #6A8042;
         }
         .role-badge #user-role {
-            display: inline-block;
-            max-width: 10.5rem;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            white-space: normal;
         }
     </style>
 </head>
@@ -87,8 +81,6 @@
             const id = params.get('id');
             const card = document.getElementById('incident-card');
             const user = JSON.parse(sessionStorage.getItem('user'));
-            const canEdit = user && Number(user.rol_id) >= 3;
-            document.getElementById('nav-title').textContent = canEdit ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
 
             if (!id) {
                 card.innerHTML = '<p class="error">No se especificó una incidencia.</p>';
@@ -105,6 +97,12 @@
                 }
 
                 const inc = data.incident;
+                const isAdmin = user && Number(user.rol_id) >= 3;
+                const isOwner = user && Number(user.id) === Number(inc.usr_id);
+                const canEdit = isAdmin || isOwner;
+                const canDelete = isAdmin || isOwner;
+
+                document.getElementById('nav-title').textContent = canEdit ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
                 const date = inc.created_at
                     ? new Date(inc.created_at).toLocaleString('es-MX', {
                         year: 'numeric', month: 'long', day: 'numeric',
@@ -134,13 +132,13 @@
 
                     <div class="info-grid">
                         <label>REPORTADO POR :</label>
-                        <input type="text" value="${escapeHtml(data.userName ?? '�?"')}" readonly>
+                        <input type="text" value="${escapeHtml(data.userName ?? '-')}" readonly>
 
                         <label>FECHA</label>
                         <input type="text" value="${date}" readonly>
 
                         <label>ÁREA</label>
-                        <input type="text" value="${escapeHtml(data.areaName)}" readonly>
+                        <input type="text" value="${escapeHtml(data.areaName)}" readonly id="view-area">
 
                         <label>COSTO</label>
                         <input type="text" value="${costText}" readonly>
@@ -151,70 +149,254 @@
 
                     ${canEdit ? `
                     <div class="update-section">
-                        <div class="update-title">ACTUALIZAR REPORTE :</div>
-                        <div class="update-row two-cols">
-                            <div>
-                                <label for="upd-status">ESTADO</label>
-                                <select id="upd-status">${statusOptions}</select>
+                        <div class="update-title">${isAdmin ? 'ACTUALIZAR REPORTE (ADMINISTRADOR)' : 'ACTUALIZAR REPORTE'} :</div>
+
+                        ${!isAdmin ? `
+                            <!-- Solo para Owners (no-admin) -->
+                            <div class="update-row">
+                                <label for="upd-description">DESCRIPCIÓN</label>
+                                <textarea id="upd-description" style="height: 80px; font-size: 0.9rem;">${descriptionText}</textarea>
                             </div>
-                            <div>
-                                <label for="upd-cost">COSTO</label>
-                                <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
+
+                            <div class="update-row two-cols">
+                                <div>
+                                    <label for="upd-area">ÁREA</label>
+                                    <select id="upd-area">
+                                        ${(data.areas ?? []).map(a => {
+                                            const sel = String(a.id) === String(inc.area_id) ? 'selected' : '';
+                                            return `<option value="${a.id}" ${sel}>${escapeHtml(a.name)}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="upd-type">TIPO</label>
+                                    <select id="upd-type">
+                                        ${(data.types ?? []).map(t => {
+                                            const sel = String(t.id) === String(inc.type_id) ? 'selected' : '';
+                                            return `<option value="${t.id}" ${sel}>${escapeHtml(t.name)}</option>`;
+                                        }).join('')}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="update-row">
-                            <label for="upd-notes">NOTAS <span id="char-counter">${notesText.length} / 150</span></label>
-                            <input type="text" id="upd-notes" maxlength="150" value="${notesText}">
-                        </div>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="upd-completed">
-                            MARCAR FECHA DE COMPLETADO COMO AHORA
-                        </label>
-                        <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
+
+                            <div class="button-row">
+                                <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
+                                ${canDelete ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                            </div>
+                        ` : `
+                            <!-- Solo para Admin -->
+                            <div class="update-row two-cols">
+                                <div>
+                                    <label for="upd-status">ESTADO</label>
+                                    <select id="upd-status">${statusOptions}</select>
+                                </div>
+                                <div>
+                                    <label for="upd-cost">COSTO</label>
+                                    <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
+                                </div>
+                            </div>
+                            <div class="update-row">
+                                <label for="upd-notes">NOTAS <span id="char-counter">${notesText.length} / 150</span></label>
+                                <input type="text" id="upd-notes" maxlength="150" value="${notesText}">
+                            </div>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="upd-completed">
+                                MARCAR FECHA DE COMPLETADO COMO AHORA
+                            </label>
+                            <div class="button-row">
+                                <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
+                                ${canDelete ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                            </div>
+                        `}
                     </div>
                     ` : ''}
                 `;
 
                 if (canEdit) {
-                    const notesInput = document.getElementById('upd-notes');
-                    const counter = document.getElementById('char-counter');
-                    notesInput.addEventListener('input', () => {
-                        counter.textContent = `${notesInput.value.length} / 150`;
-                    });
-
-                    document.getElementById('update-btn').addEventListener('click', async () => {
-                        const status_id = document.getElementById('upd-status').value;
-                        const notes = notesInput.value.trim();
-                        const costVal = document.getElementById('upd-cost').value;
-                        const set_completed_at = document.getElementById('upd-completed').checked;
-
-                        if (costVal !== '' && parseFloat(costVal) < 0) {
-                            Swal.fire({ icon: 'error', title: 'Costo inválido', text: 'El costo no puede ser negativo.' });
-                            return;
-                        }
-
-                        const body = { status_id };
-                        if (notes) body.notes = notes;
-                        if (costVal !== '') body.cost = costVal;
-                        if (set_completed_at) body.set_completed_at = true;
-
-                        try {
-                            const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
-                                method: 'PATCH',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(body)
+                    // Para Admin
+                    if (isAdmin) {
+                        const notesInput = document.getElementById('upd-notes');
+                        const counter = document.getElementById('char-counter');
+                        if (notesInput && counter) {
+                            notesInput.addEventListener('input', () => {
+                                counter.textContent = `${notesInput.value.length} / 150`;
                             });
-                            const result = await r.json();
-                            if (result.success) {
-                                await Swal.fire({ icon: 'success', title: 'Actualizado', text: 'Reporte actualizado correctamente.', timer: 1800, timerProgressBar: true, showConfirmButton: false });
-                                window.location.reload();
-                            } else {
-                                Swal.fire({ icon: 'error', title: 'Error', text: result.message ?? 'No se pudo actualizar.' });
-                            }
-                        } catch {
-                            Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red.' });
                         }
-                    });
+
+                        document.getElementById('update-btn').addEventListener('click', async () => {
+                            const status_id = document.getElementById('upd-status').value;
+                            const notes = document.getElementById('upd-notes')?.value?.trim() || '';
+                            const costVal = document.getElementById('upd-cost').value;
+                            const set_completed_at = document.getElementById('upd-completed')?.checked;
+
+                            if (costVal !== '' && parseFloat(costVal) < 0) {
+                                Swal.fire({
+                                    title: 'Costo inválido',
+                                    text: 'El costo no puede ser negativo.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            const body = { status_id };
+                            if (notes) body.notes = notes;
+                            if (costVal !== '') body.cost = costVal;
+                            if (set_completed_at) body.set_completed_at = true;
+
+                            try {
+                                const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(body)
+                                });
+                                const result = await r.json();
+                                if (result.success) {
+                                    await Swal.fire({
+                                        title: 'Actualizado',
+                                        text: 'Reporte actualizado correctamente.',
+                                        icon: 'success',
+                                        timer: 1800,
+                                        timerProgressBar: true,
+                                        showConfirmButton: false,
+                                        confirmButtonColor: '#6A8042'
+                                    });
+                                    window.location.reload();
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: result.message ?? 'No se pudo actualizar.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#d33',
+                                        confirmButtonText: 'Aceptar'
+                                    });
+                                }
+                            } catch {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Fallo de red.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        });
+                    } else {
+                        // Para Owner (no-admin)
+                        document.getElementById('update-btn').addEventListener('click', async () => {
+                            const description = document.getElementById('upd-description')?.value?.trim() || '';
+                            const area_id = document.getElementById('upd-area').value;
+                            const type_id = document.getElementById('upd-type').value;
+
+                            if (!description) {
+                                Swal.fire({
+                                    title: 'Campo requerido',
+                                    text: 'La descripción es obligatoria.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            const body = {
+                                description,
+                                area_id,
+                                type_id
+                            };
+
+                            try {
+                                const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify(body)
+                                });
+                                const result = await r.json();
+                                if (result.success) {
+                                    await Swal.fire({
+                                        title: 'Actualizado',
+                                        text: 'Reporte actualizado correctamente.',
+                                        icon: 'success',
+                                        timer: 1800,
+                                        timerProgressBar: true,
+                                        showConfirmButton: false,
+                                        confirmButtonColor: '#6A8042'
+                                    });
+                                    window.location.reload();
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: result.message ?? 'No se pudo actualizar.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#d33',
+                                        confirmButtonText: 'Aceptar'
+                                    });
+                                }
+                            } catch {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Fallo de red.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        });
+                    }
+
+                    const deleteBtn = document.getElementById('delete-btn');
+                    if (deleteBtn) {
+                        deleteBtn.addEventListener('click', async () => {
+                            const confirm = await Swal.fire({
+                                title: '¿Eliminar incidencia?',
+                                text: 'Esta acción no se puede deshacer',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#dc3545',
+                                confirmButtonText: 'Sí, eliminar',
+                                cancelButtonText: 'Cancelar'
+                            });
+
+                            if (confirm.isConfirmed) {
+                                try {
+                                    const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
+                                        method: 'DELETE',
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                    const result = await r.json();
+                                    if (result.success) {
+                                        await Swal.fire({
+                                            title: 'Eliminada',
+                                            text: 'Incidencia eliminada correctamente.',
+                                            icon: 'success',
+                                            timer: 1800,
+                                            timerProgressBar: true,
+                                            showConfirmButton: false,
+                                            confirmButtonColor: '#6A8042'
+                                        });
+                                        window.location.href = '/incident-board';
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: result.message ?? 'No se pudo eliminar.',
+                                            icon: 'error',
+                                            confirmButtonColor: '#d33',
+                                            confirmButtonText: 'Aceptar'
+                                        });
+                                    }
+                                } catch {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: 'Fallo de red.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#d33',
+                                        confirmButtonText: 'Aceptar'
+                                    });
+                                }
+                            }
+                        });
+                    }
                 }
 
             } catch (e) {

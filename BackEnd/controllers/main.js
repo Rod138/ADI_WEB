@@ -82,31 +82,35 @@ export const getMainMenu = async (req, res) => {
         const menuItems = [
             {
                 id: 'incidents',
-                title: 'ADMINISTRACIÓN DE INCIDENCIAS',
+                title: 'INCIDENCIAS',
+                subtitle: 'Gestión de incidencias',
                 href: '/incident-board',
                 visible: true,
                 button_class: 'button-2'
             },
             {
-                id: 'departments',
-                title: 'ADMINISTRACIÓN DE DEPARTAMENTOS',
-                href: '/departments',
+                id: 'finance',
+                title: 'GESTIÓN FINANCIERA',
+                subtitle: 'Contabilidad y pagos',
+                href: '/accounting',
                 visible: true,
-                button_class: 'button-1'
+                button_class: 'button-4'
             },
             {
                 id: 'reports',
                 title: 'REPORTES',
+                subtitle: 'Balance y análisis',
                 href: '/reports',
                 visible: true,
                 button_class: 'button-3'
             },
             {
-                id: 'accounting',
-                title: 'CONTABILIDAD',
-                href: '/accounting',
-                visible: userRole >= ROLES.TESORERO,
-                button_class: 'button-4'
+                id: 'departments',
+                title: 'DEPARTAMENTOS',
+                subtitle: 'Gestión de departamentos',
+                href: '/departments',
+                visible: userRole !== ROLES.RESIDENTE,
+                button_class: 'button-1'
             }
         ];
 

@@ -31,16 +31,19 @@ body {
     background-color: var(--adi-surface);
     border-bottom: 0.0625rem solid var(--adi-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     padding: 0.75rem 1.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+    position: relative;
 }
 
 .nav-brand {
     display: flex;
     align-items: center;
     height: 5rem;
+    flex: 1;
+    min-width: 0;
 }
 
 .nav-brand img {
@@ -55,12 +58,22 @@ body {
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    width: max-content;
+    max-width: calc(100% - 16rem);
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 0.8rem;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+    margin-left: auto;
 }
 
 .nav-icon-btn {
@@ -74,7 +87,6 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: color 0.2s ease;
     border-radius: 0.4rem;
 }
 
@@ -125,7 +137,6 @@ body {
     background-position: center;
     background-repeat: no-repeat;
     box-shadow: 0 0.5rem 1.125rem rgba(0, 0, 0, 0.26);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .menu-card span {
@@ -142,7 +153,6 @@ body {
 .menu-card:hover {
     transform: translateY(-0.25rem);
     box-shadow: 0 0.625rem 1.375rem rgba(0, 0, 0, 0.34);
-    transition: all 0.2s ease;
 }
 
 .button-1 {
@@ -185,7 +195,6 @@ body {
     border: none;
     font-family: 'Outfit', sans-serif;
     cursor: pointer;
-    transition: background-color 0.2s ease;
 }
 
 .btn-back:hover {
@@ -247,4 +256,10 @@ textarea:focus {
     outline: none;
     border-color: var(--adi-accent);
     box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+@media (max-width: 48rem) {
+    .nav-title {
+        max-width: calc(100% - 8rem);
+    }
 }

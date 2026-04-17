@@ -17,12 +17,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const amount = parseFloat(amountInput.value);
 
         if (isNaN(amount) || amount < 0) {
-            Swal.fire({ icon: 'warning', title: 'Monto invalido', text: 'Ingresa un monto mayor o igual a 0.' });
+            Swal.fire({
+                title: 'Monto inválido',
+                text: 'Ingresa un monto mayor o igual a 0.',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
         if (!confirmInput.checked) {
-            Swal.fire({ icon: 'warning', title: 'Falta confirmacion', text: 'Marca la casilla para confirmar.' });
+            Swal.fire({
+                title: 'Falta confirmación',
+                text: 'Marca la casilla para confirmar.',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
             return;
         }
 
@@ -37,7 +49,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const result = await response.json();
             if (!result.success) {
-                Swal.fire({ icon: 'error', title: 'Error', text: result.message || 'No se pudo guardar el fondo inicial.' });
+                Swal.fire({
+                    title: 'Error al guardar',
+                    text: result.message || 'No se pudo guardar el fondo inicial.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
                 return;
             }
 
@@ -54,7 +72,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             confirmInput.checked = false;
             await loadCurrentFund();
         } catch (error) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Fallo de red al guardar.' });
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo guardar el fondo inicial.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
         } finally {
             saveBtn.disabled = false;
         }
