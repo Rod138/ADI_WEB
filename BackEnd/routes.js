@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
-import { createTowerExpense, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
+import { createTowerExpense, getTowerExpensesBoard, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
 
 const router = Router();
@@ -89,6 +89,10 @@ router.get('/accounting/expense', (req, res) => {
     res.render('accounting/expense');
 });
 
+router.get('/accounting/expenses-board', (req, res) => {
+    res.render('accounting/expenses-board');
+});
+
 router.get('/accounting/tower-fund', (req, res) => {
     res.render('accounting/tower-fund');
 });
@@ -98,7 +102,13 @@ router.get('/accounting/monthly-quota', (req, res) => {
 });
 
 router.get('/accounting/payment', (req, res) => {
-    res.render('accounting/payment');
+    const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+    const cloudinaryUploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
+
+    res.render('accounting/payment', {
+        cloudinaryCloudName,
+        cloudinaryUploadPreset
+    });
 });
 
 router.get('/reports', (req, res) => {
@@ -114,6 +124,7 @@ router.get('/accounting/receipt', (req, res) => {
 });
 
 router.post('/api/accounting/expenses', requireMinRole(2), createTowerExpense);
+router.get('/api/accounting/expenses-board', requireMinRole(1), getTowerExpensesBoard);
 router.get('/api/accounting/tower-fund', getTowerFundConfig);
 router.post('/api/accounting/tower-fund', requireMinRole(2), upsertTowerFundConfig);
 router.get('/api/accounting/monthly-quota', getMonthlyQuotaConfig);

@@ -7,9 +7,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
-    <link rel="stylesheet" href="/FrontEnd/CSS/payment.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/mis_quotas.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Registrar Pago de Cuota</title>
+    <title>ADI - Mis Cuotas</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/payment.js" defer></script>
@@ -40,12 +40,15 @@
         }
     </style>
 </head>
-<body data-min-role="1">
+<body
+    data-min-role="1"
+    data-cloudinary-cloud-name="<%= cloudinaryCloudName || '' %>"
+    data-cloudinary-upload-preset="<%= cloudinaryUploadPreset || '' %>">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">REGISTRAR PAGO DE CUOTA</div>
+        <div class="nav-title">MIS CUOTAS</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -62,20 +65,26 @@
 
     <main class="main-container">
         <section class="left-form-panel">
-            <label for="pay-department">Departamento:</label>
-            <select id="pay-department"></select>
-
-            <label for="pay-month">Mes Correspondiente:</label>
+            <label for="pay-month">MES CORRESPONDIENTE:</label>
             <select id="pay-month"></select>
 
-            <label for="pay-amount">Cantidad Pagada</label>
-            <input id="pay-amount" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
-
-            <label for="pay-expected">Cuanto se debio pagar:</label>
-            <input id="pay-expected" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
-
-            <label for="pay-year">Año</label>
+            <label for="pay-year">AÑO:</label>
             <input id="pay-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+
+            <label for="pay-expected">CUOTA ESPERADA:</label>
+            <input id="pay-expected" class="expected-quota-input" type="number" min="0" step="0.01" placeholder="Se autocompleta" readonly>
+
+            <label for="pay-amount">CANTIDAD PAGADA (LA QUE VAS A REGISTRAR):</label>
+            <input id="pay-amount" class="user-paid-input" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+
+            <label for="pay-proof">COMPROBANTE (IMAGEN O PDF):</label>
+            <label class="proof-upload-box" for="pay-proof">
+                <input id="pay-proof" type="file" accept="image/*,.pdf,application/pdf" hidden>
+                <span class="proof-upload-copy">
+                    <span id="proof-name" class="proof-upload-name">Selecciona un archivo</span>
+                    <span class="proof-upload-hint">Imagen o PDF</span>
+                </span>
+            </label>
 
             <button id="save-payment-btn" class="btn-save">GUARDAR</button>
         </section>
@@ -83,9 +92,12 @@
         <section class="right-board-panel">
             <div class="filters-box">
                 <div class="filter-group">
-                    <label for="flt-department">Departamento</label>
-                    <select id="flt-department">
+                    <label for="flt-status">Estado</label>
+                    <select id="flt-status">
                         <option value="any">Cualquiera</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="approved">Validado</option>
+                        <option value="rejected">Rechazado</option>
                     </select>
                 </div>
                 <div class="filter-group">
@@ -106,13 +118,16 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>AÑO</th>
-                            <th>DEPARTAMENTO</th>
-                            <th>MES</th>
+                            <th>ESTADO</th>
+                            <th>FECHA</th>
+                            <th>PERIODO</th>
+                            <th>PAGADO</th>
+                            <th>ESPERADO</th>
+                            <th>COMPROBANTE</th>
                         </tr>
                     </thead>
                     <tbody id="payments-tbody">
-                        <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                        <tr><td colspan="6" style="text-align:center">Cargando...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -126,7 +141,6 @@
     </main>
 
     <div class="bottom-actions">
-        <button id="download-btn" class="btn-download">DESCARGAR</button>
         <a href="/accounting" class="btn-back">REGRESAR</a>
     </div>
     <script>

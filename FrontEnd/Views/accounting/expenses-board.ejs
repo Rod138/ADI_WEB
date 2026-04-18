@@ -7,13 +7,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
-    <link rel="stylesheet" href="/FrontEnd/CSS/tower_fund.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/expenses_board.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Fondo Inicial de Torres</title>
+    <title>ADI - Tablon de Gastos</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
-    <script src="/FrontEnd/JS/tower_fund.js" defer></script>
+    <script src="/FrontEnd/JS/expenses_board.js" defer></script>
     <style>
         .role-badge {
             display: flex;
@@ -41,12 +41,12 @@
         }
     </style>
 </head>
-<body data-min-role="2">
+<body data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">FONDO INICIAL DE TORRES</div>
+        <div class="nav-title">TABLON DE GASTOS</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -61,27 +61,69 @@
         </div>
     </nav>
 
-    <main class="main-container">
-        <section class="fund-card">
-            <p class="current-label">Fondo actual configurado</p>
-            <p id="current-fund" class="current-amount">$0.00</p>
-            <p id="updated-at" class="updated-at">Sin actualizaciones registradas</p>
+    <div class="main-container">
+        <div class="selects">
+            <div class="filter-group">
+                <label for="month-filter">Periodo</label>
+                <select id="month-filter">
+                    <option value="any">Cualquiera</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="amount-filter">Monto</label>
+                <select id="amount-filter">
+                    <option value="any">Cualquiera</option>
+                    <option value="lt-500">Menor a $500</option>
+                    <option value="500-1000">$500 a $1000</option>
+                    <option value="gt-1000">Mayor a $1000</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="order-by">Ordenar por</label>
+                <select id="order-by">
+                    <option value="date-desc">Fecha descendente</option>
+                    <option value="date-asc">Fecha ascendente</option>
+                    <option value="amount-desc">Monto descendente</option>
+                    <option value="amount-asc">Monto ascendente</option>
+                </select>
+            </div>
+            <a href="/accounting/expense" class="btn-create-expense" data-min-role="2" aria-label="Levantar gasto">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>LEVANTAR GASTO</span>
+            </a>
+        </div>
 
-            <label for="fund-amount">Nuevo fondo inicial</label>
-            <input id="fund-amount" type="number" min="0" step="0.01" placeholder="Ej. 25000.00">
+        <div class="table-container">
+            <table>
+                <colgroup>
+                    <col style="width: 65%">
+                    <col style="width: 20%">
+                    <col style="width: 15%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>Informacion</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                    </tr>
+                </thead>
+                <tbody id="expenses-tbody">
+                    <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                </tbody>
+            </table>
+        </div>
 
-            <label class="checkbox-label">
-                <input type="checkbox" id="fund-confirm">
-                HAGA CLICK PARA CONFIRMAR
-            </label>
-
-            <button id="save-fund-btn" class="btn-save">GUARDAR</button>
-        </section>
+        <div class="pagination-controls" id="expenses-pagination" style="display:none">
+            <button type="button" class="page-btn" id="exp-prev-btn">ANTERIOR</button>
+            <span class="page-indicator" id="exp-page-indicator">Pagina 1 de 1</span>
+            <button type="button" class="page-btn" id="exp-next-btn">SIGUIENTE</button>
+        </div>
 
         <div class="bottom-actions">
             <a href="/accounting" class="btn-back">REGRESAR</a>
         </div>
-    </main>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const user = window.ADIAuth?.getCurrentUser?.();
@@ -93,10 +135,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-

@@ -126,7 +126,7 @@
 
                     <div class="image-box">
                         ${imageUrl
-                            ? `<img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia">`
+                            ? `<img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia" class="openable-image" data-image="${escapeHtml(imageUrl)}">`
                             : `<span class="material-symbols-outlined">image</span>`}
                     </div>
 
@@ -155,7 +155,7 @@
                             <!-- Solo para Owners (no-admin) -->
                             <div class="update-row">
                                 <label for="upd-description">DESCRIPCIÓN</label>
-                                <textarea id="upd-description" style="height: 80px; font-size: 0.9rem;">${descriptionText}</textarea>
+                                <textarea id="upd-description" maxlength="100">${descriptionText}</textarea>
                             </div>
 
                             <div class="update-row two-cols">
@@ -211,6 +211,19 @@
                     </div>
                     ` : ''}
                 `;
+
+                const openableImage = card.querySelector('.openable-image');
+                if (openableImage) {
+                    openableImage.addEventListener('click', () => {
+                        Swal.fire({
+                            title: 'Imagen de la incidencia',
+                            imageUrl: openableImage.dataset.image,
+                            imageAlt: 'Imagen de la incidencia',
+                            confirmButtonColor: '#6A8042',
+                            confirmButtonText: 'Cerrar'
+                        });
+                    });
+                }
 
                 if (canEdit) {
                     // Para Admin
@@ -293,6 +306,17 @@
                                 Swal.fire({
                                     title: 'Campo requerido',
                                     text: 'La descripción es obligatoria.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            if (description.length > 100) {
+                                Swal.fire({
+                                    title: 'Descripción demasiado larga',
+                                    text: 'La descripción debe tener máximo 100 caracteres.',
                                     icon: 'error',
                                     confirmButtonColor: '#d33',
                                     confirmButtonText: 'Aceptar'

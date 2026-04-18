@@ -6,6 +6,8 @@
 
 import supabase from "../dbconfig.js";
 
+const INCIDENT_DESCRIPTION_MAX_LENGTH = 100;
+
 // Normaliza el payload para compatibilidad entre nombres de columnas antiguos y actuales.
 const normalizeIncident = (incident) => {
     if (!incident) return incident;
@@ -167,7 +169,14 @@ export const updateIncident = async (req, res) => {
 
         // Campos que OWNER (o ADMIN) pueden editar - estos son campos de reporte
         if (description !== undefined && description !== null) {
-            updates.description = String(description).trim();
+            const descriptionText = String(description).trim();
+            if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
+                return res.status(400).json({
+                    success: false,
+                    message: `description excede ${INCIDENT_DESCRIPTION_MAX_LENGTH} caracteres`
+                });
+            }
+            updates.description = descriptionText;
         }
         if (area_id !== undefined && area_id !== null && area_id !== '') {
             const parsed = parseInt(area_id, 10);
@@ -200,11 +209,19 @@ export const updateIncident = async (req, res) => {
 export const createIncident = async (req, res) => {
     const { description, type_id, area_id, image_url, image } = req.body;
     const userId = req.get('x-session-user-id') || req.cookies?.session_user_id;
+    const descriptionText = String(description || '').trim();
 
-    if (!userId || !description || !type_id || !area_id) {
+    if (!userId || !descriptionText || !type_id || !area_id) {
         return res.status(400).json({
             success: false,
             message: 'Faltan campos requeridos: description, type_id, area_id'
+        });
+    }
+
+    if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
+        return res.status(400).json({
+            success: false,
+            message: `description excede ${INCIDENT_DESCRIPTION_MAX_LENGTH} caracteres`
         });
     }
 
@@ -215,7 +232,7 @@ export const createIncident = async (req, res) => {
             .from('incidents')
             .insert({
                 usr_id: parseInt(userId, 10),
-                description: String(description).trim(),
+                description: descriptionText,
                 type_id: parseInt(type_id, 10),
                 area_id: parseInt(area_id, 10),
                 status_id: 1, // Estado inicial

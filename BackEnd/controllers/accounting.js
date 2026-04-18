@@ -73,6 +73,27 @@ export const createTowerExpense = async (req, res) => {
     }
 };
 
+// Obtiene gastos de condominio para mostrarlos en un tablon con filtros en frontend.
+export const getTowerExpensesBoard = async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('tower_expenses')
+            .select('id, description, url_image, amount, expense_date')
+            .order('expense_date', { ascending: false });
+
+        if (error) {
+            return res.status(500).json({ success: false, message: 'No se pudieron obtener los gastos.' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            expenses: data || []
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno al consultar gastos.' });
+    }
+};
+
 // Obtiene la configuracion vigente del fondo inicial de torre.
 export const getTowerFundConfig = async (req, res) => {
     try {
@@ -385,7 +406,7 @@ export const getQuotaPaymentData = async (req, res) => {
 // Registra un pago mensual evitando duplicados por departamento, mes y anio.
 export const createQuotaPayment = async (req, res) => {
     try {
-        const { dep_id, year, month, amount_paid, amount_expected } = req.body;
+        const { dep_id, year, month, amount_paid, amount_expected, url_image } = req.body;
         const sessionUser = await getSessionUser(req);
         const isManager = Number(sessionUser?.rol_id || 0) >= 2;
 
@@ -416,6 +437,10 @@ export const createQuotaPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cantidad esperada invalida.' });
         }
 
+        if (!url_image || !String(url_image).trim()) {
+            return res.status(400).json({ success: false, message: 'Debes adjuntar el comprobante de pago.' });
+        }
+
         const normalizedMonth = String(month).trim();
 
         const { data: existing, error: existingError } = await supabase
@@ -442,8 +467,8 @@ export const createQuotaPayment = async (req, res) => {
                 month: normalizedMonth,
                 amount_paid: amountPaidNum,
                 amount_expected: amountExpectedNum,
-                url_image: null,
-                validated: false,
+                url_image: String(url_image).trim(),
+                validated: null,
                 created_at: new Date().toISOString()
             });
 

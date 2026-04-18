@@ -21,6 +21,8 @@
 body {
     background-color: var(--adi-surface);
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .top-nav {
@@ -103,10 +105,12 @@ body {
     gap: 1rem;
     align-items: flex-start;
     justify-content: center;
+    flex: 1;
 }
 
 .left-form-panel {
-    width: 16rem;
+    width: 22rem;
+    flex: 0 0 22rem;
     background-color: #F1F1F1;
     border: 0.25rem solid #B2C189;
     border-radius: 0.7rem;
@@ -133,6 +137,27 @@ body {
     padding: 0 0.7rem;
 }
 
+.left-form-panel .expected-quota-input {
+    border: 0.125rem solid #ED7A13;
+    background: #FFF1E4;
+    color: #A34F04;
+    font-weight: 700;
+}
+
+.left-form-panel .user-paid-input {
+    border: 0.125rem solid #C4D1A3;
+    background-color: #DBE2C9;
+    color: #415329;
+}
+
+.left-form-panel input[type="file"] {
+    height: auto;
+    min-height: 1.9rem;
+    padding: 0.22rem 0.45rem;
+    font-size: 0.7rem;
+    line-height: 1.25;
+}
+
 .left-form-panel select {
     appearance: none;
     -webkit-appearance: none;
@@ -140,6 +165,76 @@ body {
     background-repeat: no-repeat;
     background-position: right 0.6rem center;
     background-size: 0.75rem;
+}
+
+.proof-upload-box {
+    width: 100%;
+    min-height: 3.25rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    border: 0.125rem dashed #aebd8d;
+    border-radius: 0.85rem;
+    background: linear-gradient(135deg, #e7edd9 0%, #d9e2c8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.9rem;
+    gap: 0.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 0.1rem 0.2rem rgba(0, 0, 0, 0.05), inset 0 0.0625rem 0 rgba(255, 255, 255, 0.55);
+    flex-wrap: nowrap;
+    text-align: center;
+}
+
+.proof-upload-box:hover {
+    border-color: #6A8042;
+    background: linear-gradient(135deg, #dfe9cb 0%, #ccd9b7 100%);
+    box-shadow: 0 0.16rem 0.4rem rgba(106, 128, 66, 0.18), inset 0 0.0625rem 0 rgba(255, 255, 255, 0.6);
+    transform: translateY(-0.05rem);
+}
+
+.proof-upload-box:focus-within {
+    outline: 0.125rem solid var(--adi-accent);
+    outline-offset: 0.125rem;
+}
+
+.proof-upload-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+
+.proof-upload-name {
+    font-size: 0.78rem;
+    color: #445533;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.proof-upload-hint {
+    font-size: 0.65rem;
+    color: #66764a;
+    letter-spacing: 0.02em;
+}
+
+.proof-upload-box.is-filled {
+    border-style: solid;
+    border-color: #6A8042;
+    background: linear-gradient(135deg, #d7e4c1 0%, #c8d7b0 100%);
+}
+
+.proof-upload-box.is-filled .proof-upload-name {
+    color: #33401f;
 }
 
 .btn-save {
@@ -157,6 +252,7 @@ body {
 
 .right-board-panel {
     width: 43rem;
+    min-width: 0;
 }
 
 .filters-box {
@@ -166,11 +262,12 @@ body {
     padding: 0.65rem 0.8rem;
     display: flex;
     gap: 0.8rem;
+    flex-wrap: wrap;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
 }
 
 .filter-group {
-    flex: 1;
+    flex: 1 1 11rem;
 }
 
 .filter-group label {
@@ -204,6 +301,7 @@ body {
     border-radius: 0.7rem;
     padding: 0.8rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+    overflow-x: auto;
 }
 
 table {
@@ -227,6 +325,64 @@ tbody td {
     border-radius: 0.6rem;
     padding: 0.6rem 0.5rem;
     font-size: 0.78rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6.5rem;
+    border-radius: 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    padding: 0.25rem 0.5rem;
+}
+
+.status-approved {
+    color: #0f5132;
+    background: #d1e7dd;
+    border: 0.0625rem solid #9ed6b9;
+}
+
+.status-rejected {
+    color: #842029;
+    background: #f8d7da;
+    border: 0.0625rem solid #efb5bb;
+}
+
+.status-pending {
+    color: #7a3a00;
+    background: #ffcd70;
+    border: 0.0625rem solid #ff9f1a;
+    box-shadow: 0 0 0 0.08rem rgba(255, 159, 26, 0.25);
+}
+
+.proof-link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0.0625rem solid #ED7A13;
+    border-radius: 0.85rem;
+    background-color: #FFF3E8;
+    color: #B65400;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0.35rem 0.65rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.proof-link-btn:hover {
+    background-color: #ED7A13;
+    color: #FFFADD;
+    transform: translateY(-0.03rem);
+}
+
+.proof-link-btn:focus-visible {
+    outline: 0.125rem solid rgba(237, 122, 19, 0.45);
+    outline-offset: 0.08rem;
 }
 
 .pagination-controls {
@@ -268,11 +424,15 @@ tbody td {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     padding: 0 1.2rem 1.4rem;
     gap: 1rem;
 }
 
 .btn-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 9rem;
     height: 2rem;
     border-radius: 1rem;
@@ -284,6 +444,9 @@ tbody td {
 }
 
 .btn-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background-color: #6A8042;
     color: #FFFADD;
     text-decoration: none;
@@ -360,24 +523,39 @@ textarea:focus {
     .main-container {
         padding: 1rem 0.8rem 0.8rem;
         gap: 0.8rem;
+        flex-direction: column;
+        align-items: center;
     }
 
     .left-form-panel {
         width: 100%;
-        margin-bottom: 0.8rem;
+        max-width: 30rem;
+        margin-bottom: 0;
     }
 
-    .content-panel {
-        flex-direction: column;
-    }
-
-    .search-bar {
+    .right-board-panel {
         width: 100%;
+        max-width: 30rem;
+    }
+
+    .filters-box {
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .table-container {
+        padding: 0.6rem;
     }
 
     .bottom-actions {
         flex-direction: column;
+        align-items: stretch;
         width: 100%;
+        max-width: 30rem;
         padding: 0 1rem 1.2rem;
     }
 
@@ -388,6 +566,7 @@ textarea:focus {
 
     table {
         font-size: 0.7rem;
+        min-width: 34rem;
     }
 
     th,

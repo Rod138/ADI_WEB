@@ -194,11 +194,6 @@ body {
     color: var(--adi-accent);
 }
 
-.btn-save,
-.btn-back,
-button {
-}
-
 input:focus {
     outline: none;
     border-color: var(--adi-accent);

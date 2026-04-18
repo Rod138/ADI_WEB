@@ -118,7 +118,7 @@ body {
 
 .image-box {
     width: min(100%, 26.25rem);
-    height: 8.125rem;
+    height: 12rem;
     margin: 0 auto 1rem;
     border: 0.25rem solid #EFD36A;
     border-radius: 0.9rem;
@@ -133,6 +133,10 @@ body {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.image-box img.openable-image {
+    cursor: zoom-in;
 }
 
 .image-box .material-symbols-outlined {
@@ -166,6 +170,18 @@ body {
     color: #1E3006;
     padding: 0 0.8rem;
     font-size: 0.95rem;
+}
+
+.update-section textarea {
+    width: 100%;
+    min-height: 5rem;
+    border-radius: 1rem;
+    border: 0.125rem solid #EFD36A;
+    background-color: #E8E4C7;
+    color: #1E3006;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.95rem;
+    resize: vertical;
 }
 
 .update-title {
@@ -388,16 +404,6 @@ nav {
 .nav-icon-btn:hover,
 nav a:hover {
     color: var(--adi-accent);
-}
-
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
 }
 
 .btn-back {

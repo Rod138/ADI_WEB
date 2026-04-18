@@ -91,14 +91,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         handleImageDownload();
     }
 
-    // Exporta la visualizacion actual (tabla/grafica) como imagen PNG.
+    // Exporta la visualizacion actual (tabla/grafica) como imagen JPG.
     function handleImageDownload() {
         if (viewSelect.value === 'chart' && chart) {
             const canvas = document.getElementById('reports-chart');
-            const url = canvas.toDataURL('image/png');
+            const url = canvas.toDataURL('image/jpeg');
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${typeSelect.value}_grafica_${yearSelect.value}_${monthSelect.value}.png`;
+            link.download = `${typeSelect.value}_grafica_${yearSelect.value}_${monthSelect.value}.jpg`;
             link.click();
         } else {
             if (!lastRenderedRows.length) {
@@ -125,10 +125,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const table = document.getElementById('reports-table');
             html2canvas(table).then(canvas => {
-                const url = canvas.toDataURL('image/png');
+                const url = canvas.toDataURL('image/jpeg');
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = `${typeSelect.value}_tabla_${yearSelect.value}_${monthSelect.value}.png`;
+                link.download = `${typeSelect.value}_tabla_${yearSelect.value}_${monthSelect.value}.jpg`;
                 link.click();
             });
         }

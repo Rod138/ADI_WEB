@@ -327,6 +327,14 @@ nav a:hover {
 .update-btn,
 .page-btn,
 button {
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.65rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
 .btn-back {

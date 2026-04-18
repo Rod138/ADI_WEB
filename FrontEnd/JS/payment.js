@@ -1,18 +1,18 @@
 /**
- * TESINA: Logica cliente para registro y consulta de pagos de cuotas.
- * Responsabilidad: capturar pago, filtrar historial y exportar comprobantes.
- * Flujo: cargar datos base -> filtrar/paginar -> acciones de descarga.
+ * TESINA: Tablon de "Mis cuotas" para residentes.
+ * Responsabilidad: registrar pago con comprobante y listar historial propio.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const depInput = document.getElementById('pay-department');
+    const user = window.ADIAuth?.getCurrentUser?.();
     const monthInput = document.getElementById('pay-month');
     const amountPaidInput = document.getElementById('pay-amount');
     const amountExpectedInput = document.getElementById('pay-expected');
     const yearInput = document.getElementById('pay-year');
+    const proofInput = document.getElementById('pay-proof');
     const saveBtn = document.getElementById('save-payment-btn');
 
-    const fltDepartment = document.getElementById('flt-department');
+    const fltStatus = document.getElementById('flt-status');
     const fltMonth = document.getElementById('flt-month');
     const fltYear = document.getElementById('flt-year');
     const tbody = document.getElementById('payments-tbody');
@@ -21,173 +21,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     const prevBtn = document.getElementById('pay-prev-btn');
     const nextBtn = document.getElementById('pay-next-btn');
     const pageIndicator = document.getElementById('pay-page-indicator');
-    const downloadBtn = document.getElementById('download-btn');
+
+    const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
+    const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
+    const CLOUDINARY_IMAGE_UPLOAD_URL = CLOUDINARY_CLOUD_NAME
+        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+        : '';
+    const CLOUDINARY_RAW_UPLOAD_URL = CLOUDINARY_CLOUD_NAME
+        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/raw/upload`
+        : '';
 
     const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const PAGE_SIZE = 8;
 
-    const PAGE_SIZE = 10;
     let currentPage = 1;
     let allRows = [];
     let filteredRows = [];
     let quotas = [];
-    let allDepartments = [];
 
     const now = new Date();
     yearInput.value = now.getFullYear();
-
     monthInput.innerHTML = MONTHS.map((m, idx) => `<option value="${m}" ${idx === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
     fltMonth.innerHTML += MONTHS.map(m => `<option value="${m}">${m}</option>`).join('');
 
-    try {
-        const res = await fetch('/api/accounting/payment-data');
-        const data = await res.json();
+    await refreshData();
 
-        if (!data.success) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar datos</td></tr>';
-            return;
-        }
+    monthInput.addEventListener('change', autoFillExpectedAmount);
+    yearInput.addEventListener('input', autoFillExpectedAmount);
 
-        quotas = data.quotas || [];
-        allRows = data.receipts || [];
-
-        allDepartments = [...(data.departments || [])].sort((a, b) => compareDepartmentNames(a.name, b.name));
-        fltDepartment.innerHTML += allDepartments.map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`).join('');
-        refreshAvailableDepartments();
-
-        const uniqueYears = [...new Set(allRows.map(r => r.year).filter(Boolean))].sort((a, b) => b - a);
-        fltYear.innerHTML += uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
-
-        autoFillExpectedAmount();
-        applyFilters();
-    } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error de red</td></tr>';
-        return;
-    }
-
-    monthInput.addEventListener('change', () => {
-        autoFillExpectedAmount();
-        refreshAvailableDepartments();
-    });
-
-    yearInput.addEventListener('input', () => {
-        autoFillExpectedAmount();
-        refreshAvailableDepartments();
-    });
-
-    saveBtn.addEventListener('click', async () => {
-        const depId = depInput.value;
-        const month = monthInput.value;
-        const year = parseInt(yearInput.value, 10);
-        const amountPaid = parseFloat(amountPaidInput.value);
-        const amountExpected = parseFloat(amountExpectedInput.value);
-
-        if (!depId) {
-            Swal.fire({
-                title: 'Sin departamentos',
-                text: 'No hay departamentos pendientes de pago en ese mes y año',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (!month) {
-            Swal.fire({
-                title: 'Mes faltante',
-                text: 'Selecciona el mes correspondiente',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (isNaN(year) || year < 2000) {
-            Swal.fire({
-                title: 'Año inválido',
-                text: 'Ingresa un año válido (desde 2000)',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (isNaN(amountPaid) || amountPaid < 0) {
-            Swal.fire({
-                title: 'Cantidad inválida',
-                text: 'Ingresa una cantidad pagada válida',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (isNaN(amountExpected) || amountExpected <= 0) {
-            Swal.fire({
-                title: 'Cantidad esperada inválida',
-                text: 'Ingresa la cuota esperada.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        saveBtn.disabled = true;
-
-        try {
-            const r = await fetch('/api/accounting/payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    dep_id: depId,
-                    year,
-                    month,
-                    amount_paid: amountPaid,
-                    amount_expected: amountExpected
-                })
-            });
-
-            const result = await r.json();
-            if (!result.success) {
-                Swal.fire({
-                    title: 'Error al guardar',
-                    text: result.message || 'No se pudo guardar el pago.',
-                    icon: 'error',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                });
-                return;
-            }
-
-            await Swal.fire({
-                title: 'Pago guardado',
-                text: 'El pago de cuota se registró correctamente.',
-                icon: 'success',
-                timer: 1600,
-                timerProgressBar: true,
-                showConfirmButton: false,
-                confirmButtonColor: '#6A8042'
-            });
-
-            refreshData();
-        } catch (error) {
-            Swal.fire({
-                title: 'Error de conexión',
-                text: 'No se pudo guardar el pago.',
-                icon: 'error',
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Aceptar'
-            });
-        } finally {
-            saveBtn.disabled = false;
-        }
-    });
-
-    fltDepartment.addEventListener('change', applyFilters);
+    fltStatus.addEventListener('change', applyFilters);
     fltMonth.addEventListener('change', applyFilters);
     fltYear.addEventListener('change', applyFilters);
 
@@ -204,82 +66,156 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredRows);
     });
 
-    downloadBtn.addEventListener('click', () => {
-        const rows = (filteredRows.length ? filteredRows : allRows)
-            .slice()
-            .sort((a, b) => compareRowsByDepartment(a, b));
-        const header = ['Año', 'Departamento', 'Mes'];
-        const body = rows.map(r => [r.year, r.department_name || `DEP ${r.dep_id}`, r.month]);
-        const csv = [header, ...body]
-            .map(cols => cols.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
-            .join('\n');
+    tbody.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.proof-link-btn');
+        if (!trigger) return;
 
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'pagos_cuota.csv';
-        link.click();
-        URL.revokeObjectURL(url);
-    });
-
-    // Reconsulta catalogos y movimientos despues de registrar un nuevo pago.
-    async function refreshData() {
-        const res = await fetch('/api/accounting/payment-data');
-        const data = await res.json();
-        if (!data.success) return;
-
-        allRows = data.receipts || [];
-        quotas = data.quotas || [];
-        allDepartments = [...(data.departments || [])].sort((a, b) => compareDepartmentNames(a.name, b.name));
-
-        const uniqueYears = [...new Set(allRows.map(r => r.year).filter(Boolean))].sort((a, b) => b - a);
-        fltYear.innerHTML = '<option value="any">Cualquiera</option>' + uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
-
-        refreshAvailableDepartments();
-        applyFilters();
-    }
-
-    // Limita el selector a departamentos sin pago registrado en mes/anio seleccionado.
-    function refreshAvailableDepartments() {
-        const month = String(monthInput.value || '').trim();
-        const year = parseInt(yearInput.value, 10);
-
-        if (!month || isNaN(year)) {
-            depInput.innerHTML = '<option value="">Selecciona</option>';
+        const proofUrl = String(trigger.dataset.proofUrl || '').trim();
+        if (!proofUrl) {
+            notify('Sin comprobante', 'Este pago no tiene comprobante.', 'info');
             return;
         }
 
-        const paidSet = new Set(
-            allRows
-                .filter(r => String(r.month || '').trim() === month && Number(r.year) === year)
-                .map(r => String(r.dep_id))
-        );
+        if (isImageUrl(proofUrl)) {
+            Swal.fire({
+                title: 'Comprobante de pago',
+                imageUrl: proofUrl,
+                imageAlt: 'Comprobante de pago',
+                confirmButtonColor: '#6A8042',
+                confirmButtonText: 'Cerrar'
+            });
+            return;
+        }
 
-        const available = allDepartments
-            .filter(dep => !paidSet.has(String(dep.id)))
-            .sort((a, b) => compareDepartmentNames(a.name, b.name));
-        depInput.innerHTML = '<option value="">Selecciona</option>' +
-            available.map(dep => `<option value="${dep.id}">${escapeHtml(dep.name)}</option>`).join('');
+        window.open(proofUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    proofInput.addEventListener('change', () => {
+        const proofName = document.getElementById('proof-name');
+        const proofUploadBox = proofInput.closest('.proof-upload-box');
+        if (proofInput.files?.length > 0) {
+            proofName.textContent = proofInput.files[0].name;
+            proofUploadBox?.classList.add('is-filled');
+        } else {
+            proofName.textContent = 'Selecciona archivo';
+            proofUploadBox?.classList.remove('is-filled');
+        }
+    });
+
+    saveBtn.addEventListener('click', async () => {
+        const month = monthInput.value;
+        const year = parseInt(yearInput.value, 10);
+        const amountPaid = parseFloat(amountPaidInput.value);
+        const amountExpected = parseFloat(amountExpectedInput.value);
+        const proofFile = proofInput.files?.[0];
+
+        if (!month) {
+            return notify('Mes faltante', 'Selecciona el mes correspondiente.', 'warning');
+        }
+
+        if (isNaN(year) || year < 2000) {
+            return notify('Ano invalido', 'Ingresa un ano valido (desde 2000).', 'warning');
+        }
+
+        if (isNaN(amountPaid) || amountPaid < 0) {
+            return notify('Cantidad invalida', 'Ingresa una cantidad pagada valida.', 'warning');
+        }
+
+        if (isNaN(amountExpected) || amountExpected <= 0) {
+            return notify('Cantidad esperada invalida', 'Ingresa la cuota esperada.', 'warning');
+        }
+
+        if (!proofFile) {
+            return notify('Comprobante faltante', 'Debes adjuntar una imagen o PDF.', 'warning');
+        }
+
+        if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+            return notify('Cloudinary no configurado', 'Falta configuracion de Cloudinary en el servidor.', 'error');
+        }
+
+        saveBtn.disabled = true;
+
+        try {
+            const proofUrl = await uploadProofToCloudinary(proofFile);
+
+            const r = await fetch('/api/accounting/payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dep_id: user?.dep_id,
+                    year,
+                    month,
+                    amount_paid: amountPaid,
+                    amount_expected: amountExpected,
+                    url_image: proofUrl
+                })
+            });
+
+            const result = await r.json();
+            if (!result.success) {
+                notify('Error al guardar', result.message || 'No se pudo guardar el pago.', 'error');
+                return;
+            }
+
+            await Swal.fire({
+                title: 'Pago enviado',
+                text: 'Tu comprobante quedo registrado y pendiente de validacion.',
+                icon: 'success',
+                timer: 1800,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+
+            amountPaidInput.value = '';
+            proofInput.value = '';
+            proofInput.closest('.proof-upload-box')?.classList.remove('is-filled');
+            document.getElementById('proof-name').textContent = 'Selecciona un archivo';
+            await refreshData();
+        } catch (error) {
+            notify('Error de conexion', error.message || 'No se pudo registrar el pago.', 'error');
+        } finally {
+            saveBtn.disabled = false;
+        }
+    });
+
+    async function refreshData() {
+        try {
+            const res = await fetch('/api/accounting/payment-data');
+            const data = await res.json();
+
+            if (!data.success) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error al cargar datos</td></tr>';
+                return;
+            }
+
+            quotas = data.quotas || [];
+
+            const baseRows = data.receipts || [];
+            allRows = Number(user?.dep_id)
+                ? baseRows.filter(r => Number(r.dep_id) === Number(user.dep_id))
+                : baseRows;
+
+            const uniqueYears = [...new Set(allRows.map(r => r.year).filter(Boolean))].sort((a, b) => b - a);
+            fltYear.innerHTML = '<option value="any">Cualquiera</option>' + uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
+
+            autoFillExpectedAmount();
+            applyFilters();
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error de red</td></tr>';
+        }
     }
 
-    // Autocompleta cuota esperada a partir de la configuracion mensual vigente.
     function autoFillExpectedAmount() {
         const month = String(monthInput.value || '').toLowerCase();
         const year = parseInt(yearInput.value, 10);
         const quota = quotas.find(q => String(q.month || '').toLowerCase() === month && Number(q.year) === year);
-        if (quota && quota.amount !== null && quota.amount !== undefined) {
-            amountExpectedInput.value = parseFloat(quota.amount).toFixed(2);
-        }
+        amountExpectedInput.value = (quota && quota.amount !== null && quota.amount !== undefined)
+            ? Number(quota.amount).toFixed(2)
+            : '';
     }
 
-    // Ejecuta filtros combinados por departamento, mes y anio.
     function applyFilters() {
         let rows = [...allRows];
-
-        if (fltDepartment.value !== 'any') {
-            rows = rows.filter(r => String(r.dep_id) === String(fltDepartment.value));
-        }
 
         if (fltMonth.value !== 'any') {
             rows = rows.filter(r => String(r.month) === String(fltMonth.value));
@@ -289,32 +225,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             rows = rows.filter(r => String(r.year) === String(fltYear.value));
         }
 
-        rows.sort((a, b) => compareRowsByDepartment(a, b));
+        if (fltStatus.value !== 'any') {
+            rows = rows.filter(r => statusKey(r.validated) === fltStatus.value);
+        }
+
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         filteredRows = rows;
         currentPage = 1;
         renderTable(filteredRows);
     }
 
-    // Orden primario por nombre de departamento y secundario por anio descendente.
-    function compareRowsByDepartment(a, b) {
-        const depA = String(a.department_name || `DEP ${a.dep_id}`);
-        const depB = String(b.department_name || `DEP ${b.dep_id}`);
-        const depCmp = compareDepartmentNames(depA, depB);
-        if (depCmp !== 0) return depCmp;
-
-        return Number(b.year || 0) - Number(a.year || 0);
-    }
-
-    // Comparador local-aware para nombres de departamento.
-    function compareDepartmentNames(a, b) {
-        return String(a || '').localeCompare(String(b || ''), 'es', { numeric: true, sensitivity: 'base' });
-    }
-
-    // Renderiza pagina de resultados y controles de navegacion.
     function renderTable(rows) {
         if (!rows.length) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin pagos registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Sin pagos registrados</td></tr>';
             paginationBox.style.display = 'none';
             return;
         }
@@ -330,16 +254,113 @@ document.addEventListener('DOMContentLoaded', async () => {
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 
-        tbody.innerHTML = items.map(r => `
-            <tr>
-                <td>${escapeHtml(r.year)}</td>
-                <td>${escapeHtml(r.department_name || `DEP ${r.dep_id}`)}</td>
-                <td>${escapeHtml(r.month || '-')}</td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = items.map(r => {
+            const status = buildStatusBadge(r.validated);
+            const createdAt = r.created_at ? new Date(r.created_at).toLocaleString('es-MX') : '-';
+            const period = `${escapeHtml(r.month || '-')} ${escapeHtml(r.year || '-')}`;
+            const paid = formatCurrency(r.amount_paid);
+            const expected = formatCurrency(r.amount_expected);
+            const proof = r.url_image
+                ? `<button type="button" class="proof-link-btn" data-proof-url="${escapeHtml(r.url_image)}">Ver comprobante</button>`
+                : '<span>-</span>';
+
+            return `
+                <tr>
+                    <td>${status}</td>
+                    <td>${createdAt}</td>
+                    <td>${period}</td>
+                    <td>${paid}</td>
+                    <td>${expected}</td>
+                    <td>${proof}</td>
+                </tr>
+            `;
+        }).join('');
     }
 
-    // Escapa texto de salida para prevenir insercion de HTML no confiable.
+    function buildStatusBadge(validated) {
+        if (validated === true) {
+            return '<span class="status-badge status-approved">VALIDADO</span>';
+        }
+        if (validated === false) {
+            return '<span class="status-badge status-rejected">RECHAZADO</span>';
+        }
+        return '<span class="status-badge status-pending">PENDIENTE</span>';
+    }
+
+    function statusKey(validated) {
+        if (validated === true) return 'approved';
+        if (validated === false) return 'rejected';
+        return 'pending';
+    }
+
+    async function uploadProofToCloudinary(file) {
+        const filename = file.name || 'comprobante';
+        const extension = filename.split('.').pop()?.toLowerCase() || '';
+        const isPdf = extension === 'pdf' || file.type === 'application/pdf';
+        const uploadUrl = isPdf ? CLOUDINARY_RAW_UPLOAD_URL : CLOUDINARY_IMAGE_UPLOAD_URL;
+
+        const formData = new FormData();
+        formData.append('file', file, filename);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        formData.append('folder', 'cuotas');
+
+        const response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data?.secure_url) {
+            throw new Error(data?.error?.message || 'No se pudo subir el comprobante.');
+        }
+
+        return data.secure_url;
+    }
+
+    function downloadCsv() {
+        const rows = (filteredRows.length ? filteredRows : allRows).slice();
+        const header = ['Estado', 'Fecha', 'Mes', 'Ano', 'Monto pagado', 'Monto esperado', 'Comprobante'];
+        const body = rows.map(r => [
+            statusKey(r.validated),
+            r.created_at || '',
+            r.month || '',
+            r.year || '',
+            r.amount_paid || '',
+            r.amount_expected || '',
+            r.url_image || ''
+        ]);
+
+        const csv = [header, ...body]
+            .map(cols => cols.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'mis_cuotas.csv';
+        link.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function notify(title, text, icon) {
+        return Swal.fire({ title, text, icon, confirmButtonColor: icon === 'error' ? '#d33' : '#ED7A13' });
+    }
+
+    function formatCurrency(value) {
+        const n = Number(value);
+        if (Number.isNaN(n)) return '-';
+        return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function isImageUrl(url) {
+        const lower = String(url || '').toLowerCase();
+        return lower.startsWith('data:image/')
+            || lower.includes('/image/upload/')
+            || /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/.test(lower);
+    }
+
     function escapeHtml(str) {
         return String(str)
             .replace(/&/g, '&amp;')

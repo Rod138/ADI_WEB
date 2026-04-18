@@ -214,10 +214,6 @@ th {
 }
 
 .btn-save,
-.btn-back,
-button {
-}
-
 input:focus,
 select:focus {
     outline: none;

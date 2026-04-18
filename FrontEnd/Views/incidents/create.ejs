@@ -70,8 +70,8 @@
 
             <div class="form-group">
                 <label for="description">DESCRIPCIÓN *</label>
-                <textarea id="description" name="description" maxlength="500" rows="5" placeholder="Describe el problema..." required></textarea>
-                <small id="desc-counter">0/500</small>
+                <textarea id="description" name="description" maxlength="100" rows="5" placeholder="Describe el problema..." required></textarea>
+                <small id="desc-counter">0/100</small>
             </div>
 
             <div class="form-group">
@@ -182,7 +182,7 @@
 
             // Description counter
             descTextarea.addEventListener('input', () => {
-                descCounter.textContent = `${descTextarea.value.length}/500`;
+                descCounter.textContent = `${descTextarea.value.length}/100`;
             });
 
             // Cancel
@@ -201,6 +201,17 @@
                     Swal.fire({
                         title: 'Validación',
                         text: 'Completa todos los campos requeridos',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                if (description.length > 100) {
+                    Swal.fire({
+                        title: 'Descripción demasiado larga',
+                        text: 'La descripción debe tener máximo 100 caracteres.',
                         icon: 'warning',
                         confirmButtonColor: '#ED7A13',
                         confirmButtonText: 'Aceptar'

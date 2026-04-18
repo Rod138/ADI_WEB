@@ -263,16 +263,6 @@ nav a:hover {
     color: var(--adi-accent);
 }
 
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
-}
-
 .btn-back {
     background-color: var(--adi-olive);
     color: var(--adi-cream);

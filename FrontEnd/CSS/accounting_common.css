@@ -1,0 +1,106 @@
+:root {
+    --adi-olive: #6A8042;
+    --adi-olive-dark: #5D723B;
+    --adi-accent: #ED7A13;
+    --adi-cream: #FFFADD;
+    --adi-surface: #F7F7F7;
+    --adi-text: #111111;
+    --adi-border: #c8c8c8;
+}
+
+body {
+    background-color: var(--adi-surface);
+    color: var(--adi-text);
+}
+
+.top-nav {
+    background-color: var(--adi-surface);
+    border-bottom: 0.0625rem solid var(--adi-border);
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+}
+
+.nav-title {
+    color: var(--adi-text);
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.nav-icon-btn {
+    color: var(--adi-text);
+    border: none;
+    background: transparent;
+    border-radius: 0.4rem;
+    transition: color 0.2s ease;
+}
+
+.nav-icon-btn:hover,
+nav a:hover {
+    color: var(--adi-accent);
+}
+
+.btn-back,
+.btn-upload,
+.btn-download,
+.btn-save,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    border-radius: 0.75rem;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-back {
+    background-color: var(--adi-olive);
+    color: var(--adi-cream);
+}
+
+.btn-back:hover {
+    background-color: var(--adi-olive-dark);
+}
+
+.btn-save,
+.btn-upload,
+.btn-download,
+.save-btn,
+.update-btn,
+.page-btn,
+button {
+    font-weight: 600;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
+}
+
+.selects,
+.table-container,
+.expense-card,
+.receipt-card,
+.fund-card,
+.quota-panel,
+.history-panel,
+.filters-panel,
+.result-panel,
+.left-form-panel,
+.right-board-panel {
+    border-radius: 0.9rem;
+}
+
+@media (max-width: 48rem) {
+    .top-nav,
+    nav {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .nav-title {
+        font-size: 1.2rem;
+        max-width: calc(100% - 8rem);
+    }
+}

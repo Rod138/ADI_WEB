@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
     <title>ADI - Contabilidad</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -64,28 +65,46 @@
 
     <main class="main-container accounting-page">
         <section class="cards-grid" aria-label="Opciones de contabilidad">
-            <a href="#" class="menu-card button-2" id="card-my-quota" onclick="handleMyQuota(event)">
-                <span>MIS CUOTAS</span>
+            <a href="/accounting/payment" class="menu-card button-2" id="card-my-quota">
+                <div class="card-content">
+                    <h2 class="card-title">MIS CUOTAS</h2>
+                    <p class="card-subtitle">Consulta pagos y adeudos.</p>
+                </div>
+            </a>
+
+            <a href="/accounting/expenses-board" class="menu-card button-3" id="card-expense-board">
+                <div class="card-content">
+                    <h2 class="card-title">GASTOS DEL CONDOMINIO</h2>
+                    <p class="card-subtitle">Revisa gastos y comprobantes.</p>
+                </div>
             </a>
 
             <a href="/accounting/expense" class="menu-card button-3" id="card-expense-manage" data-admin-only="true">
-                <span>GASTOS DEL CONDOMINIO</span>
-            </a>
-
-            <a href="#" class="menu-card button-3 coming-soon" id="card-expense-resident" data-feature="Gastos del condominio" style="display:none">
-                <span>GASTOS DEL CONDOMINIO</span>
+                <div class="card-content">
+                    <h2 class="card-title">LEVANTAR GASTO</h2>
+                    <p class="card-subtitle">Registra un gasto nuevo.</p>
+                </div>
             </a>
 
             <a href="/accounting/receipts-board" class="menu-card button-4" data-admin-only="true">
-                <span>CUOTAS DE RESIDENTES</span>
+                <div class="card-content">
+                    <h2 class="card-title">CUOTAS DE RESIDENTES</h2>
+                    <p class="card-subtitle">Valida comprobantes de pago.</p>
+                </div>
             </a>
 
             <a href="/accounting/tower-fund" class="menu-card button-4" data-admin-only="true">
-                <span>CONFIGURAR FONDO INICIAL</span>
+                <div class="card-content">
+                    <h2 class="card-title">CONFIGURAR FONDO INICIAL</h2>
+                    <p class="card-subtitle">Ajusta el fondo inicial.</p>
+                </div>
             </a>
 
             <a href="/accounting/monthly-quota" class="menu-card button-5" data-admin-only="true">
-                <span>CONFIGURAR CUOTA MENSUAL</span>
+                <div class="card-content">
+                    <h2 class="card-title">CONFIGURAR CUOTA MENSUAL</h2>
+                    <p class="card-subtitle">Define la cuota mensual.</p>
+                </div>
             </a>
         </section>
 
@@ -99,20 +118,10 @@
     </footer>
 
     <script>
-        function handleMyQuota(e) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'En desarrollo',
-                text: 'Esta funcionalidad está siendo desarrollada',
-                icon: 'info',
-                confirmButtonColor: '#0099ff',
-                confirmButtonText: 'Aceptar'
-            });
-        }
-
         document.addEventListener('DOMContentLoaded', () => {
             const user = window.ADIAuth?.getCurrentUser?.();
             const canManage = user && Number(user.rol_id) >= 2;
+            const cardsGrid = document.querySelector('.cards-grid');
 
             if (user) {
                 const roleSpan = document.getElementById('user-role');
@@ -123,23 +132,17 @@
                 el.style.display = canManage ? '' : 'none';
             });
 
-            const residentExpenseCard = document.getElementById('card-expense-resident');
-            if (residentExpenseCard) {
-                residentExpenseCard.style.display = canManage ? 'none' : '';
-            }
-        });
-
-        document.querySelectorAll('.coming-soon').forEach(function (card) {
-            card.addEventListener('click', function (e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: this.dataset.feature + ' próximamente',
-                    text: 'Esta sección aún no está disponible',
-                    icon: 'info',
-                    confirmButtonColor: '#0099ff',
-                    confirmButtonText: 'Aceptar'
+            if (cardsGrid) {
+                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3');
+                const visibleCards = Array.from(cardsGrid.querySelectorAll('.menu-card')).filter((card) => {
+                    return card.style.display !== 'none';
                 });
-            });
+
+                if (visibleCards.length <= 3) {
+                    cardsGrid.classList.add(`cards-count-${visibleCards.length}`);
+                }
+            }
+
         });
     </script>
 </body>
