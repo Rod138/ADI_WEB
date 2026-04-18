@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const prevBtn = document.getElementById('pay-prev-btn');
     const nextBtn = document.getElementById('pay-next-btn');
     const pageIndicator = document.getElementById('pay-page-indicator');
+    const downloadBtn = document.getElementById('download-btn');
 
     const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
     const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
@@ -66,29 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredRows);
     });
 
-    tbody.addEventListener('click', (e) => {
-        const trigger = e.target.closest('.proof-link-btn');
-        if (!trigger) return;
-
-        const proofUrl = String(trigger.dataset.proofUrl || '').trim();
-        if (!proofUrl) {
-            notify('Sin comprobante', 'Este pago no tiene comprobante.', 'info');
-            return;
-        }
-
-        if (isImageUrl(proofUrl)) {
-            Swal.fire({
-                title: 'Comprobante de pago',
-                imageUrl: proofUrl,
-                imageAlt: 'Comprobante de pago',
-                confirmButtonColor: '#6A8042',
-                confirmButtonText: 'Cerrar'
-            });
-            return;
-        }
-
-        window.open(proofUrl, '_blank', 'noopener,noreferrer');
-    });
+    downloadBtn.addEventListener('click', downloadCsv);
 
     proofInput.addEventListener('change', () => {
         const proofName = document.getElementById('proof-name');
@@ -261,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const paid = formatCurrency(r.amount_paid);
             const expected = formatCurrency(r.amount_expected);
             const proof = r.url_image
-                ? `<button type="button" class="proof-link-btn" data-proof-url="${escapeHtml(r.url_image)}">Ver comprobante</button>`
+                ? `<a href="${escapeHtml(r.url_image)}" target="_blank" rel="noopener noreferrer">Ver</a>`
                 : '<span>-</span>';
 
             return `
@@ -279,12 +258,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function buildStatusBadge(validated) {
         if (validated === true) {
-            return '<span class="status-badge status-approved">VALIDADO</span>';
+            return '<span style="color:#0f5132;font-weight:700">VALIDADO</span>';
         }
         if (validated === false) {
-            return '<span class="status-badge status-rejected">RECHAZADO</span>';
+            return '<span style="color:#842029;font-weight:700">RECHAZADO</span>';
         }
-        return '<span class="status-badge status-pending">PENDIENTE</span>';
+        return '<span style="color:#7a4f01;font-weight:700">PENDIENTE</span>';
     }
 
     function statusKey(validated) {
@@ -352,13 +331,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const n = Number(value);
         if (Number.isNaN(n)) return '-';
         return `$${n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    function isImageUrl(url) {
-        const lower = String(url || '').toLowerCase();
-        return lower.startsWith('data:image/')
-            || lower.includes('/image/upload/')
-            || /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/.test(lower);
     }
 
     function escapeHtml(str) {

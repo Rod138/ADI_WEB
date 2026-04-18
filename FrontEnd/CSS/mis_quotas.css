@@ -137,19 +137,6 @@ body {
     padding: 0 0.7rem;
 }
 
-.left-form-panel .expected-quota-input {
-    border: 0.125rem solid #ED7A13;
-    background: #FFF1E4;
-    color: #A34F04;
-    font-weight: 700;
-}
-
-.left-form-panel .user-paid-input {
-    border: 0.125rem solid #C4D1A3;
-    background-color: #DBE2C9;
-    color: #415329;
-}
-
 .left-form-panel input[type="file"] {
     height: auto;
     min-height: 1.9rem;
@@ -327,64 +314,6 @@ tbody td {
     font-size: 0.78rem;
 }
 
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 6.5rem;
-    border-radius: 0.7rem;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
-    padding: 0.25rem 0.5rem;
-}
-
-.status-approved {
-    color: #0f5132;
-    background: #d1e7dd;
-    border: 0.0625rem solid #9ed6b9;
-}
-
-.status-rejected {
-    color: #842029;
-    background: #f8d7da;
-    border: 0.0625rem solid #efb5bb;
-}
-
-.status-pending {
-    color: #7a3a00;
-    background: #ffcd70;
-    border: 0.0625rem solid #ff9f1a;
-    box-shadow: 0 0 0 0.08rem rgba(255, 159, 26, 0.25);
-}
-
-.proof-link-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 0.0625rem solid #ED7A13;
-    border-radius: 0.85rem;
-    background-color: #FFF3E8;
-    color: #B65400;
-    font-size: 0.72rem;
-    font-weight: 700;
-    line-height: 1;
-    padding: 0.35rem 0.65rem;
-    cursor: pointer;
-    transition: all 0.18s ease;
-}
-
-.proof-link-btn:hover {
-    background-color: #ED7A13;
-    color: #FFFADD;
-    transform: translateY(-0.03rem);
-}
-
-.proof-link-btn:focus-visible {
-    outline: 0.125rem solid rgba(237, 122, 19, 0.45);
-    outline-offset: 0.08rem;
-}
-
 .pagination-controls {
     width: 100%;
     display: flex;
@@ -422,7 +351,7 @@ tbody td {
     width: min(100%, 60.5rem);
     margin: 0.8rem auto 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     flex-wrap: wrap;
     padding: 0 1.2rem 1.4rem;
@@ -578,5 +507,34 @@ textarea:focus {
 @media (max-width: 48rem) {
     .nav-title {
         max-width: calc(100% - 8rem);
+    }
+}
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+}
+
+footer p {
+    text-align: center;
+    color: #FFFFFF;
+    padding-top: 0.7rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+}
+
+/* Unified Content Width */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
     }
 }

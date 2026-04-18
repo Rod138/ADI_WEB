@@ -109,7 +109,7 @@ export const getMainMenu = async (req, res) => {
                 title: 'DEPARTAMENTOS',
                 subtitle: 'Gestión de departamentos',
                 href: '/departments',
-                visible: userRole !== ROLES.RESIDENTE,
+                visible: userRole === ROLES.ADMINISTRADOR || userRole === ROLES.TESORERO_ADMIN,
                 button_class: 'button-1'
             }
         ];

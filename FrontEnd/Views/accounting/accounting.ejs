@@ -79,13 +79,6 @@
                 </div>
             </a>
 
-            <a href="/accounting/expense" class="menu-card button-3" id="card-expense-manage" data-admin-only="true">
-                <div class="card-content">
-                    <h2 class="card-title">LEVANTAR GASTO</h2>
-                    <p class="card-subtitle">Registra un gasto nuevo.</p>
-                </div>
-            </a>
-
             <a href="/accounting/receipts-board" class="menu-card button-4" data-admin-only="true">
                 <div class="card-content">
                     <h2 class="card-title">CUOTAS DE RESIDENTES</h2>
@@ -93,17 +86,10 @@
                 </div>
             </a>
 
-            <a href="/accounting/tower-fund" class="menu-card button-4" data-admin-only="true">
-                <div class="card-content">
-                    <h2 class="card-title">CONFIGURAR FONDO INICIAL</h2>
-                    <p class="card-subtitle">Ajusta el fondo inicial.</p>
-                </div>
-            </a>
-
             <a href="/accounting/monthly-quota" class="menu-card button-5" data-admin-only="true">
                 <div class="card-content">
-                    <h2 class="card-title">CONFIGURAR CUOTA MENSUAL</h2>
-                    <p class="card-subtitle">Define la cuota mensual.</p>
+                    <h2 class="card-title">CONFIGURAR FONDO Y CUOTA</h2>
+                    <p class="card-subtitle">Ajusta fondo inicial y cuota mensual.</p>
                 </div>
             </a>
         </section>
@@ -133,12 +119,12 @@
             });
 
             if (cardsGrid) {
-                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3');
+                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3', 'cards-count-4');
                 const visibleCards = Array.from(cardsGrid.querySelectorAll('.menu-card')).filter((card) => {
                     return card.style.display !== 'none';
                 });
 
-                if (visibleCards.length <= 3) {
+                if (visibleCards.length >= 1 && visibleCards.length <= 4) {
                     cardsGrid.classList.add(`cards-count-${visibleCards.length}`);
                 }
             }

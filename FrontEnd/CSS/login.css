@@ -1,4 +1,4 @@
-* {
+﻿* {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     color: #111111;
@@ -105,7 +105,7 @@ button:hover {
     border-radius: 1rem;
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
     border: 0.0625rem solid var(--adi-border);
-    max-width: min(90%, 60rem);
+    max-width: min(80%, 60rem);
     width: 100%;
     margin: 5rem auto;
     text-align: center;
@@ -238,4 +238,25 @@ textarea:focus {
         width: 90%;
         font-size: 0.9rem;
     }
+}
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+}
+
+footer p {
+    text-align: center;
+    color: #FFFFFF;
+    padding-top: 0.7rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+}
+
+/* Footer anchoring fix */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

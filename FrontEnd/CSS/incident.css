@@ -1,4 +1,4 @@
-* {
+﻿* {
     font-family: 'Inter', sans-serif;
     color: #111111;
     padding: 0;
@@ -222,7 +222,6 @@ body {
 }
 
 .update-btn {
-    margin-top: 1rem;
     background-color: transparent;
     border: 0.0625rem solid #ED7A13;
     color: #ED7A13;
@@ -439,4 +438,37 @@ textarea:focus {
     .nav-title {
         max-width: calc(100% - 8rem);
     }
+}
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+    box-shadow: 0 -0.125rem 0.25rem rgba(0, 0, 0, 0.08);
+}
+
+footer p {
+    display: none;
+}
+
+/* Unified Content Width */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
+    }
+}
+
+/* Footer anchoring fix */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

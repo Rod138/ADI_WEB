@@ -393,3 +393,32 @@ tbody td:nth-child(3) {
         max-width: 12rem;
     }
 }
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+}
+
+footer p {
+    text-align: center;
+    color: #FFFFFF;
+    padding-top: 0.7rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+}
+
+/* Unified Content Width */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
+    }
+}

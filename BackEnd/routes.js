@@ -77,7 +77,7 @@ router.get('/incident', (req, res) => {
     res.render('incidents/incident');
 });
 
-router.get('/departments', (req, res) => {
+router.get('/departments', requireMinRole(3), (req, res) => {
     res.render('departments/departments');
 });
 
@@ -94,7 +94,7 @@ router.get('/accounting/expenses-board', (req, res) => {
 });
 
 router.get('/accounting/tower-fund', (req, res) => {
-    res.render('accounting/tower-fund');
+    res.redirect('/accounting/monthly-quota');
 });
 
 router.get('/accounting/monthly-quota', (req, res) => {

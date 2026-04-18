@@ -1,4 +1,4 @@
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -336,4 +336,12 @@ textarea:focus {
         margin: 0 0.5rem;
         font-size: 0.9rem;
     }
+}
+
+
+/* Footer anchoring fix */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

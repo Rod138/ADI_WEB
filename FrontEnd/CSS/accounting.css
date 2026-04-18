@@ -138,6 +138,11 @@ body {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.cards-grid.cards-count-4 {
+    width: min(100%, 78rem);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .menu-card {
     width: 100%;
     min-height: 27rem;
@@ -260,7 +265,8 @@ footer p {
     }
 
     .cards-grid.cards-count-2,
-    .cards-grid.cards-count-3 {
+    .cards-grid.cards-count-3,
+    .cards-grid.cards-count-4 {
         width: min(100%, 44rem);
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -290,7 +296,8 @@ footer p {
 
     .cards-grid.cards-count-1,
     .cards-grid.cards-count-2,
-    .cards-grid.cards-count-3 {
+    .cards-grid.cards-count-3,
+    .cards-grid.cards-count-4 {
         width: 100%;
         grid-template-columns: 1fr;
     }
@@ -324,5 +331,19 @@ textarea:focus {
 @media (max-width: 48rem) {
     .nav-title {
         max-width: calc(100% - 8rem);
+    }
+}
+/* Unified Content Width */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
     }
 }

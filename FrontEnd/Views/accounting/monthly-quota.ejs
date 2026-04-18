@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="/FrontEnd/CSS/monthly_quota.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Configuracion de Cuotas Mensuales</title>
+    <title>ADI - Configuracion Financiera</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/tower_fund.js" defer></script>
     <script src="/FrontEnd/JS/monthly_quota.js" defer></script>
     <style>
         .role-badge {
@@ -46,7 +47,7 @@
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">CUOTA MENSUAL</div>
+        <div class="nav-title">CONFIGURACION FINANCIERA</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -62,7 +63,25 @@
     </nav>
 
     <main class="main-container">
+        <section class="fund-card">
+            <h2>Fondo Inicial de Torres</h2>
+            <p class="current-label">Fondo actual configurado</p>
+            <p id="current-fund" class="current-amount">$0.00</p>
+            <p id="updated-at" class="updated-at">Sin actualizaciones registradas</p>
+
+            <label for="fund-amount">Nuevo fondo inicial</label>
+            <input id="fund-amount" type="number" min="0" step="0.01" placeholder="Ej. 25000.00">
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="fund-confirm">
+                HAGA CLICK PARA CONFIRMAR
+            </label>
+
+            <button id="save-fund-btn" class="btn-save">GUARDAR FONDO</button>
+        </section>
+
         <section class="quota-panel">
+            <h2>Cuota Mensual</h2>
             <div class="form-grid">
                 <label for="quota-month">Mes</label>
                 <select id="quota-month"></select>
@@ -78,7 +97,7 @@
                     HAGA CLICK PARA CONFIRMAR
                 </label>
 
-                <button id="save-quota-btn" class="btn-save">GUARDAR</button>
+                <button id="save-quota-btn" class="btn-save">GUARDAR CUOTA</button>
             </div>
         </section>
 
@@ -114,6 +133,9 @@
             }
         });
     </script>
+    <footer>
+        <p>X-CORP</p>
+    </footer>
 </body>
 </html>
 

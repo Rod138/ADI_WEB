@@ -1,4 +1,4 @@
-* {
+﻿* {
     font-family: 'Inter', sans-serif;
     color: #111111;
     padding: 0;
@@ -91,6 +91,7 @@ body {
     padding: 1.1rem 1rem 2rem;
 }
 
+.fund-card,
 .quota-panel,
 .history-panel {
     background-color: #F1F1F1;
@@ -98,8 +99,35 @@ body {
     padding: 1rem 1.1rem;
 }
 
+.fund-card,
 .quota-panel {
     margin-bottom: 1rem;
+}
+
+.fund-card h2,
+.quota-panel h2,
+.history-panel h2 {
+    font-size: 1.05rem;
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 0.7rem;
+}
+
+.current-label {
+    color: #6A744F;
+    font-size: 0.85rem;
+}
+
+.current-amount {
+    font-size: 2rem;
+    color: #1E3006;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+}
+
+.updated-at {
+    font-size: 0.8rem;
+    color: var(--adi-text-light);
+    margin-bottom: 0.8rem;
 }
 
 .form-grid {
@@ -152,12 +180,6 @@ body {
     background-color: transparent;
     font-size: 0.95rem;
     cursor: pointer;
-}
-
-.history-panel h2 {
-    font-size: 1.05rem;
-    font-family: 'Outfit', sans-serif;
-    margin-bottom: 0.7rem;
 }
 
 .table-container {
@@ -230,6 +252,10 @@ select:focus {
         font-size: 1.2rem;
     }
 
+    .current-amount {
+        font-size: 1.6rem;
+    }
+
     .bottom-actions {
         justify-content: center;
     }
@@ -239,4 +265,40 @@ select:focus {
     .nav-title {
         max-width: calc(100% - 8rem);
     }
+}
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+}
+
+footer p {
+    text-align: center;
+    color: #FFFFFF;
+    padding-top: 0.7rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+}
+
+/* Unified Content Width */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 80%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
+    }
+}
+
+/* Footer anchoring fix */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

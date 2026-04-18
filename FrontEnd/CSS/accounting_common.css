@@ -1,4 +1,4 @@
-:root {
+﻿:root {
     --adi-olive: #6A8042;
     --adi-olive-dark: #5D723B;
     --adi-accent: #ED7A13;
@@ -103,4 +103,25 @@ textarea:focus {
         font-size: 1.2rem;
         max-width: calc(100% - 8rem);
     }
+}
+footer {
+    margin-top: auto;
+    width: 100%;
+    background-color: var(--adi-green-dark);
+    height: 2.5rem;
+}
+
+footer p {
+    text-align: center;
+    color: #FFFFFF;
+    padding-top: 0.7rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+}
+
+/* Footer anchoring fix */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }

@@ -71,11 +71,11 @@
             <label for="pay-year">AÑO:</label>
             <input id="pay-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
 
-            <label for="pay-expected">CUOTA ESPERADA:</label>
-            <input id="pay-expected" class="expected-quota-input" type="number" min="0" step="0.01" placeholder="Se autocompleta" readonly>
+            <label for="pay-amount">CANTIDAD PAGADA:</label>
+            <input id="pay-amount" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
 
-            <label for="pay-amount">CANTIDAD PAGADA (LA QUE VAS A REGISTRAR):</label>
-            <input id="pay-amount" class="user-paid-input" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+            <label for="pay-expected">CUOTA ESPERADA:</label>
+            <input id="pay-expected" type="number" min="0" step="0.01" placeholder="Ej. 100.00" readonly>
 
             <label for="pay-proof">COMPROBANTE (IMAGEN O PDF):</label>
             <label class="proof-upload-box" for="pay-proof">
@@ -141,6 +141,7 @@
     </main>
 
     <div class="bottom-actions">
+        <button id="download-btn" class="btn-download">DESCARGAR CSV</button>
         <a href="/accounting" class="btn-back">REGRESAR</a>
     </div>
     <script>
@@ -152,6 +153,9 @@
             }
         });
     </script>
+    <footer>
+        <p>X-CORP</p>
+    </footer>
 </body>
 </html>
 
