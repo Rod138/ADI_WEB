@@ -94,171 +94,198 @@ export const getTowerExpensesBoard = async (req, res) => {
     }
 };
 
-// Obtiene la configuracion vigente del fondo inicial de torre.
-export const getTowerFundConfig = async (req, res) => {
+// === Unified Finance Configuration ===
+// Calculates the current tower balance: initial_fund + payments_received - expenses
+const calculateTowerBalance = async () => {
     try {
-        const { data, error } = await supabase
+        // Get current fund
+        const { data: fundData, error: fundError } = await supabase
+            .from('tower_fund')
+            .select('initial_amount')
+            .order('updated_at', { ascending: false })
+            .limit(1);
+
+        const initialAmount = fundData && fundData.length > 0 ? parseFloat(fundData[0].initial_amount || 0) : 0;
+
+        // Get total payments received from departments
+        const { data: paymentsData, error: paymentsError } = await supabase
+            .from('recipes_payment')
+            .select('amount_paid');
+
+        const totalPayments = paymentsData
+            ? paymentsData.reduce((sum, p) => sum + (parseFloat(p.amount_paid || 0)), 0)
+            : 0;
+
+        // Get total expenses
+        const { data: expensesData, error: expensesError } = await supabase
+            .from('tower_expenses')
+            .select('amount');
+
+        const totalExpenses = expensesData
+            ? expensesData.reduce((sum, e) => sum + (parseFloat(e.amount || 0)), 0)
+            : 0;
+
+        const balance = initialAmount + totalPayments - totalExpenses;
+        return { balance, initialAmount, totalPayments, totalExpenses };
+    } catch (error) {
+        console.error('Error calculating balance:', error);
+        return { balance: 0, initialAmount: 0, totalPayments: 0, totalExpenses: 0 };
+    }
+};
+
+// Obtiene la configuracion vigente del fondo inicial de torre.
+// Retrieves both tower fund and monthly quota configurations
+export const getFinanceConfig = async (req, res) => {
+    try {
+        const { data: fundData, error: fundError } = await supabase
             .from('tower_fund')
             .select('id, initial_amount, updated_at')
             .order('updated_at', { ascending: false })
             .limit(1);
 
-        if (error) {
-            return res.status(500).json({ success: false, message: 'No se pudo obtener el fondo inicial.' });
-        }
-
-        const currentFund = Array.isArray(data) && data.length > 0 ? data[0] : null;
-
-        return res.status(200).json({
-            success: true,
-            fund: currentFund
-        });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: 'Error interno al consultar el fondo inicial.' });
-    }
-};
-
-// Inserta o actualiza (upsert manual) el fondo inicial segun exista un registro previo.
-export const upsertTowerFundConfig = async (req, res) => {
-    const { initial_amount } = req.body;
-    const parsedAmount = parseFloat(initial_amount);
-
-    if (isNaN(parsedAmount) || parsedAmount < 0) {
-        return res.status(400).json({ success: false, message: 'El fondo inicial debe ser un numero mayor o igual a 0.' });
-    }
-
-    try {
-        const nowIso = new Date().toISOString();
-
-        const { data: existingRows, error: existingError } = await supabase
-            .from('tower_fund')
-            .select('id')
-            .order('updated_at', { ascending: false })
-            .limit(1);
-
-        if (existingError) {
-            return res.status(500).json({ success: false, message: 'No se pudo validar el fondo actual.' });
-        }
-
-        const latest = Array.isArray(existingRows) && existingRows.length > 0 ? existingRows[0] : null;
-
-        let saveError = null;
-
-        if (latest) {
-            const { error } = await supabase
-                .from('tower_fund')
-                .update({
-                    initial_amount: parsedAmount,
-                    updated_at: nowIso
-                })
-                .eq('id', latest.id);
-            saveError = error;
-        } else {
-            const { error } = await supabase
-                .from('tower_fund')
-                .insert({
-                    initial_amount: parsedAmount,
-                    updated_at: nowIso
-                });
-            saveError = error;
-        }
-
-        if (saveError) {
-            return res.status(500).json({ success: false, message: 'No se pudo guardar el fondo inicial.' });
-        }
-
-        return res.status(200).json({ success: true, message: 'Fondo inicial actualizado correctamente.' });
-    } catch (error) {
-        return res.status(500).json({ success: false, message: 'Error interno al guardar el fondo inicial.' });
-    }
-};
-
-// Lista historica de configuraciones de cuota mensual para consulta administrativa.
-export const getMonthlyQuotaConfig = async (req, res) => {
-    try {
-        const { data, error } = await supabase
+        const { data: quotaData, error: quotaError } = await supabase
             .from('monthly_quota')
             .select('id, month, year, amount, created_at')
             .order('year', { ascending: false })
             .order('created_at', { ascending: false });
 
-        if (error) {
-            return res.status(500).json({ success: false, message: 'No se pudo obtener la configuracion de cuotas.' });
+        if (fundError || quotaError) {
+            return res.status(500).json({ success: false, message: 'No se pudo obtener la configuración financiera.' });
         }
 
-        return res.status(200).json({ success: true, quotas: data || [] });
+        const currentFund = Array.isArray(fundData) && fundData.length > 0 ? fundData[0] : null;
+        const balanceData = await calculateTowerBalance();
+
+        return res.status(200).json({
+            success: true,
+            fund: currentFund,
+            quotas: quotaData || [],
+            balance: balanceData
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: 'Error interno al consultar cuotas.' });
+        return res.status(500).json({ success: false, message: 'Error interno al consultar configuración financiera.' });
     }
 };
 
-// Crea o actualiza la cuota de un mes/anio especifico manteniendo unicidad logica.
-export const upsertMonthlyQuotaConfig = async (req, res) => {
+// Updates both tower fund and monthly quota configurations
+export const upsertFinanceConfig = async (req, res) => {
     try {
-        const { month, year, amount } = req.body;
-
-        const normalizedMonth = String(month || '').trim();
-        const yearNum = parseInt(year, 10);
-        const amountNum = parseFloat(amount);
-
-        if (!normalizedMonth) {
-            return res.status(400).json({ success: false, message: 'El mes es obligatorio.' });
-        }
-
-        if (isNaN(yearNum) || yearNum < 2000) {
-            return res.status(400).json({ success: false, message: 'El año es invalido.' });
-        }
-
-        if (isNaN(amountNum) || amountNum <= 0) {
-            return res.status(400).json({ success: false, message: 'La cuota debe ser mayor a 0.' });
-        }
-
+        const { initial_amount, month, year, amount } = req.body;
         const nowIso = new Date().toISOString();
 
-        const { data: existingRows, error: existingError } = await supabase
-            .from('monthly_quota')
-            .select('id')
-            .eq('month', normalizedMonth)
-            .eq('year', yearNum)
-            .limit(1);
+        // Update tower fund if initial_amount is provided
+        if (initial_amount !== undefined && initial_amount !== null) {
+            const parsedAmount = parseFloat(initial_amount);
+            if (isNaN(parsedAmount) || parsedAmount < 0) {
+                return res.status(400).json({ success: false, message: 'El fondo inicial debe ser un número mayor o igual a 0.' });
+            }
 
-        if (existingError) {
-            return res.status(500).json({ success: false, message: 'No se pudo validar la cuota mensual.' });
+            const { data: existingRows, error: existingError } = await supabase
+                .from('tower_fund')
+                .select('id')
+                .order('updated_at', { ascending: false })
+                .limit(1);
+
+            if (existingError) {
+                return res.status(500).json({ success: false, message: 'No se pudo validar el fondo actual.' });
+            }
+
+            const latest = Array.isArray(existingRows) && existingRows.length > 0 ? existingRows[0] : null;
+            let saveError = null;
+
+            if (latest) {
+                const { error } = await supabase
+                    .from('tower_fund')
+                    .update({
+                        initial_amount: parsedAmount,
+                        updated_at: nowIso
+                    })
+                    .eq('id', latest.id);
+                saveError = error;
+            } else {
+                const { error } = await supabase
+                    .from('tower_fund')
+                    .insert({
+                        initial_amount: parsedAmount,
+                        updated_at: nowIso
+                    });
+                saveError = error;
+            }
+
+            if (saveError) {
+                return res.status(500).json({ success: false, message: 'No se pudo guardar el fondo inicial.' });
+            }
         }
 
-        const existing = Array.isArray(existingRows) && existingRows.length > 0 ? existingRows[0] : null;
-        let saveError = null;
+        // Update monthly quota if month, year, amount are provided
+        if (month !== undefined && year !== undefined && amount !== undefined) {
+            const normalizedMonth = String(month || '').trim();
+            const yearNum = parseInt(year, 10);
+            const amountNum = parseFloat(amount);
 
-        if (existing) {
-            const { error } = await supabase
+            if (!normalizedMonth) {
+                return res.status(400).json({ success: false, message: 'El mes es obligatorio.' });
+            }
+
+            if (isNaN(yearNum) || yearNum < 2000) {
+                return res.status(400).json({ success: false, message: 'El año es inválido.' });
+            }
+
+            if (isNaN(amountNum) || amountNum <= 0) {
+                return res.status(400).json({ success: false, message: 'La cuota debe ser mayor a 0.' });
+            }
+
+            const { data: existingRows, error: existingError } = await supabase
                 .from('monthly_quota')
-                .update({
-                    amount: amountNum,
-                    created_at: nowIso
-                })
-                .eq('id', existing.id);
-            saveError = error;
-        } else {
-            const { error } = await supabase
-                .from('monthly_quota')
-                .insert({
-                    month: normalizedMonth,
-                    year: yearNum,
-                    amount: amountNum,
-                    created_at: nowIso
-                });
-            saveError = error;
+                .select('id')
+                .eq('month', normalizedMonth)
+                .eq('year', yearNum)
+                .limit(1);
+
+            if (existingError) {
+                return res.status(500).json({ success: false, message: 'No se pudo validar la cuota mensual.' });
+            }
+
+            const existing = Array.isArray(existingRows) && existingRows.length > 0 ? existingRows[0] : null;
+            let saveError = null;
+
+            if (existing) {
+                const { error } = await supabase
+                    .from('monthly_quota')
+                    .update({
+                        amount: amountNum,
+                        created_at: nowIso
+                    })
+                    .eq('id', existing.id);
+                saveError = error;
+            } else {
+                const { error } = await supabase
+                    .from('monthly_quota')
+                    .insert({
+                        month: normalizedMonth,
+                        year: yearNum,
+                        amount: amountNum,
+                        created_at: nowIso
+                    });
+                saveError = error;
+            }
+
+            if (saveError) {
+                return res.status(500).json({ success: false, message: 'No se pudo guardar la cuota mensual.' });
+            }
         }
 
-        if (saveError) {
-            return res.status(500).json({ success: false, message: 'No se pudo guardar la cuota mensual.' });
-        }
-
-        return res.status(200).json({ success: true, message: 'Cuota mensual guardada correctamente.' });
+        return res.status(200).json({ success: true, message: 'Configuración financiera actualizada correctamente.' });
     } catch (error) {
-        return res.status(500).json({ success: false, message: 'Error interno al guardar cuota mensual.' });
+        return res.status(500).json({ success: false, message: 'Error interno al guardar configuración financiera.' });
     }
 };
+
+// === Legacy function aliases (for backward compatibility) ===
+export const getTowerFundConfig = getFinanceConfig;
+export const upsertTowerFundConfig = upsertFinanceConfig;
+export const getMonthlyQuotaConfig = getFinanceConfig;
+export const upsertMonthlyQuotaConfig = upsertFinanceConfig;
 
 // Recupera comprobantes junto con el nombre legible del departamento.
 export const getPaymentReceipts = async (req, res) => {

@@ -149,18 +149,6 @@ button:hover {
 }
 
 /* === ADI Light Refresh === */
-:root {
-    --adi-olive: #6A8042;
-    --adi-olive-dark: #5D723B;
-    --adi-accent: #ED7A13;
-    --adi-cream: #FFFADD;
-    --adi-surface: #F7F7F7;
-    --adi-text: #111111;
-}
-
-body {
-    color: var(--adi-text);
-}
 
 .top-nav,
 nav {
@@ -174,16 +162,6 @@ nav {
 .nav-icon-btn:hover,
 nav a:hover {
     color: var(--adi-accent);
-}
-
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
 }
 
 .btn-back {

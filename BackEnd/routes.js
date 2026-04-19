@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification } from './controllers/notifications.js';
-import { createTowerExpense, getTowerExpensesBoard, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
+import { createTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
 
 const router = Router();
@@ -93,12 +93,17 @@ router.get('/accounting/expenses-board', (req, res) => {
     res.render('accounting/expenses-board');
 });
 
+// Legacy routes redirect to unified finance config
 router.get('/accounting/tower-fund', (req, res) => {
-    res.redirect('/accounting/monthly-quota');
+    res.redirect('/accounting/finance-config');
 });
 
 router.get('/accounting/monthly-quota', (req, res) => {
-    res.render('accounting/monthly-quota');
+    res.redirect('/accounting/finance-config');
+});
+
+router.get('/accounting/finance-config', (req, res) => {
+    res.render('accounting/finance-config');
 });
 
 router.get('/accounting/payment', (req, res) => {
@@ -125,10 +130,13 @@ router.get('/accounting/receipt', (req, res) => {
 
 router.post('/api/accounting/expenses', requireMinRole(2), createTowerExpense);
 router.get('/api/accounting/expenses-board', requireMinRole(1), getTowerExpensesBoard);
-router.get('/api/accounting/tower-fund', getTowerFundConfig);
-router.post('/api/accounting/tower-fund', requireMinRole(2), upsertTowerFundConfig);
-router.get('/api/accounting/monthly-quota', getMonthlyQuotaConfig);
-router.post('/api/accounting/monthly-quota', requireMinRole(2), upsertMonthlyQuotaConfig);
+// Unified finance config endpoints (legacy routes still work for backward compatibility)
+router.get('/api/accounting/finance-config', getFinanceConfig);
+router.post('/api/accounting/finance-config', requireMinRole(2), upsertFinanceConfig);
+router.get('/api/accounting/tower-fund', getFinanceConfig);
+router.post('/api/accounting/tower-fund', requireMinRole(2), upsertFinanceConfig);
+router.get('/api/accounting/monthly-quota', getFinanceConfig);
+router.post('/api/accounting/monthly-quota', requireMinRole(2), upsertFinanceConfig);
 router.get('/api/accounting/receipts', getPaymentReceipts);
 router.get('/api/accounting/receipts/:id', getPaymentReceiptById);
 router.patch('/api/accounting/receipts/:id', requireMinRole(2), updatePaymentReceipt);

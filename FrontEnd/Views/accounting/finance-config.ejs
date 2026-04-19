@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/finance_config.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Configuración Financiera</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+    <script src="/FrontEnd/JS/finance_config.js" defer></script>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+        }
+        .role-badge > span:first-child {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+        .role-badge #user-role {
+            white-space: normal;
+        }
+    </style>
+</head>
+<body data-min-role="2">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">CONFIGURACIÓN FINANCIERA</div>
+        <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <span id="user-role">Rol</span>
+            </div>
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-container">
+        <section class="balance-card">
+            <h2>Balance de la Torre</h2>
+            <div class="balance-display">
+                <p class="balance-label">Balance Actual</p>
+                <p id="current-balance" class="balance-amount">$0.00</p>
+                <div class="balance-breakdown">
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Fondo Inicial:</span>
+                        <span id="breakdown-fund" class="breakdown-value">$0.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Pagos Recibidos:</span>
+                        <span id="breakdown-payments" class="breakdown-value positive">+$0.00</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="breakdown-label">Gastos Realizados:</span>
+                        <span id="breakdown-expenses" class="breakdown-value negative">-$0.00</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="fund-card">
+            <h2>Fondo Inicial de Torres</h2>
+            <p class="current-label">Fondo actual configurado</p>
+            <p id="current-fund" class="current-amount">$0.00</p>
+            <p id="updated-at" class="updated-at">Sin actualizaciones registradas</p>
+
+            <label for="fund-amount">Nuevo fondo inicial</label>
+            <input id="fund-amount" type="number" min="0" step="0.01" placeholder="Ej. 25000.00">
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="fund-confirm">
+                HAGA CLICK PARA CONFIRMAR
+            </label>
+
+            <button id="save-fund-btn" class="btn-save">GUARDAR FONDO</button>
+        </section>
+
+        <section class="quota-panel">
+            <h2>Cuota Mensual</h2>
+            <div class="form-grid">
+                <label for="quota-month">Mes</label>
+                <select id="quota-month"></select>
+
+                <label for="quota-year">Año</label>
+                <input id="quota-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+
+                <label for="quota-amount">Monto de cuota</label>
+                <input id="quota-amount" type="number" min="0.01" step="0.01" placeholder="Ej. 1200.00">
+
+                <label class="checkbox-label">
+                    <input type="checkbox" id="quota-confirm">
+                    HAGA CLICK PARA CONFIRMAR
+                </label>
+
+                <button id="save-quota-btn" class="btn-save">GUARDAR CUOTA</button>
+            </div>
+        </section>
+
+        <section class="history-panel">
+            <h2>Configuración Actual</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>AÑO</th>
+                            <th>MES</th>
+                            <th>CUOTA</th>
+                            <th>ACTUALIZADO</th>
+                        </tr>
+                    </thead>
+                    <tbody id="quota-tbody">
+                        <tr><td colspan="4" style="text-align:center">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="bottom-actions">
+            <a href="/accounting" class="btn-back">REGRESAR</a>
+        </div>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = window.ADIAuth?.getCurrentUser?.();
+            if (user) {
+                const roleSpan = document.getElementById('user-role');
+                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+            }
+        });
+    </script>
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+</body>
+</html>
