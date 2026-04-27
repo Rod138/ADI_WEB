@@ -76,9 +76,71 @@ export const getRoles = async (req, res) => {
 // Inserta un usuario con ID incremental y datos normalizados.
 export const createUser = async (req, res) => {
     const { name, ap, am, email, phone, password, rol_id, dep_id } = req.body;
+
+    // Validar campos requeridos
     if (!name || !email || !phone || !password || !rol_id || !dep_id) {
         return res.status(400).json({ success: false, message: 'Faltan campos obligatorios' });
     }
+
+    // Validar nombre: 3-30 caracteres, solo letras y espacios
+    const nameRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/;
+    if (!nameRegex.test(String(name).trim())) {
+        return res.status(400).json({
+            success: false,
+            message: 'Nombre: 3-30 caracteres, solo letras y espacios'
+        });
+    }
+
+    // Validar apellido paterno si se proporciona
+    if (ap && ap.trim()) {
+        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+        if (!apRegex.test(String(ap).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Apellido paterno: solo letras y espacios, máximo 30 caracteres'
+            });
+        }
+    }
+
+    // Validar apellido materno si se proporciona
+    if (am && am.trim()) {
+        const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+        if (!amRegex.test(String(am).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Apellido materno: solo letras y espacios, máximo 30 caracteres'
+            });
+        }
+    }
+
+    // Validar email: 6-320 caracteres, formato válido
+    const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+    const emailTrimmed = String(email).trim();
+    if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email: 6-320 caracteres, formato válido requerido'
+        });
+    }
+
+    // Validar teléfono: exactamente 10 dígitos
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(String(phone).trim())) {
+        return res.status(400).json({
+            success: false,
+            message: 'Teléfono: debe ser exactamente 10 dígitos'
+        });
+    }
+
+    // Validar contraseña: 8-16 caracteres, al menos 1 mayúscula, 1 minúscula, 1 número
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+    if (!passwordRegex.test(String(password))) {
+        return res.status(400).json({
+            success: false,
+            message: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número'
+        });
+    }
+
     try {
         const { data: maxRow } = await supabase
             .from('users')
@@ -91,11 +153,11 @@ export const createUser = async (req, res) => {
 
         const { error } = await supabase.from('users').insert({
             id: newId,
-            name,
+            name: String(name).trim(),
             ap: ap ? String(ap).trim() || null : null,
-            am: am || null,
-            email,
-            phone,
+            am: am ? String(am).trim() || null : null,
+            email: emailTrimmed,
+            phone: String(phone).trim(),
             password,
             rol_id: parseInt(rol_id, 10),
             dep_id: parseInt(dep_id, 10)
@@ -174,6 +236,68 @@ export const updateUser = async (req, res) => {
 
     if (Object.keys(updates).length === 0)
         return res.status(400).json({ success: false, message: 'No hay datos para actualizar' });
+
+    // Validar campos si se están actualizando
+    if (updates.name) {
+        const nameRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/;
+        if (!nameRegex.test(String(updates.name).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Nombre: 3-30 caracteres, solo letras y espacios'
+            });
+        }
+    }
+
+    if (updates.ap && updates.ap !== null) {
+        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+        if (!apRegex.test(String(updates.ap).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Apellido paterno: solo letras y espacios, máximo 30 caracteres'
+            });
+        }
+    }
+
+    if (updates.am && updates.am !== null) {
+        const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+        if (!amRegex.test(String(updates.am).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Apellido materno: solo letras y espacios, máximo 30 caracteres'
+            });
+        }
+    }
+
+    if (updates.email) {
+        const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+        const emailTrimmed = String(updates.email).trim();
+        if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email: 6-320 caracteres, formato válido requerido'
+            });
+        }
+    }
+
+    if (updates.phone) {
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(String(updates.phone).trim())) {
+            return res.status(400).json({
+                success: false,
+                message: 'Teléfono: debe ser exactamente 10 dígitos'
+            });
+        }
+    }
+
+    if (updates.password) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+        if (!passwordRegex.test(String(updates.password))) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número'
+            });
+        }
+    }
 
     try {
         const { error } = await supabase.from('users').update(updates).eq('id', id);

@@ -5,6 +5,7 @@
  */
 
 import supabase from '../dbconfig.js'
+import { sanitizeEmail, validatePassword } from '../utils/validation.js';
 
 // Construye cliente OAuth para Gmail API cuando existen credenciales de entorno.
 const buildGmailClient = async () => {
@@ -55,10 +56,27 @@ export const login = async (req, res) => {
             });
         }
 
+        // Validar formato de email
+        const sanitizedEmail = sanitizeEmail(email);
+        if (!sanitizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email inválido'
+            });
+        }
+
+        // Validar contraseña no esté vacía
+        if (typeof password !== 'string' || password.length === 0 || password.length > 256) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña inválida'
+            });
+        }
+
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('*')
-            .eq('email', email)
+            .eq('email', sanitizedEmail)
             .eq('password', password)
             .single();
 
@@ -116,10 +134,19 @@ export const forgotPassword = async (req, res) => {
             });
         }
 
+        // Validar formato de email
+        const sanitizedEmail = sanitizeEmail(email);
+        if (!sanitizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email inválido'
+            });
+        }
+
         const { data: user, error: userError } = await supabase
             .from('users')
             .select('id, name, email, password')
-            .eq('email', email)
+            .eq('email', sanitizedEmail)
             .maybeSingle();
 
         if (userError) {

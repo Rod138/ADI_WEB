@@ -7,6 +7,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("email");
     const forgotPasswordForm = document.getElementById("forgot-password-form");
+    const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
 
     if (forgotPasswordForm) {
         // Valida correo y dispara solicitud de recuperacion con timeout de seguridad.
@@ -18,6 +19,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 Swal.fire({
                     titleText: "Campo vacío",
                     text: "Debe llenar el campo del correo electrónico",
+                    icon: "error",
+                    timer: 5000,
+                    timerProgressBar: true,
+                    draggable: true,
+                    theme: 'auto'
+                });
+                return;
+            }
+
+            const emailTrimmed = email.value.trim();
+            if (emailTrimmed.length < 6 || emailTrimmed.length > 320) {
+                Swal.fire({
+                    titleText: "Correo inválido",
+                    text: "El correo debe tener entre 6 y 320 caracteres",
+                    icon: "error",
+                    timer: 5000,
+                    timerProgressBar: true,
+                    draggable: true,
+                    theme: 'auto'
+                });
+                return;
+            }
+
+            if (!email_regex.test(emailTrimmed)) {
+                Swal.fire({
+                    titleText: "Correo inválido",
+                    text: "El correo no tiene un formato válido",
                     icon: "error",
                     timer: 5000,
                     timerProgressBar: true,
@@ -39,7 +67,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const response = await fetch('/api/forgot-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email.value }),
+                    body: JSON.stringify({ email: emailTrimmed }),
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);

@@ -202,48 +202,121 @@ document.addEventListener('DOMContentLoaded', async () => {
             <div class="edit-grid">
                 <div class="edit-field">
                     <label>Nombre *</label>
-                    <input type="text" id="new-name">
+                    <input type="text" id="new-name" placeholder="Ej. Juan" minlength="3" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
                 </div>
                 <div class="edit-field">
                     <label>Apellido paterno</label>
-                    <input type="text" id="new-ap" placeholder="(opcional)">
+                    <input type="text" id="new-ap" placeholder="(opcional)" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
                 </div>
                 <div class="edit-field">
                     <label>Apellido materno</label>
-                    <input type="text" id="new-am" placeholder="(opcional)">
+                    <input type="text" id="new-am" placeholder="(opcional)" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
                 </div>
                 <div class="edit-field">
                     <label>Email *</label>
-                    <input type="email" id="new-email">
+                    <input type="email" id="new-email" minlength="6" maxlength="320">
                 </div>
                 <div class="edit-field">
                     <label>Teléfono *</label>
-                    <input type="text" id="new-phone">
+                    <input type="tel" id="new-phone" placeholder="Ej. 5551234567" minlength="10" maxlength="10" pattern="^\d{10}$">
                 </div>
                 <div class="edit-field">
                     <label>Contraseña *</label>
-                    <input type="password" id="new-password">
+                    <input type="password" id="new-password" minlength="8" maxlength="16">
                 </div>
             </div>
             <button class="save-btn" id="new-user-submit-btn">Crear residente</button>
         `;
 
         document.getElementById('new-user-submit-btn').onclick = async () => {
+            const nameInput = document.getElementById('new-name');
+            const apInput = document.getElementById('new-ap');
+            const amInput = document.getElementById('new-am');
+            const emailInput = document.getElementById('new-email');
+            const phoneInput = document.getElementById('new-phone');
+            const passwordInput = document.getElementById('new-password');
+
             const body = {
-                name:     document.getElementById('new-name').value.trim(),
-                ap:       document.getElementById('new-ap').value.trim(),
-                am:       document.getElementById('new-am').value.trim() || null,
-                email:    document.getElementById('new-email').value.trim(),
-                phone:    document.getElementById('new-phone').value.trim(),
-                password: document.getElementById('new-password').value,
+                name:     nameInput.value.trim(),
+                ap:       apInput.value.trim() || null,
+                am:       amInput.value.trim() || null,
+                email:    emailInput.value.trim(),
+                phone:    phoneInput.value.trim(),
+                password: passwordInput.value,
                 rol_id:   1,
                 dep_id:   depId
             };
 
-            if (!body.name || !body.email || !body.phone || !body.password) {
+            // Validación frontend
+            const nameRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/;
+            if (!nameRegex.test(body.name)) {
                 Swal.fire({
-                    title: 'Campos requeridos',
-                    text: 'Completa nombre, email, teléfono y contraseña. Los apellidos son opcionales.',
+                    title: 'Nombre inválido',
+                    text: 'Nombre: 3-30 caracteres, solo letras y espacios',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            if (body.ap) {
+                const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+                if (!apRegex.test(body.ap)) {
+                    Swal.fire({
+                        title: 'Apellido paterno inválido',
+                        text: 'Solo letras y espacios, máximo 30 caracteres',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+            }
+
+            if (body.am) {
+                const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+                if (!amRegex.test(body.am)) {
+                    Swal.fire({
+                        title: 'Apellido materno inválido',
+                        text: 'Solo letras y espacios, máximo 30 caracteres',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+            }
+
+            const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+            if (body.email.length < 6 || body.email.length > 320 || !emailRegex.test(body.email)) {
+                Swal.fire({
+                    title: 'Email inválido',
+                    text: 'Email: 6-320 caracteres, formato válido requerido',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(body.phone)) {
+                Swal.fire({
+                    title: 'Teléfono inválido',
+                    text: 'Teléfono: debe ser exactamente 10 dígitos',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+            if (!passwordRegex.test(body.password)) {
+                Swal.fire({
+                    title: 'Contraseña inválida',
+                    text: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'

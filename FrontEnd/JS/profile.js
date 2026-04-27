@@ -4,6 +4,14 @@
  * Control: alterna modo lectura/edicion para evitar modificaciones accidentales.
  */
 
+// Patrones de validación consistentes
+const ValidationPatterns = {
+    nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
+    emailRegex: /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i,
+    phoneRegex: /^\d{10}$/,
+    passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     const sessionUser = JSON.parse(sessionStorage.getItem('user'));
 
@@ -89,12 +97,69 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        // Validar nombre: 3-30 caracteres, solo letras y espacios
+        if (!ValidationPatterns.nameRegex.test(name)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Nombre inválido',
+                text: 'El nombre debe tener 3-30 caracteres y contener solo letras y espacios'
+            });
+            return;
+        }
+
+        // Validar email: 6-320 caracteres, formato válido
+        if (email.length < 6 || email.length > 320 || !ValidationPatterns.emailRegex.test(email)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email inválido',
+                text: 'El email debe tener entre 6 y 320 caracteres y formato válido'
+            });
+            return;
+        }
+
+        // Validar teléfono: exactamente 10 dígitos
+        if (!ValidationPatterns.phoneRegex.test(phone)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Teléfono inválido',
+                text: 'El teléfono debe contener exactamente 10 dígitos'
+            });
+            return;
+        }
+
         if (password || passwordConfirm) {
             if (!password || !passwordConfirm) {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Contraseña incompleta',
                     text: 'Completa ambos campos de contraseña.'
+                });
+                return;
+            }
+
+            if (password.length < 8) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contraseña muy corta',
+                    text: 'La contraseña debe tener mínimo 8 caracteres'
+                });
+                return;
+            }
+
+            if (password.length > 16) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contraseña muy larga',
+                    text: 'La contraseña debe tener máximo 16 caracteres'
+                });
+                return;
+            }
+
+            if (!ValidationPatterns.passwordRegex.test(password)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contraseña débil',
+                    text: 'Debe incluir: 1 mayúscula, 1 minúscula y 1 número'
                 });
                 return;
             }

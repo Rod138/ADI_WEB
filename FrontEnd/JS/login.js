@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("passw");
     const log_in_form = document.getElementById("login-form");
 
-    const email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+    const password_regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
 
     // Correo
     if (email) {
@@ -42,11 +43,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Contraseña
     if (password) {
         password.addEventListener("input", function () {
-            if (this.value.length > 32) {
-                this.value = this.value.slice(0, 32);
+            if (this.value.length > 16) {
+                this.value = this.value.slice(0, 16);
                 Swal.fire({
                     title: 'Límite de caracteres',
-                    text: "Máximo 32 carácteres en la contraseña",
+                    text: "Máximo 16 carácteres en la contraseña",
                     ...AlertConfig.warning,
                     timer: 3000,
                     timerProgressBar: true,
@@ -98,10 +99,26 @@ document.addEventListener("DOMContentLoaded", () => {
                     confirmButtonText: 'Aceptar'
                 });
                 data_is_fine = false;
-            } else if (password.value.length > 32) {
+            } else if (password.value.length < 8) {
+                Swal.fire({
+                    title: "Contraseña muy corta",
+                    text: "Mínimo 8 carácteres requeridos",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
+                });
+                data_is_fine = false;
+            } else if (password.value.length > 16) {
                 Swal.fire({
                     title: "Contraseña muy larga",
-                    text: "Máximo 32 carácteres",
+                    text: "Máximo 16 carácteres",
+                    ...AlertConfig.error,
+                    confirmButtonText: 'Aceptar'
+                });
+                data_is_fine = false;
+            } else if (!password_regex.test(password.value)) {
+                Swal.fire({
+                    title: "Contraseña débil",
+                    text: "Debe incluir: 1 mayúscula, 1 minúscula y 1 número",
                     ...AlertConfig.error,
                     confirmButtonText: 'Aceptar'
                 });
