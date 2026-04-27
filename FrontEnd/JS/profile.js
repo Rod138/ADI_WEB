@@ -9,7 +9,7 @@ const ValidationPatterns = {
     nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
     emailRegex: /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i,
     phoneRegex: /^\d{10}$/,
-    passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/
+    passwordRegex: /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 Swal.fire({
                     icon: 'warning',
                     title: 'Contraseña débil',
-                    text: 'Debe incluir: 1 mayúscula, 1 minúscula y 1 número'
+                    text: 'Debe contener al menos 1 número o letra'
                 });
                 return;
             }

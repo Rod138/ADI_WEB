@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const log_in_form = document.getElementById("login-form");
 
     const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
-    const password_regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+    const password_regex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
 
     // Correo
     if (email) {
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (!password_regex.test(password.value)) {
                 Swal.fire({
                     title: "Contraseña débil",
-                    text: "Debe incluir: 1 mayúscula, 1 minúscula y 1 número",
+                    text: "Debe contener al menos 1 número o letra",
                     ...AlertConfig.error,
                     confirmButtonText: 'Aceptar'
                 });

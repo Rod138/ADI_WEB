@@ -312,11 +312,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+            const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
             if (!passwordRegex.test(body.password)) {
                 Swal.fire({
                     title: 'Contraseña inválida',
-                    text: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número',
+                    text: 'Contraseña: 8-16 caracteres con al menos 1 número o letra',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'

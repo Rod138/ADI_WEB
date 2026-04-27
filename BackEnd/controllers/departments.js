@@ -132,12 +132,12 @@ export const createUser = async (req, res) => {
         });
     }
 
-    // Validar contraseña: 8-16 caracteres, al menos 1 mayúscula, 1 minúscula, 1 número
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+    // Validar contraseña: 8-16 caracteres, al menos 1 número o letra
+    const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
     if (!passwordRegex.test(String(password))) {
         return res.status(400).json({
             success: false,
-            message: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número'
+            message: 'Contraseña: 8-16 caracteres con al menos 1 número o letra'
         });
     }
 
@@ -290,11 +290,11 @@ export const updateUser = async (req, res) => {
     }
 
     if (updates.password) {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/;
+        const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
         if (!passwordRegex.test(String(updates.password))) {
             return res.status(400).json({
                 success: false,
-                message: 'Contraseña: 8-16 caracteres, mínimo 1 mayúscula, 1 minúscula y 1 número'
+                message: 'Contraseña: 8-16 caracteres con al menos 1 número o letra'
             });
         }
     }

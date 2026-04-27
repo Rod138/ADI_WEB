@@ -9,7 +9,7 @@ const ValidationPatterns = {
     nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
     emailRegex: /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i,
     phoneRegex: /^\d{10}$/,
-    passwordRegex: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,16}$/
+    passwordRegex: /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/
 };
 
 /**
