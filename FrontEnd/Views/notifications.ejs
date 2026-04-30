@@ -69,9 +69,16 @@
                     <option value="desc">FECHA DESC</option>
                     <option value="asc">FECHA ASC</option>
                 </select>
+                <button id="delete-all-btn" class="btn-delete-all">BORRAR TODAS</button>
             </div>
 
             <div id="notifications-list" class="notifications-list"></div>
+
+            <div id="pagination-box" class="pagination-box" style="display: none;">
+                <button id="noti-prev-btn" class="pagination-btn" aria-label="Página anterior">← ANTERIOR</button>
+                <span id="noti-page-indicator" class="page-indicator">Página 1 de 1</span>
+                <button id="noti-next-btn" class="pagination-btn" aria-label="Página siguiente">SIGUIENTE →</button>
+            </div>
         </section>
 
         <div class="bottom-actions">

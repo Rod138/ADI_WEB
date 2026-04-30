@@ -23,6 +23,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
     const password_regex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const reasonFromUrl = urlParams.get('reason');
+    const reasonFromStorage = localStorage.getItem('adi_login_notice');
+    const reason = reasonFromUrl || reasonFromStorage;
+
+    if (reason === 'session-ended') {
+        Swal.fire({
+            title: 'Tu sesión terminó',
+            text: 'Por seguridad, debes volver a ingresar.',
+            ...AlertConfig.info,
+            confirmButtonText: 'Entendido'
+        });
+        localStorage.removeItem('adi_login_notice');
+    }
+
     // Correo
     if (email) {
         email.addEventListener("input", function () {
@@ -143,7 +158,17 @@ async function login(correo, contrasenna) {
         const data = await response.json();
 
         if (data.success) {
-            sessionStorage.setItem('user', JSON.stringify(data.user));
+            sessionStorage.setItem('user', JSON.stringify({
+                id: data.user.id,
+                email: data.user.email,
+                phone: data.user.phone,
+                name: data.user.name,
+                rol_id: data.user.rol_id,
+                dep_id: data.user.dep_id,
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+                sessionExpiresAt: Date.now() + (3 * 24 * 60 * 60 * 1000)
+            }));
             await Swal.fire({
                 title: `¡Bienvenido, ${data.user.name}!`,
                 ...AlertConfig.success,

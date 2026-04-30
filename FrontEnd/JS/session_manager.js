@@ -11,6 +11,9 @@ const ADI_ROLES = Object.freeze({
     TESORERO_ADMIN: 4
 });
 
+const SESSION_TIMEOUT_MS = 3 * 24 * 60 * 60 * 1000;
+let sessionTimeoutHandle = null;
+
 // Lee la sesion desde storage y evita fallos por JSON malformado.
 function safeParseUserSession() {
     try {
@@ -58,6 +61,71 @@ function showUserMessage(title, message, icon = 'warning') {
     return Promise.resolve();
 }
 
+function getSessionDeadline(user) {
+    const rawValue = Number(user?.sessionExpiresAt || 0);
+    if (!Number.isFinite(rawValue) || rawValue <= 0) return 0;
+    return rawValue;
+}
+
+function isSessionExpired(user) {
+    const deadline = getSessionDeadline(user);
+    if (!deadline) return true;
+    return Date.now() >= deadline;
+}
+
+function storeLoginNotice(reasonKey) {
+    if (!reasonKey) return;
+    try {
+        localStorage.setItem('adi_login_notice', reasonKey);
+    } catch {
+        // No bloquear flujo por almacenamiento.
+    }
+}
+
+async function endSession(reasonKey = 'session-ended', shouldCallLogoutApi = true) {
+    if (window.__adiEndingSession) return;
+    window.__adiEndingSession = true;
+
+    const currentUser = safeParseUserSession();
+    const refreshToken = currentUser?.refreshToken || '';
+
+    if (shouldCallLogoutApi && refreshToken) {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ refreshToken })
+            });
+        } catch {
+            // Continuar cierre local aunque el servidor no responda.
+        }
+    }
+
+    sessionStorage.removeItem('user');
+    storeLoginNotice(reasonKey);
+    window.location.replace(`/login?reason=${encodeURIComponent(reasonKey)}`);
+}
+
+function scheduleSessionTimeout(user) {
+    if (sessionTimeoutHandle) {
+        clearTimeout(sessionTimeoutHandle);
+        sessionTimeoutHandle = null;
+    }
+
+    const deadline = getSessionDeadline(user);
+    if (!deadline) return;
+
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) {
+        endSession('session-ended', true);
+        return;
+    }
+
+    sessionTimeoutHandle = setTimeout(() => {
+        endSession('session-ended', true);
+    }, remainingMs);
+}
+
 // Desactiva las animaciones de SweetAlert2 para mantener la interfaz estática.
 function disableSwalAnimations() {
     if (typeof Swal === 'undefined' || !Swal || typeof Swal.fire !== 'function') return;
@@ -94,27 +162,41 @@ function patchApiFetchHeaders() {
 
     const nativeFetch = window.fetch.bind(window);
 
-    window.fetch = (input, init = {}) => {
+    window.fetch = async (input, init = {}) => {
         const requestUrl = typeof input === 'string' ? input : (input?.url || '');
         const shouldAttachSession = requestUrl.startsWith('/api/')
             && !requestUrl.startsWith('/api/login')
-            && !requestUrl.startsWith('/api/forgot-password');
+            && !requestUrl.startsWith('/api/forgot-password')
+            && !requestUrl.startsWith('/api/refresh-token')
+            && !requestUrl.startsWith('/api/logout');
 
         if (!shouldAttachSession) {
             return nativeFetch(input, init);
         }
 
         const currentUser = safeParseUserSession();
-        const mergedHeaders = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
-
-        if (currentUser?.id) {
-            mergedHeaders.set('x-session-user-id', String(currentUser.id));
+        if (!currentUser || isSessionExpired(currentUser)) {
+            await endSession('session-ended', true);
+            throw new Error('Session expired');
         }
 
-        return nativeFetch(input, {
+        const mergedHeaders = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));
+
+        // Usar JWT en Authorization header
+        if (currentUser?.accessToken) {
+            mergedHeaders.set('Authorization', `Bearer ${currentUser.accessToken}`);
+        }
+
+        const response = await nativeFetch(input, {
             ...init,
             headers: mergedHeaders
         });
+
+        if (response.status === 401) {
+            await endSession('session-ended', true);
+        }
+
+        return response;
     };
 
     window.__adiFetchPatched = true;
@@ -147,45 +229,56 @@ async function enforcePageRole(user) {
     return false;
 }
 
-window.ADIAuth = {
-    roles: ADI_ROLES,
-    getCurrentUser: safeParseUserSession,
-    getRoleLabel,
-    hasMinRole
-};
+    window.ADIAuth = {
+        roles: ADI_ROLES,
+        getCurrentUser: safeParseUserSession,
+        getRoleLabel,
+        hasMinRole
+    };
 
-patchApiFetchHeaders();
-disableSwalAnimations();
+    patchApiFetchHeaders();
+    disableSwalAnimations();
 
-window.addEventListener('pageshow', async function () {
-    const user = safeParseUserSession();
-    if (!user) {
-        window.location.replace('/login');
-        return;
-    }
+    window.addEventListener('pageshow', async function () {
+        const user = safeParseUserSession();
+        if (!user) {
+            window.location.replace('/login');
+            return;
+        }
 
-    const allowed = await enforcePageRole(user);
-    if (!allowed) return;
+        if (isSessionExpired(user)) {
+            await endSession('session-ended', true);
+            return;
+        }
 
-    applyRoleVisibility(user);
+        scheduleSessionTimeout(user);
 
-    const span = document.getElementById('user-name');
-    if (span) span.textContent = user.name;
+        const allowed = await enforcePageRole(user);
+        if (!allowed) return;
 
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', async function (e) {
-            e.preventDefault();
-            try {
-                // Limpiar cookie del lado del servidor
-                await fetch('/api/logout', { method: 'POST' });
-            } catch (err) {
-                console.error('Error al limpiar sesión en servidor:', err);
-            }
-            // Limpiar sessionStorage del lado del cliente
-            sessionStorage.removeItem('user');
-            await showUserMessage('Sesion cerrada', 'Hasta pronto.', 'success');
-            window.location.replace('/');
-        });
-    }
-});
+        applyRoleVisibility(user);
+
+        const span = document.getElementById('user-name');
+        if (span) span.textContent = user.name;
+
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                try {
+                    const currentUser = safeParseUserSession();
+                    await fetch('/api/logout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ refreshToken: currentUser?.refreshToken || '' })
+                    });
+                } catch {
+                    // Continuar cierre local aunque falle el servidor.
+                }
+
+                sessionStorage.removeItem('user');
+                await showUserMessage('Sesion cerrada', 'Hasta pronto.', 'success');
+                window.location.replace('/');
+            });
+        }
+    });

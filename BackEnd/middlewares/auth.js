@@ -5,6 +5,7 @@
  */
 
 import supabase from '../dbconfig.js';
+import { verifyAccessToken } from '../utils/validation.js';
 
 const SESSION_USER_ID_HEADER = 'x-session-user-id';
 
@@ -23,10 +24,24 @@ const loadSessionUser = async (req) => {
         return req.sessionUser;
     }
 
-    // Primero intenta obtener el ID de la cookie
-    let userId = parseSessionUserId(req.cookies?.session_user_id);
+    let userId = null;
 
-    // Si no hay cookie, intenta obtenerlo del header
+    // PRIORIDAD 1: Intentar obtener JWT del header Authorization
+    const authHeader = req.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.slice(7); // Quita "Bearer "
+        const decoded = await verifyAccessToken(token);
+        if (decoded && decoded.userId) {
+            userId = decoded.userId;
+        }
+    }
+
+    // PRIORIDAD 2: Fallback a cookie (para compatibilidad con sesiones antiguas)
+    if (!userId) {
+        userId = parseSessionUserId(req.cookies?.session_user_id);
+    }
+
+    // PRIORIDAD 3: Fallback a header antiguo (para transición)
     if (!userId) {
         userId = parseSessionUserId(req.get(SESSION_USER_ID_HEADER));
     }

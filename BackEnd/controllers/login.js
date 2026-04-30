@@ -5,7 +5,19 @@
  */
 
 import supabase from '../dbconfig.js'
-import { sanitizeEmail, validatePassword } from '../utils/validation.js';
+import { sanitizeEmail, validatePassword, generateAccessToken, generateRefreshToken, saveRefreshTokenToDB } from '../utils/validation.js';
+
+// Interpreta duraciones simples como 15m, 7d, 3600s para calcular expiración en BD.
+const parseDurationToMs = (rawValue, fallbackMs) => {
+    if (!rawValue || typeof rawValue !== 'string') return fallbackMs;
+    const match = rawValue.trim().match(/^(\d+)\s*([smhd])$/i);
+    if (!match) return fallbackMs;
+
+    const amount = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    const multipliers = { s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+    return amount * (multipliers[unit] || 1);
+}
 
 // Construye cliente OAuth para Gmail API cuando existen credenciales de entorno.
 const buildGmailClient = async () => {
@@ -88,17 +100,28 @@ export const login = async (req, res) => {
         }
 
         if (user.rol_id > 0) {
-            // Establecer cookie con el ID del usuario
-            res.cookie('session_user_id', String(user.id), {
-                httpOnly: true,
-                secure: false, // Cambiar a true en producción con HTTPS
-                sameSite: 'lax',
-                maxAge: 24 * 60 * 60 * 1000 // 24 horas
-            });
+            // Generar JWT tokens
+            const accessToken = await generateAccessToken(user.id);
+            const refreshToken = await generateRefreshToken(user.id);
+
+            // Calcular fecha de expiración del refresh token según configuración.
+            const refreshExpiryMs = parseDurationToMs(process.env.JWT_REFRESH_EXPIRY, 7 * 24 * 60 * 60 * 1000);
+            const expiresAt = new Date(Date.now() + refreshExpiryMs);
+
+            // Guardar refresh token en BD para permitir revocación
+            const saved = await saveRefreshTokenToDB(supabase, user.id, refreshToken, expiresAt);
+            if (!saved) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Error al crear la sesión'
+                });
+            }
 
             return res.status(200).json({
                 success: true,
                 message: 'Inicio de sesión exitoso',
+                accessToken,
+                refreshToken,
                 user: {
                     id: user.id,
                     email: user.email,

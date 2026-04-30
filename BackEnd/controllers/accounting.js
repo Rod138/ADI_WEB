@@ -5,6 +5,13 @@
  */
 
 import supabase from '../dbconfig.js';
+import {
+    notifyNewExpense,
+    notifyQuotaPublished,
+    notifyNewReceipt,
+    notifyQuotaValidated,
+    notifyQuotaRejected
+} from '../utils/notificationSender.js';
 
 const parseSessionUserId = (req) => {
     const raw = req.get('x-session-user-id') || req.cookies?.session_user_id;
@@ -65,6 +72,16 @@ export const createTowerExpense = async (req, res) => {
 
         if (error) {
             return res.status(500).json({ success: false, message: 'No se pudo guardar el gasto.' });
+        }
+
+        // Enviar notificación de nuevo gasto a todos los residentes
+        try {
+            await notifyNewExpense({
+                description: descriptionText,
+                amount: parsedAmount
+            });
+        } catch (notifError) {
+            console.error('Error enviando notificación de gasto:', notifError.message);
         }
 
         return res.status(201).json({ success: true, message: 'Gasto registrado correctamente.' });
@@ -273,6 +290,19 @@ export const upsertFinanceConfig = async (req, res) => {
             if (saveError) {
                 return res.status(500).json({ success: false, message: 'No se pudo guardar la cuota mensual.' });
             }
+
+            // Enviar notificación de cuota publicada si se creó una nueva
+            if (!existing) {
+                try {
+                    await notifyQuotaPublished({
+                        month: normalizedMonth,
+                        year: yearNum,
+                        amount: amountNum
+                    });
+                } catch (notifError) {
+                    console.error('Error enviando notificación de cuota:', notifError.message);
+                }
+            }
         }
 
         return res.status(200).json({ success: true, message: 'Configuración financiera actualizada correctamente.' });
@@ -365,6 +395,17 @@ export const updatePaymentReceipt = async (req, res) => {
     }
 
     try {
+        // Obtener datos del comprobante antes de actualizar
+        const { data: receipt, error: fetchError } = await supabase
+            .from('recipes_payment')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !receipt) {
+            return res.status(404).json({ success: false, message: 'Comprobante no encontrado.' });
+        }
+
         const { error } = await supabase
             .from('recipes_payment')
             .update({ validated })
@@ -372,6 +413,28 @@ export const updatePaymentReceipt = async (req, res) => {
 
         if (error) {
             return res.status(500).json({ success: false, message: 'No se pudo actualizar el comprobante.' });
+        }
+
+        // Enviar notificación de validación o rechazo
+        try {
+            if (validated === true) {
+                // Notificación de aprobación
+                await notifyQuotaValidated({
+                    depId: receipt.dep_id,
+                    month: receipt.month,
+                    year: receipt.year,
+                    amountPaid: receipt.amount_paid
+                });
+            } else if (validated === false) {
+                // Notificación de rechazo
+                await notifyQuotaRejected({
+                    depId: receipt.dep_id,
+                    month: receipt.month,
+                    year: receipt.year
+                });
+            }
+        } catch (notifError) {
+            console.error('Error enviando notificación de validación:', notifError.message);
         }
 
         return res.status(200).json({ success: true });
@@ -501,6 +564,26 @@ export const createQuotaPayment = async (req, res) => {
 
         if (error) {
             return res.status(500).json({ success: false, message: 'No se pudo registrar el pago.' });
+        }
+
+        // Enviar notificación de nuevo comprobante a tesoreros
+        try {
+            const { data: deptData } = await supabase
+                .from('departments')
+                .select('name')
+                .eq('id', depIdNum)
+                .single();
+
+            const depName = deptData?.name || `DEP ${depIdNum}`;
+
+            await notifyNewReceipt({
+                depName,
+                month: normalizedMonth,
+                year: yearNum,
+                amountPaid: amountPaidNum
+            });
+        } catch (notifError) {
+            console.error('Error enviando notificación de recibo:', notifError.message);
         }
 
         return res.status(201).json({ success: true, message: 'Pago registrado correctamente.' });

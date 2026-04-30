@@ -9,9 +9,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
-import { getNotifications, deleteNotification } from './controllers/notifications.js';
+import { getNotifications, deleteNotification, deleteAllNotifications } from './controllers/notifications.js';
 import { createTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
+import { verifyRefreshToken, generateAccessToken, verifyRefreshTokenInDB, deleteRefreshTokenFromDB } from './utils/validation.js';
+import supabase from './dbconfig.js';
 
 const router = Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -30,9 +32,59 @@ router.get('/login', (req, res) => {
 
 router.post('/api/login', login);
 
-router.post('/api/logout', (req, res) => {
+router.post('/api/refresh-token', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Token de sesión no disponible'
+            });
+        }
+
+        const decoded = await verifyRefreshToken(refreshToken);
+        if (!decoded) {
+            return res.status(401).json({
+                success: false,
+                message: 'Tu sesión terminó. Vuelve a iniciar sesión.'
+            });
+        }
+
+        const tokenRecord = await verifyRefreshTokenInDB(supabase, refreshToken);
+        if (!tokenRecord) {
+            return res.status(401).json({
+                success: false,
+                message: 'Tu sesión terminó. Vuelve a iniciar sesión.'
+            });
+        }
+
+        const newAccessToken = await generateAccessToken(decoded.userId);
+
+        return res.status(200).json({
+            success: true,
+            accessToken: newAccessToken
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'No pudimos renovar tu sesión en este momento'
+        });
+    }
+});
+
+router.post('/api/logout', async (req, res) => {
+    try {
+        const { refreshToken } = req.body || {};
+        if (refreshToken) {
+            await deleteRefreshTokenFromDB(supabase, refreshToken);
+        }
+    } catch (error) {
+        // Respuesta de cierre siempre positiva para no bloquear salida del usuario.
+    }
+
     res.clearCookie('session_user_id');
-    res.status(200).json({ success: true, message: 'Sesión cerrada' });
+    return res.status(200).json({ success: true, message: 'Sesión cerrada' });
 });
 
 // Rutas de recuperación de contraseña
@@ -155,5 +207,6 @@ router.patch('/api/departments/:id', requireMinRole(3), updateDepartment);
 
 router.get('/api/notifications', getNotifications);
 router.delete('/api/notifications/:id', deleteNotification);
+router.post('/api/notifications/delete-all', deleteAllNotifications);
 
 export default router;

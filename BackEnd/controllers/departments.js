@@ -75,7 +75,7 @@ export const getRoles = async (req, res) => {
 // POST /api/users  — crear nuevo usuario
 // Inserta un usuario con ID incremental y datos normalizados.
 export const createUser = async (req, res) => {
-    const { name, ap, am, email, phone, password, rol_id, dep_id } = req.body;
+    const { name, email, phone, password, rol_id, dep_id } = req.body;
 
     // Validar campos requeridos
     if (!name || !email || !phone || !password || !rol_id || !dep_id) {
@@ -154,8 +154,6 @@ export const createUser = async (req, res) => {
         const { error } = await supabase.from('users').insert({
             id: newId,
             name: String(name).trim(),
-            ap: ap ? String(ap).trim() || null : null,
-            am: am ? String(am).trim() || null : null,
             email: emailTrimmed,
             phone: String(phone).trim(),
             password,
@@ -225,7 +223,7 @@ export const getUserById = async (req, res) => {
 // Aplica actualizacion parcial permitiendo limpiar campos opcionales con null.
 export const updateUser = async (req, res) => {
     const { id } = req.params;
-    const allowed = ['name', 'ap', 'am', 'email', 'phone', 'password', 'rol_id', 'dep_id'];
+    const allowed = ['name', 'email', 'phone', 'password', 'rol_id', 'dep_id'];
     const updates = {};
 
     for (const field of allowed) {

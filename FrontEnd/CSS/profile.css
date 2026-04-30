@@ -21,6 +21,10 @@
 
 body {
     background-color: var(--adi-surface);
+    background-image: linear-gradient(rgba(21, 21, 21, 0.65)), url("../IMG/ed1.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -106,30 +110,28 @@ body {
     justify-content: center;
     align-items: center;
     padding: 2rem;
-    background-image: linear-gradient(rgba(21, 21, 21, 0.50), rgba(21, 21, 21, 0.50)), url("../IMG/ed1.png");
-    background-size: cover;
-    background-position: center;
 }
 
 .profile-card {
-    width: min(100%, 47.5rem);
-    background-color: rgba(247, 247, 247, 0.88);
-    border: 0.125rem solid #FFFADD;
-    border-radius: 0.9rem;
-    padding: 1.3rem 2.1rem 1.6rem;
+    width: min(100%, 60rem);
+    background-color: rgba(255, 255, 255, 0.85);
+    border: 0.0625rem solid var(--adi-border);
+    border-radius: 1rem;
+    padding: 2.5rem 0;
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
 }
 
 .profile-card h1 {
     font-family: 'Outfit', sans-serif;
-    font-size: 2rem;
-    font-weight: 500;
-    color: #222222;
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #000000;
+    text-align: center;
+    margin-bottom: 1.5rem;
 }
 
 .profile-card hr {
-    border: none;
-    border-top: 0.0625rem solid #8E8E8E;
-    margin: 0.6rem 0 1rem;
+    display: none;
 }
 
 #profile-form {
@@ -138,44 +140,66 @@ body {
 }
 
 #profile-form label {
-    font-size: 1.1rem;
-    color: #222222;
-    margin-bottom: 0.3rem;
+    font-size: 1.5rem;
+    color: #000000;
+    margin-bottom: 0.2rem;
+    margin-top: 0;
+    margin-left: 7.5%;
+    text-align: left;
+    font-weight: 400;
+}
+
+#profile-form label:first-child {
+    margin-top: 0;
 }
 
 #profile-form input {
-    background-color: #F3F3F3;
-    border: 0.0625rem solid #BABABA;
-    border-radius: 0.4rem;
-    padding: 0.55rem 0.75rem;
+    background-color: #FFFFFF;
+    border: 0.0625rem solid var(--adi-border);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
     font-size: 1rem;
     color: #111111;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.3rem;
+    width: 85%;
+    box-sizing: border-box;
+    box-shadow: 0 0.0625rem 0.1875rem rgba(0, 0, 0, 0.08);
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
 #profile-form input:disabled {
     color: #8C8C8C;
+    background-color: #F5F5F5;
+}
+
+#profile-form input:focus:not(:disabled) {
+    outline: none;
+    border-color: var(--adi-accent);
+    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
 }
 
 .form-actions {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.5rem;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
 }
 
 .btn-edit,
 .btn-back {
     border: none;
-    border-radius: 0.75rem;
+    border-radius: 2rem;
     text-decoration: none;
     text-align: center;
     cursor: pointer;
-    width: 12.5rem;
-    height: 2.8rem;
-    line-height: 2.8rem;
-    font-size: 0.95rem;
+    padding: 0.75rem 3rem;
+    font-size: 1.1rem;
     font-weight: 700;
+    transition: background-color 0.2s ease;
+    font-family: 'Outfit', sans-serif;
 }
 
 .btn-edit {
@@ -183,47 +207,13 @@ body {
     color: #1E3006;
 }
 
-.btn-back {
-    background-color: #6A8042;
-    color: #FFFADD;
+.btn-edit:hover:not(:disabled) {
+    background-color: #FFD663;
 }
 
-/* === ADI Light Refresh === */
-:root {
-    --adi-olive: #6A8042;
-    --adi-olive-dark: #5D723B;
-    --adi-accent: #ED7A13;
-    --adi-cream: #FFFADD;
-    --adi-surface: #F7F7F7;
-    --adi-text: #111111;
-}
-
-body {
-    color: var(--adi-text);
-}
-
-.top-nav,
-nav {
-    background-color: var(--adi-surface);
-}
-
-.nav-title {
-    font-family: 'Outfit', sans-serif;
-}
-
-.nav-icon-btn:hover,
-nav a:hover {
-    color: var(--adi-accent);
-}
-
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
+.btn-edit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .btn-back {
@@ -233,14 +223,6 @@ button {
 
 .btn-back:hover {
     background-color: var(--adi-olive-dark);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--adi-accent);
-    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
 }
 
 @media (max-width: 48rem) {
@@ -259,36 +241,36 @@ textarea:focus {
     }
 
     .profile-card {
-        padding: 1rem 1.5rem;
+        padding: 1.5rem 0;
     }
 
     .profile-card h1 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
     }
 
     #profile-form label {
-        font-size: 0.95rem;
+        font-size: 1.2rem;
     }
 
     #profile-form input {
         font-size: 0.9rem;
+        width: 90%;
     }
 
     .form-actions {
         flex-direction: column;
-        gap: 0.8rem;
+        gap: 1rem;
     }
 
-    .form-actions button {
-        width: 100%;
+    .btn-edit,
+    .btn-back {
+        width: 90%;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
     }
 }
 
-@media (max-width: 48rem) {
-    .nav-title {
-        max-width: calc(100% - 8rem);
-    }
-}
 footer {
     margin-top: auto;
     width: 100%;

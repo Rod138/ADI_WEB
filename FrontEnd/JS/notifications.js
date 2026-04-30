@@ -15,9 +15,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     const typeFilter = document.getElementById('type-filter');
     const orderFilter = document.getElementById('order-filter');
     const list = document.getElementById('notifications-list');
+    const paginationBox = document.getElementById('pagination-box');
+    const prevBtn = document.getElementById('noti-prev-btn');
+    const nextBtn = document.getElementById('noti-next-btn');
+    const pageIndicator = document.getElementById('noti-page-indicator');
 
     let allNotifications = [];
+    let filteredNotifications = [];
     let typesMap = {};
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
 
     // Convierte marca temporal en etiqueta legible para la bandeja.
     const formatTimeAgo = (isoString) => {
@@ -50,13 +57,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // Pinta lista de tarjetas de notificacion en el estado de filtros activo.
-    const render = () => {
-        if (allNotifications.length === 0) {
+    const render = (notifications) => {
+        if (!notifications.length) {
             list.innerHTML = '<p class="empty-text">No tiene notificaciones nueva</p>';
+            paginationBox.style.display = 'none';
             return;
         }
 
-        list.innerHTML = allNotifications.map(n => {
+        const totalPages = Math.max(1, Math.ceil(notifications.length / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = notifications.slice(start, start + PAGE_SIZE);
+
+        paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
+        pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+
+        list.innerHTML = pageItems.map(n => {
             const typeName = escapeHtml(typesMap[n.type_id] || `Tipo ${n.type_id || '-'}`);
             const description = escapeHtml(n.description || 'Sin descripción');
             const timeAgo = escapeHtml(formatTimeAgo(n.created_at));
@@ -102,9 +120,27 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         allNotifications = result.notifications || [];
         typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.name]));
+        currentPage = 1;
+        applyFilters();
+    };
+
+    const applyFilters = () => {
         populateTypeFilter();
-        typeFilter.value = params.get('type_id') || 'all';
-        render();
+
+        let filtered = [...allNotifications];
+        if (typeFilter.value !== 'all') {
+            filtered = filtered.filter(n => String(n.type_id) === String(typeFilter.value));
+        }
+
+        if (orderFilter.value === 'asc') {
+            filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        } else {
+            filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        }
+
+        filteredNotifications = filtered;
+        currentPage = 1;
+        render(filteredNotifications);
     };
 
     try {
@@ -114,8 +150,93 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    typeFilter.addEventListener('change', fetchAndRender);
-    orderFilter.addEventListener('change', fetchAndRender);
+    typeFilter.addEventListener('change', applyFilters);
+    orderFilter.addEventListener('change', applyFilters);
+
+    prevBtn.addEventListener('click', () => {
+        if (currentPage <= 1) return;
+        currentPage -= 1;
+        render(filteredNotifications);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        const totalPages = Math.max(1, Math.ceil(filteredNotifications.length / PAGE_SIZE));
+        if (currentPage >= totalPages) return;
+        currentPage += 1;
+        render(filteredNotifications);
+    });
+
+    const deleteAllBtn = document.getElementById('delete-all-btn');
+    if (deleteAllBtn) {
+        deleteAllBtn.addEventListener('click', async () => {
+            if (filteredNotifications.length === 0) {
+                Swal.fire({
+                    title: 'Sin notificaciones',
+                    text: 'No hay notificaciones para borrar.',
+                    icon: 'info',
+                    confirmButtonColor: '#6A8042',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            const confirmation = await Swal.fire({
+                icon: 'warning',
+                title: '¿Borrar todas las notificaciones?',
+                text: `Se eliminarán ${filteredNotifications.length} notificación(es). Esta acción no se puede deshacer.`,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, borrar todas',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#d33'
+            });
+
+            if (!confirmation.isConfirmed) return;
+
+            try {
+                const response = await fetch('/api/notifications/delete-all', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usr_id: sessionUser.id })
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    Swal.fire({
+                        title: 'Error al borrar',
+                        text: result.message || 'No se pudieron borrar las notificaciones.',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                allNotifications = [];
+                filteredNotifications = [];
+                currentPage = 1;
+                render(filteredNotifications);
+
+                Swal.fire({
+                    title: '¡Listo!',
+                    text: result.message || 'Todas las notificaciones fueron eliminadas.',
+                    icon: 'success',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    confirmButtonColor: '#6A8042'
+                });
+            } catch {
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'No se pudieron borrar las notificaciones.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        });
+    }
 
     list.addEventListener('click', async (event) => {
         const btn = event.target.closest('.delete-btn');
@@ -155,11 +276,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             allNotifications = allNotifications.filter(n => String(n.id) !== String(notificationId));
-            if (allNotifications.length === 0) {
-                await fetchAndRender();
-            } else {
-                render();
+            filteredNotifications = filteredNotifications.filter(n => String(n.id) !== String(notificationId));
+
+            if (filteredNotifications.length === 0) {
+                currentPage = 1;
+            } else if (currentPage > Math.ceil(filteredNotifications.length / PAGE_SIZE)) {
+                currentPage = Math.ceil(filteredNotifications.length / PAGE_SIZE);
             }
+
+            render(filteredNotifications);
 
             Swal.fire({
                 title: 'Notificación eliminada',

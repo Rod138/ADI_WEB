@@ -139,3 +139,42 @@ export const deleteNotification = async (req, res) => {
         return res.status(500).json({ success: false, message: error?.message || 'Error interno' });
     }
 };
+
+// Elimina todas las notificaciones del usuario autenticado.
+export const deleteAllNotifications = async (req, res) => {
+    const usrId = parseInt(req.body.usr_id, 10);
+
+    if (isNaN(usrId)) {
+        return res.status(400).json({ success: false, message: 'Usuario inválido' });
+    }
+
+    try {
+        let deleteRes = await supabase
+            .from('notifications')
+            .delete()
+            .eq('usr_id', usrId)
+            .select('id');
+
+        // Compatibilidad si el campo del usuario se llama user_id.
+        if (deleteRes.error) {
+            deleteRes = await supabase
+                .from('notifications')
+                .delete()
+                .eq('user_id', usrId)
+                .select('id');
+        }
+
+        const { data, error } = deleteRes;
+
+        if (error) {
+            return res.status(500).json({ success: false, message: error.message || 'Error al borrar notificaciones' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: `Se eliminaron ${data?.length || 0} notificaciones`
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error?.message || 'Error interno' });
+    }
+};

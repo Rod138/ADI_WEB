@@ -86,3 +86,147 @@ export const validatePhone = (phone) => {
  * Exporta todos los patrones para uso en cliente
  */
 export { ValidationPatterns };
+
+/**
+ * Genera un JWT access token con 15 minutos de duración
+ * @param {number} userId - ID del usuario
+ * @returns {Promise<string>} JWT access token
+ */
+export const generateAccessToken = async (userId) => {
+    const { default: jwt } = await import('jsonwebtoken');
+    return jwt.sign(
+        { userId, type: 'access' },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRY || '15m' }
+    );
+};
+
+/**
+ * Genera un JWT refresh token con 7 días de duración
+ * @param {number} userId - ID del usuario
+ * @returns {Promise<string>} JWT refresh token
+ */
+export const generateRefreshToken = async (userId) => {
+    const { default: jwt } = await import('jsonwebtoken');
+    return jwt.sign(
+        { userId, type: 'refresh' },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_REFRESH_EXPIRY || '7d' }
+    );
+};
+
+/**
+ * Verifica y decodifica un JWT access token
+ * @param {string} token - Token a verificar
+ * @returns {Promise<object|null>} Payload decodificado o null si inválido
+ */
+export const verifyAccessToken = async (token) => {
+    try {
+        const { default: jwt } = await import('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
+
+/**
+ * Verifica y decodifica un JWT refresh token
+ * @param {string} token - Refresh token a verificar
+ * @returns {Promise<object|null>} Payload decodificado o null si inválido
+ */
+export const verifyRefreshToken = async (token) => {
+    try {
+        const { default: jwt } = await import('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        if (decoded.type !== 'refresh') return null;
+        return decoded;
+    } catch (error) {
+        return null;
+    }
+};
+
+/**
+ * Guarda un refresh token en la BD para permitir revocación
+ * @param {number} userId - ID del usuario
+ * @param {string} token - Refresh token a guardar
+ * @param {Date} expiresAt - Fecha de expiración del token
+ * @returns {Promise<boolean>} true si se guardó exitosamente
+ */
+export const saveRefreshTokenToDB = async (supabase, userId, token, expiresAt) => {
+    try {
+        const { error } = await supabase
+            .from('refresh_tokens')
+            .insert([
+                {
+                    usr_id: userId,
+                    token,
+                    expires_at: expiresAt.toISOString(),
+                    created_at: new Date().toISOString()
+                }
+            ]);
+
+        if (error) {
+            console.error('Error guardando refresh token en BD:', error);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error en saveRefreshTokenToDB:', error);
+        return false;
+    }
+};
+
+/**
+ * Verifica que un refresh token exista en la BD (no ha sido revocado)
+ * @param {object} supabase - Cliente de Supabase
+ * @param {string} token - Refresh token a verificar
+ * @returns {Promise<object|null>} Registro del token o null si no existe
+ */
+export const verifyRefreshTokenInDB = async (supabase, token) => {
+    try {
+        const { data, error } = await supabase
+            .from('refresh_tokens')
+            .select('*')
+            .eq('token', token)
+            .single();
+
+        if (error || !data) {
+            return null;
+        }
+
+        // Verificar que no haya expirado
+        if (new Date(data.expires_at) < new Date()) {
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error en verifyRefreshTokenInDB:', error);
+        return null;
+    }
+};
+
+/**
+ * Elimina un refresh token de la BD (al hacer logout)
+ * @param {object} supabase - Cliente de Supabase
+ * @param {string} token - Refresh token a eliminar
+ * @returns {Promise<boolean>} true si se eliminó exitosamente
+ */
+export const deleteRefreshTokenFromDB = async (supabase, token) => {
+    try {
+        const { error } = await supabase
+            .from('refresh_tokens')
+            .delete()
+            .eq('token', token);
+
+        if (error) {
+            console.error('Error eliminando refresh token de BD:', error);
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error('Error en deleteRefreshTokenFromDB:', error);
+        return false;
+    }
+};

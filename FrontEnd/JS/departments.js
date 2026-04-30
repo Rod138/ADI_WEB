@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 data.users.forEach(u => {
                     const opt = document.createElement('option');
                     opt.value = u.id;
-                    const fullName = [u.name, u.ap].filter(v => v && v !== '-').join(' ').trim();
+                    const fullName = u.name || '-';
                     opt.textContent = fullName || (u.name ?? '-');
                     userSelect.appendChild(opt);
                 });
@@ -205,14 +205,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="text" id="new-name" placeholder="Ej. Juan" minlength="3" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
                 </div>
                 <div class="edit-field">
-                    <label>Apellido paterno</label>
-                    <input type="text" id="new-ap" placeholder="(opcional)" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
-                </div>
-                <div class="edit-field">
-                    <label>Apellido materno</label>
-                    <input type="text" id="new-am" placeholder="(opcional)" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
-                </div>
-                <div class="edit-field">
                     <label>Email *</label>
                     <input type="email" id="new-email" minlength="6" maxlength="320">
                 </div>
@@ -230,16 +222,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('new-user-submit-btn').onclick = async () => {
             const nameInput = document.getElementById('new-name');
-            const apInput = document.getElementById('new-ap');
-            const amInput = document.getElementById('new-am');
             const emailInput = document.getElementById('new-email');
             const phoneInput = document.getElementById('new-phone');
             const passwordInput = document.getElementById('new-password');
 
             const body = {
                 name:     nameInput.value.trim(),
-                ap:       apInput.value.trim() || null,
-                am:       amInput.value.trim() || null,
                 email:    emailInput.value.trim(),
                 phone:    phoneInput.value.trim(),
                 password: passwordInput.value,
@@ -265,6 +253,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!apRegex.test(body.ap)) {
                     Swal.fire({
                         title: 'Apellido paterno inválido',
+                        text: 'Solo letras y espacios, máximo 30 caracteres',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+            }
+
+            if (body.am) {
+                const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
+                if (!amRegex.test(body.am)) {
+                    Swal.fire({
+                        title: 'Apellido materno inválido',
                         text: 'Solo letras y espacios, máximo 30 caracteres',
                         icon: 'warning',
                         confirmButtonColor: '#ED7A13',
@@ -387,11 +389,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const canDelete = session && Number(session.rol_id) >= 3;
 
         const fields = [
-            ['Nombre',           user.name],
-            ['Apellido paterno', user.ap],
-            ['Apellido materno', user.am ?? '—'],
-            ['Email',            user.email],
-            ['Teléfono',         user.phone],
+            ['Nombre',     user.name],
+            ['Email',      user.email],
+            ['Teléfono',   user.phone],
         ];
 
         userView.innerHTML = fields.map(([label, val]) => `

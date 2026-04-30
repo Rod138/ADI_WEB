@@ -135,6 +135,65 @@ body {
     cursor: pointer;
 }
 
+.btn-delete-all {
+    background-color: #d33;
+    color: #FFFADD;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.25rem 0.95rem;
+    font-size: 1.35rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-delete-all:hover {
+    background-color: #b81c1c;
+}
+
+.btn-delete-all:active {
+    background-color: #a01919;
+}
+
+.pagination-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1.25rem;
+    border-top: 0.0625rem solid #E9B07B;
+    background-color: #FFFADD;
+}
+
+.pagination-btn {
+    background-color: #E9B07B;
+    color: #1E3006;
+    border: 0.0625rem solid #D4951F;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #D4951F;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-indicator {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1E3006;
+    min-width: 12rem;
+    text-align: center;
+}
+
 .notifications-list {
     padding: 0.6rem 1.25rem 1rem;
 }
@@ -171,11 +230,18 @@ body {
     color: #1E3006;
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .notification-content p {
     font-size: 1.45rem;
     color: #233110;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .notification-content small {
@@ -352,6 +418,21 @@ textarea:focus {
 @media (max-width: 48rem) {
     .nav-title {
         max-width: calc(100% - 8rem);
+    }
+
+    .pagination-box {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .pagination-btn {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+    }
+
+    .page-indicator {
+        width: 100%;
+        font-size: 0.85rem;
     }
 }
 footer {

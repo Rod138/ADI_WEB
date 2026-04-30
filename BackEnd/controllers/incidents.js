@@ -4,8 +4,7 @@
  * Flujo: consumir tablas de soporte (estado, area, tipo) para vista completa.
  */
 
-import supabase from "../dbconfig.js";
-
+import supabase from "../dbconfig.js";import { notifyNewIncident, notifyIncidentStatusChange } from "../utils/notificationSender.js";
 const INCIDENT_DESCRIPTION_MAX_LENGTH = 100;
 
 // Normaliza el payload para compatibilidad entre nombres de columnas antiguos y actuales.
@@ -73,16 +72,24 @@ export const getIncidentById = async (req, res) => {
         const typesMap    = Object.fromEntries(typeRes.data.map(t => [t.id, t.name ?? t.type ?? t.id]));
 
         let userName = 'Desconocido';
+        let userDepartment = '';
         if (incRes.data.usr_id) {
             const { data: usr } = await supabase
                 .from('users')
-                .select('name, ap')
+                .select('name, dep_id')
                 .eq('id', incRes.data.usr_id)
                 .single();
-            if (usr) {
-                userName = (usr.name === '-' && usr.ap === '-')
-                    ? 'Usuario eliminado'
-                    : `${usr.name ?? ''} ${usr.ap ?? ''}`.trim();
+            if (usr && usr.name !== '-') {
+                userName = usr.name ?? 'Usuario eliminado';
+                // Get department name
+                if (usr.dep_id) {
+                    const { data: dept } = await supabase
+                        .from('departments')
+                        .select('name')
+                        .eq('id', usr.dep_id)
+                        .single();
+                    userDepartment = dept?.name ?? '';
+                }
             }
         }
 
@@ -95,7 +102,7 @@ export const getIncidentById = async (req, res) => {
             statuses:   statusRes.data,
             areas:      areaRes.data,
             types:      typeRes.data,
-            userName
+            userName: userName + (userDepartment ? ` ${userDepartment}` : '')
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno' });
@@ -199,6 +206,34 @@ export const updateIncident = async (req, res) => {
 
         const { error } = await supabase.from('incidents').update(updates).eq('id', id);
         if (error) return res.status(500).json({ success: false, message: 'Error al actualizar' });
+
+        // Enviar notificación si cambió el estado
+        if (status_id !== undefined) {
+            try {
+                const { data: statusData } = await supabase
+                    .from('inc_status')
+                    .select('name')
+                    .eq('id', status_id)
+                    .single();
+                const statusName = statusData?.name || `Estado ${status_id}`;
+
+                const { data: areaData } = await supabase
+                    .from('areas')
+                    .select('name')
+                    .eq('id', incident.area_id ?? 0)
+                    .single();
+                const areaName = areaData?.name || undefined;
+
+                await notifyIncidentStatusChange({
+                    reporterUserId: incident.usr_id,
+                    newStatus: statusName,
+                    area: areaName
+                });
+            } catch (notifError) {
+                console.error('Error enviando notificación de estado:', notifError.message);
+            }
+        }
+
         return res.status(200).json({ success: true });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno' });
@@ -248,9 +283,37 @@ export const createIncident = async (req, res) => {
             });
         }
 
+        const createdIncident = data?.[0];
+
+        // Enviar notificación de nueva incidencia a los admins
+        try {
+            const { data: userData } = await supabase
+                .from('users')
+                .select('name')
+                .eq('id', parseInt(userId, 10))
+                .single();
+
+            const { data: areaData } = await supabase
+                .from('areas')
+                .select('name')
+                .eq('id', parseInt(area_id, 10))
+                .single();
+
+            const reporterName = userData?.name || 'Usuario';
+            const areaName = areaData?.name || undefined;
+
+            await notifyNewIncident({
+                reporterName,
+                area: areaName,
+                description: descriptionText
+            });
+        } catch (notifError) {
+            console.error('Error enviando notificación de incidencia:', notifError.message);
+        }
+
         return res.status(201).json({
             success: true,
-            incident: normalizeIncident(data?.[0]),
+            incident: normalizeIncident(createdIncident),
             message: 'Incidencia creada exitosamente'
         });
     } catch (error) {
