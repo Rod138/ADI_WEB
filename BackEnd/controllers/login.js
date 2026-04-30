@@ -117,6 +117,14 @@ export const login = async (req, res) => {
                 });
             }
 
+            // Cookie de sesión para rutas renderizadas del servidor (ej. /main).
+            res.cookie('session_user_id', String(user.id), {
+                httpOnly: true,
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 3 * 24 * 60 * 60 * 1000
+            });
+
             return res.status(200).json({
                 success: true,
                 message: 'Inicio de sesión exitoso',

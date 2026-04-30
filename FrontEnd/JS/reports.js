@@ -95,7 +95,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     function handleImageDownload() {
         if (viewSelect.value === 'chart' && chart) {
             const canvas = document.getElementById('reports-chart');
-            const url = canvas.toDataURL('image/jpeg');
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = canvas.width;
+            exportCanvas.height = canvas.height;
+
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCtx.fillStyle = '#FFFFFF';
+            exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+            exportCtx.drawImage(canvas, 0, 0);
+
+            const url = exportCanvas.toDataURL('image/jpeg', 0.95);
             const link = document.createElement('a');
             link.href = url;
             link.download = `${typeSelect.value}_grafica_${yearSelect.value}_${monthSelect.value}.jpg`;

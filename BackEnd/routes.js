@@ -7,10 +7,10 @@
 import { Router } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident } from './controllers/incidents.js';
+import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident, updateIncidentImage, deleteIncidentImage } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
 import { getNotifications, deleteNotification, deleteAllNotifications } from './controllers/notifications.js';
-import { createTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
+import { createTowerExpense, updateTowerExpense, deleteTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
 import { verifyRefreshToken, generateAccessToken, verifyRefreshTokenInDB, deleteRefreshTokenFromDB } from './utils/validation.js';
 import supabase from './dbconfig.js';
@@ -124,9 +124,17 @@ router.get('/api/incidents/:id', getIncidentById);
 router.post('/api/incidents', requireMinRole(1), createIncident);
 router.patch('/api/incidents/:id', requireMinRole(1), updateIncident);
 router.delete('/api/incidents/:id', requireMinRole(1), deleteIncident);
+router.post('/api/incidents/:id/image', requireMinRole(1), updateIncidentImage);
+router.delete('/api/incidents/:id/image', requireMinRole(1), deleteIncidentImage);
 
 router.get('/incident', (req, res) => {
-    res.render('incidents/incident');
+    const cloudinaryCloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME || '';
+    const cloudinaryUploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET || '';
+
+    res.render('incidents/incident', {
+        cloudinaryCloudName,
+        cloudinaryUploadPreset
+    });
 });
 
 router.get('/departments', requireMinRole(3), (req, res) => {
@@ -168,6 +176,10 @@ router.get('/accounting/payment', (req, res) => {
     });
 });
 
+router.get('/accounting/cash-payment', requireMinRole(2), (req, res) => {
+    res.render('accounting/cash-payment');
+});
+
 router.get('/reports', (req, res) => {
     res.render('accounting/reports');
 });
@@ -181,6 +193,8 @@ router.get('/accounting/receipt', (req, res) => {
 });
 
 router.post('/api/accounting/expenses', requireMinRole(2), createTowerExpense);
+router.patch('/api/accounting/expenses/:id', requireMinRole(2), updateTowerExpense);
+router.delete('/api/accounting/expenses/:id', requireMinRole(2), deleteTowerExpense);
 router.get('/api/accounting/expenses-board', requireMinRole(1), getTowerExpensesBoard);
 // Unified finance config endpoints (legacy routes still work for backward compatibility)
 router.get('/api/accounting/finance-config', getFinanceConfig);

@@ -4,8 +4,75 @@
  * Flujo: consumir tablas de soporte (estado, area, tipo) para vista completa.
  */
 
-import supabase from "../dbconfig.js";import { notifyNewIncident, notifyIncidentStatusChange } from "../utils/notificationSender.js";
+import supabase from "../dbconfig.js";
+import { notifyNewIncident, notifyIncidentStatusChange } from "../utils/notificationSender.js";
+import crypto from 'crypto';
 const INCIDENT_DESCRIPTION_MAX_LENGTH = 100;
+const INCIDENT_EDIT_WINDOW_HOURS = 24;
+
+// Elimina una imagen de Cloudinary por su URL
+const deleteCloudinaryImage = async (imageUrl) => {
+    if (!imageUrl) return true; // No hay imagen que eliminar
+
+    try {
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME || process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+
+        if (!cloudName || !apiKey) {
+            console.warn('Cloudinary credentials not configured, skipping image deletion');
+            return true;
+        }
+
+        // Extraer public_id de la URL de Cloudinary
+        // URL format: https://res.cloudinary.com/{cloud_name}/image/upload/{transformations}/{public_id}.{ext}
+        const urlMatch = imageUrl.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[^/.]+)?$/);
+        if (!urlMatch) {
+            console.warn('Could not extract public_id from image URL');
+            return true;
+        }
+
+        const publicId = urlMatch[1];
+
+        // Preparar credenciales para API de Cloudinary
+        const timestamp = Math.floor(Date.now() / 1000);
+        const signature = crypto.createHash('sha1')
+            .update(`public_id=${publicId}&timestamp=${timestamp}${apiKey}`)
+            .digest('hex');
+
+        // Hacer DELETE request a Cloudinary API
+        const response = await fetch(
+            `https://api.cloudinary.com/v1_1/${cloudName}/resources/image/destroy`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    public_id: publicId,
+                    signature,
+                    api_key: apiKey,
+                    timestamp
+                }).toString()
+            }
+        );
+
+        if (!response.ok) {
+            console.warn(`Cloudinary deletion failed for ${publicId}:`, response.statusText);
+            return true; // No fallar la operación si Cloudinary falla
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error deleting Cloudinary image:', error.message);
+        return true; // No fallar la operación si hay error
+    }
+};
+
+// Verifica si una incidencia puede ser editada (menos de 24 horas)
+const isIncidentEditable = (createdAt) => {
+    const created = new Date(createdAt);
+    const now = new Date();
+    const hoursDiff = (now - created) / (1000 * 60 * 60);
+    return hoursDiff < INCIDENT_EDIT_WINDOW_HOURS;
+};
 
 // Normaliza el payload para compatibilidad entre nombres de columnas antiguos y actuales.
 const normalizeIncident = (incident) => {
@@ -110,7 +177,7 @@ export const getIncidentById = async (req, res) => {
 }
 
 // Actualiza campos operativos de una incidencia (estado, notas, costo y cierre).
-// Owners pueden editar: description, area_id, type_id, image_url
+// Owners pueden editar solo dentro de 24 horas: description, area_id, type_id, image_url
 // Solo Admin puede editar: status_id, cost, notes, set_completed_at
 export const updateIncident = async (req, res) => {
     const { id } = req.params;
@@ -118,9 +185,10 @@ export const updateIncident = async (req, res) => {
     const userId = parseInt(req.get('x-session-user-id') || req.cookies?.session_user_id, 10);
 
     try {
+        // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id')
+            .select('usr_id, created_at')
             .eq('id', id)
             .single();
 
@@ -141,6 +209,14 @@ export const updateIncident = async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'No tienes permiso para editar esta incidencia'
+            });
+        }
+
+        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
+        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación. Después solo un administrador puede resolverla.'
             });
         }
 
@@ -170,6 +246,12 @@ export const updateIncident = async (req, res) => {
                 updates.cost = parsed;
             }
             if (set_completed_at) {
+                if (cost === undefined || cost === null || cost === '') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Debes capturar el costo para resolver la incidencia'
+                    });
+                }
                 updates.completed_at = new Date().toISOString();
             }
         }
@@ -197,6 +279,11 @@ export const updateIncident = async (req, res) => {
         }
         const normalizedImage = image !== undefined ? image : image_url;
         if (normalizedImage !== undefined && normalizedImage !== null) {
+            // Si hay una imagen anterior, eliminarla de Cloudinary
+            if (incident.image_url || incident.image) {
+                const oldImageUrl = incident.image_url ?? incident.image;
+                await deleteCloudinaryImage(oldImageUrl);
+            }
             updates.image = normalizedImage;
         }
 
@@ -206,6 +293,10 @@ export const updateIncident = async (req, res) => {
 
         const { error } = await supabase.from('incidents').update(updates).eq('id', id);
         if (error) return res.status(500).json({ success: false, message: 'Error al actualizar' });
+
+        if (set_completed_at) {
+            await supabase.from('incidents').update({ edited_at: new Date().toISOString() }).eq('id', id);
+        }
 
         // Enviar notificación si cambió el estado
         if (status_id !== undefined) {
@@ -330,7 +421,7 @@ export const deleteIncident = async (req, res) => {
         // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id')
+            .select('usr_id, image_url, image, created_at')
             .eq('id', id)
             .single();
 
@@ -352,6 +443,20 @@ export const deleteIncident = async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta incidencia' });
         }
 
+        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
+        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes editar o borrar la incidencia dentro de 24 horas de su creación. Después solo un administrador puede resolverla.'
+            });
+        }
+
+        // Eliminar imagen de Cloudinary si existe
+        if (incident.image_url || incident.image) {
+            const imageUrl = incident.image_url ?? incident.image;
+            await deleteCloudinaryImage(imageUrl);
+        }
+
         // Eliminar
         const { error: deleteError } = await supabase
             .from('incidents')
@@ -367,3 +472,128 @@ export const deleteIncident = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error interno' });
     }
 }
+
+// Actualiza la imagen de una incidencia.
+export const updateIncidentImage = async (req, res) => {
+    const { id } = req.params;
+    const { image_url } = req.body;
+    const userId = parseInt(req.get('x-session-user-id') || req.cookies?.session_user_id, 10);
+
+    if (!image_url) {
+        return res.status(400).json({ success: false, message: 'Se requiere image_url' });
+    }
+
+    try {
+        // Obtener la incidencia para verificar propiedad
+        const { data: incident, error: fetchError } = await supabase
+            .from('incidents')
+            .select('usr_id, image_url, created_at')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !incident) {
+            return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
+        }
+
+        // Verificar permisos
+        const { data: user } = await supabase
+            .from('users')
+            .select('rol_id')
+            .eq('id', userId)
+            .single();
+
+        const isAdmin = user && Number(user.rol_id) >= 3;
+        const isOwner = Number(incident.usr_id) === userId;
+
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
+        }
+
+        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
+        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
+            });
+        }
+
+        // Eliminar imagen antigua de Cloudinary si existe
+        if (incident.image_url) {
+            await deleteCloudinaryImage(incident.image_url);
+        }
+
+        // Actualizar imagen
+        const { error: updateError } = await supabase
+            .from('incidents')
+            .update({ image_url })
+            .eq('id', id);
+
+        if (updateError) {
+            return res.status(500).json({ success: false, message: 'Error al actualizar imagen' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Imagen actualizada' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+}
+
+// Elimina la imagen de una incidencia.
+export const deleteIncidentImage = async (req, res) => {
+    const { id } = req.params;
+    const userId = parseInt(req.get('x-session-user-id') || req.cookies?.session_user_id, 10);
+
+    try {
+        // Obtener la incidencia para verificar propiedad
+        const { data: incident, error: fetchError } = await supabase
+            .from('incidents')
+            .select('usr_id, image_url, created_at')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !incident) {
+            return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
+        }
+
+        // Verificar permisos
+        const { data: user } = await supabase
+            .from('users')
+            .select('rol_id')
+            .eq('id', userId)
+            .single();
+
+        const isAdmin = user && Number(user.rol_id) >= 3;
+        const isOwner = Number(incident.usr_id) === userId;
+
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
+        }
+
+        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
+        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
+            });
+        }
+
+        // Eliminar imagen de Cloudinary
+        if (incident.image_url) {
+            await deleteCloudinaryImage(incident.image_url);
+        }
+
+        // Eliminar imagen (set a null)
+        const { error: updateError } = await supabase
+            .from('incidents')
+            .update({ image_url: null })
+            .eq('id', id);
+
+        if (updateError) {
+            return res.status(500).json({ success: false, message: 'Error al eliminar imagen' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Imagen eliminada' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno' });
+    }
+};

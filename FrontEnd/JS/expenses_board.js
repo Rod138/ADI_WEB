@@ -1,7 +1,7 @@
 /**
  * TESINA: Tablon de gastos de condominio.
- * Responsabilidad: listar gastos, aplicar filtros y paginar resultados.
- * Flujo: obtener gastos -> filtrar/ordenar -> renderizar tabla.
+ * Responsabilidad: listar gastos, aplicar filtros, paginar y gestionar CRUD con ventana de 24h.
+ * Flujo: obtener gastos -> filtrar/ordenar -> renderizar tabla -> crear/editar/eliminar.
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,35 +28,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const uploadIcon = document.getElementById('upload-icon');
     const uploadName = document.getElementById('upload-name');
     const previewImage = document.getElementById('preview-image');
+    const formTitle = document.getElementById('expense-form-title');
 
-    const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
-    const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
-    const CLOUDINARY_IMAGE_UPLOAD_URL = CLOUDINARY_CLOUD_NAME
-        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
-        : '';
+    const sessionUser = window.ADIAuth?.getCurrentUser?.();
+    const canManageExpenses = Number(sessionUser?.rol_id || 0) >= 2;
+    const EDIT_WINDOW_HOURS = 24;
 
     let allExpenses = [];
     let filteredExpenses = [];
     const PAGE_SIZE = 10;
     let currentPage = 1;
     let imageData = '';
+    let editingExpenseId = null;
 
-    try {
-        const response = await fetch('/api/accounting/expenses-board');
-        const data = await response.json();
-
-        if (!data.success) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar gastos</td></tr>';
-            return;
-        }
-
-        allExpenses = data.expenses || [];
-        populateMonthFilter(allExpenses);
-        applyFilters();
-    } catch (error) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar gastos</td></tr>';
-        return;
-    }
+    await reloadExpenses();
 
     // Event listeners para filtros
     monthSelect.addEventListener('change', applyFilters);
@@ -77,35 +62,76 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredExpenses);
     });
 
-    // Event listeners para visualizar comprobantes
+    // Event listeners para visualizar comprobantes y acciones
     tbody.addEventListener('click', (e) => {
         const trigger = e.target.closest('.receipt-thumb-btn');
-        if (!trigger) return;
-        const imgUrl = trigger.dataset.image;
-        if (!imgUrl) {
+        if (trigger) {
+            const imgUrl = trigger.dataset.image;
+            if (!imgUrl) {
+                Swal.fire({
+                    title: 'Sin comprobante',
+                    text: 'Este gasto no incluye imagen.',
+                    icon: 'info',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
             Swal.fire({
-                title: 'Sin comprobante',
-                text: 'Este gasto no incluye imagen.',
-                icon: 'info',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
+                title: 'Comprobante de gasto',
+                imageUrl: imgUrl,
+                imageAlt: 'Comprobante',
+                confirmButtonColor: '#6A8042',
+                confirmButtonText: 'Cerrar'
             });
             return;
         }
 
-        Swal.fire({
-            title: 'Comprobante de gasto',
-            imageUrl: imgUrl,
-            imageAlt: 'Comprobante',
-            confirmButtonColor: '#6A8042',
-            confirmButtonText: 'Cerrar'
-        });
+        const editBtn = e.target.closest('.expense-edit-btn');
+        if (editBtn) {
+            const expenseId = Number(editBtn.dataset.id);
+            const exp = allExpenses.find(x => Number(x.id) === expenseId);
+            if (!exp) return;
+
+            if (!canEditExpense(exp)) {
+                Swal.fire({
+                    title: 'Fuera de rango',
+                    text: 'Solo puedes editar gastos dentro de 24 horas.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            openEditForm(exp);
+            return;
+        }
+
+        const deleteBtn = e.target.closest('.expense-delete-btn');
+        if (deleteBtn) {
+            const expenseId = Number(deleteBtn.dataset.id);
+            const exp = allExpenses.find(x => Number(x.id) === expenseId);
+            if (!exp) return;
+            if (!canEditExpense(exp)) {
+                Swal.fire({
+                    title: 'Fuera de rango',
+                    text: 'Solo puedes borrar gastos dentro de 24 horas.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            handleDeleteExpense(expenseId);
+        }
     });
 
     // Event listeners para formulario integrado
     openFormBtn.addEventListener('click', () => {
-        expenseFormPanel.style.display = 'block';
-        expenseFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        openCreateForm();
     });
 
     closeFormBtn.addEventListener('click', closeExpenseForm);
@@ -138,11 +164,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                title: 'Archivo muy grande',
+                text: 'El comprobante no debe superar 5MB.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+            imageInput.value = '';
+            imageData = '';
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = () => {
             imageData = String(reader.result || '');
-            previewImage.style.display = 'none';
-            uploadIcon.style.display = 'block';
+            previewImage.src = imageData;
+            previewImage.style.display = 'block';
+            uploadIcon.style.display = 'none';
             uploadName.textContent = file.name;
         };
         reader.readAsDataURL(file);
@@ -151,8 +191,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveBtn.addEventListener('click', async () => {
         const amount = amountInput.value;
         const description = notesInput.value.trim();
+        const parsedAmount = Number.parseFloat(amount);
 
-        if (!amount || parseFloat(amount) <= 0) {
+        if (!amount || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
             Swal.fire({
                 title: 'Costo inválido',
                 text: 'Ingresa un costo mayor a 0.',
@@ -167,6 +208,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             Swal.fire({
                 title: 'Falta descripción',
                 text: 'Escribe una descripción del gasto.',
+                icon: 'warning',
+                confirmButtonColor: '#ED7A13',
+                confirmButtonText: 'Aceptar'
+            });
+            return;
+        }
+
+        if (description.length < 3 || description.length > 150) {
+            Swal.fire({
+                title: 'Descripción inválida',
+                text: 'La descripción debe tener entre 3 y 150 caracteres.',
                 icon: 'warning',
                 confirmButtonColor: '#ED7A13',
                 confirmButtonText: 'Aceptar'
@@ -199,15 +251,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveBtn.disabled = true;
 
         try {
-            const response = await fetch('/api/accounting/expenses', {
-                method: 'POST',
+            const endpoint = editingExpenseId
+                ? `/api/accounting/expenses/${encodeURIComponent(editingExpenseId)}`
+                : '/api/accounting/expenses';
+            const method = editingExpenseId ? 'PATCH' : 'POST';
+
+            const payload = {
+                amount: parsedAmount,
+                description,
+                image_data: imageData
+            };
+            if (!editingExpenseId) {
+                payload.expense_date = new Date().toISOString();
+            }
+
+            const response = await fetch(endpoint, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount,
-                    description,
-                    image_data: imageData,
-                    expense_date: new Date().toISOString()
-                })
+                body: JSON.stringify(payload)
             });
 
             const result = await response.json();
@@ -224,8 +285,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             await Swal.fire({
-                title: 'Gasto registrado',
-                text: 'El gasto se guardó correctamente.',
+                title: editingExpenseId ? 'Gasto actualizado' : 'Gasto registrado',
+                text: editingExpenseId ? 'El gasto se actualizó correctamente.' : 'El gasto se guardó correctamente.',
                 icon: 'success',
                 timer: 1700,
                 timerProgressBar: true,
@@ -233,21 +294,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 confirmButtonColor: '#6A8042'
             });
 
-            resetExpenseForm();
-            expenseFormPanel.style.display = 'none';
-
-            // Recargar lista de gastos
-            try {
-                const response = await fetch('/api/accounting/expenses-board');
-                const data = await response.json();
-                if (data.success) {
-                    allExpenses = data.expenses || [];
-                    populateMonthFilter(allExpenses);
-                    applyFilters();
-                }
-            } catch (e) {
-                console.error('Error reloading expenses:', e);
-            }
+            closeExpenseForm();
+            await reloadExpenses();
         } catch {
             Swal.fire({
                 title: 'Error de conexión',
@@ -272,6 +320,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         previewImage.style.display = 'none';
         previewImage.removeAttribute('src');
         imageData = '';
+        editingExpenseId = null;
+        if (formTitle) formTitle.textContent = 'LEVANTAR GASTO';
+        saveBtn.textContent = 'SUBIR';
     }
 
     function closeExpenseForm() {
@@ -281,6 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Llena periodos unicos para filtrar por mes y anio del gasto.
     function populateMonthFilter(expenses) {
+        monthSelect.innerHTML = '<option value="any">Cualquiera</option>';
         const uniquePeriods = [...new Set(
             expenses
                 .filter(exp => exp.expense_date)
@@ -332,7 +384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Renderiza tabla paginada de gastos con acceso opcional al comprobante.
     function renderTable(expenses) {
         if (!expenses.length) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin gastos registrados</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Sin gastos registrados</td></tr>';
             paginationBox.style.display = 'none';
             return;
         }
@@ -366,6 +418,16 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ? `<button type="button" class="receipt-thumb-btn" data-image="${escapeHtml(exp.url_image).replace(/\"/g, '&quot;')}">Ver comprobante</button>`
                 : '<span class="no-proof">Sin comprobante</span>';
 
+            const withinWindow = canEditExpense(exp);
+            const actions = canManageExpenses
+                ? `
+                    <div class="expense-actions">
+                        <button type="button" class="expense-edit-btn" data-id="${exp.id}" ${withinWindow ? '' : 'disabled'}>Editar</button>
+                        <button type="button" class="expense-delete-btn" data-id="${exp.id}" ${withinWindow ? '' : 'disabled'}>Borrar</button>
+                    </div>
+                  `
+                : '<span class="no-proof">Sin permisos</span>';
+
             return `
                 <tr>
                     <td>
@@ -374,9 +436,117 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </td>
                     <td>${date}</td>
                     <td>${amount}</td>
+                    <td>${actions}</td>
                 </tr>
             `;
         }).join('');
+    }
+
+    function openCreateForm() {
+        resetExpenseForm();
+        expenseFormPanel.style.display = 'block';
+        expenseFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function openEditForm(expense) {
+        resetExpenseForm();
+        editingExpenseId = Number(expense.id);
+        if (formTitle) formTitle.textContent = 'EDITAR GASTO';
+        saveBtn.textContent = 'GUARDAR CAMBIOS';
+
+        amountInput.value = Number(expense.amount || 0).toFixed(2);
+        notesInput.value = String(expense.description || '');
+        charCounter.textContent = `${notesInput.value.length} / 150`;
+        imageData = String(expense.url_image || '').trim();
+        confirmInput.checked = true;
+
+        if (imageData) {
+            previewImage.src = imageData;
+            previewImage.style.display = 'block';
+            uploadIcon.style.display = 'none';
+            uploadName.textContent = 'Comprobante actual cargado';
+        }
+
+        expenseFormPanel.style.display = 'block';
+        expenseFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function handleDeleteExpense(expenseId) {
+        const confirmation = await Swal.fire({
+            title: '¿Borrar gasto?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonText: 'Cancelar',
+            confirmButtonText: 'Sí, borrar'
+        });
+
+        if (!confirmation.isConfirmed) return;
+
+        try {
+            const response = await fetch(`/api/accounting/expenses/${encodeURIComponent(expenseId)}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (!result.success) {
+                Swal.fire({
+                    title: 'Error al borrar',
+                    text: result.message || 'No se pudo borrar el gasto.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            await Swal.fire({
+                title: 'Gasto eliminado',
+                text: 'El gasto se eliminó correctamente.',
+                icon: 'success',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                confirmButtonColor: '#6A8042'
+            });
+
+            await reloadExpenses();
+        } catch (error) {
+            Swal.fire({
+                title: 'Error de conexión',
+                text: 'No se pudo borrar el gasto.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+        }
+    }
+
+    function canEditExpense(exp) {
+        if (!exp || !exp.expense_date) return false;
+        const expenseDate = new Date(exp.expense_date);
+        if (Number.isNaN(expenseDate.getTime())) return false;
+        const diffHours = (Date.now() - expenseDate.getTime()) / (1000 * 60 * 60);
+        return diffHours < EDIT_WINDOW_HOURS;
+    }
+
+    async function reloadExpenses() {
+        try {
+            const response = await fetch('/api/accounting/expenses-board');
+            const data = await response.json();
+
+            if (!data.success) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Error al cargar gastos</td></tr>';
+                return;
+            }
+
+            allExpenses = data.expenses || [];
+            populateMonthFilter(allExpenses);
+            applyFilters();
+        } catch (error) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Error al cargar gastos</td></tr>';
+        }
     }
 
     // Genera etiqueta mensual para el filtro de periodo.

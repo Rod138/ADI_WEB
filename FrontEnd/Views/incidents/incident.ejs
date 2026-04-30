@@ -39,7 +39,9 @@
         }
     </style>
 </head>
-<body data-min-role="1">
+<body data-min-role="1"
+    data-cloudinary-cloud-name="<%= cloudinaryCloudName || '' %>"
+    data-cloudinary-upload-preset="<%= cloudinaryUploadPreset || ''%>">
     <nav class="top-nav">
         <div class="nav-brand">
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
@@ -102,7 +104,16 @@
                 const canEdit = isAdmin || isOwner;
                 const canDelete = isAdmin || isOwner;
 
-                document.getElementById('nav-title').textContent = canEdit ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
+                // Verificar si la incidencia tiene más de 24 horas
+                const createdAt = new Date(inc.created_at);
+                const now = new Date();
+                const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
+                const isOlderThan24Hours = hoursDiff >= 24;
+                const canEditFields = !isOlderThan24Hours || isAdmin; // Admin siempre puede editar
+                const editableByOwner = canEdit && canEditFields;
+                const canOwnerModify = isAdmin || (isOwner && !isOlderThan24Hours);
+
+                document.getElementById('nav-title').textContent = editableByOwner ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
                 const date = inc.created_at
                     ? new Date(inc.created_at).toLocaleString('es-MX', {
                         year: 'numeric', month: 'long', day: 'numeric',
@@ -112,6 +123,7 @@
 
                 const imageUrl = inc.image_url ?? inc.img_url ?? inc.cloudinary_url ?? inc.image ?? null;
                 const costText = (inc.cost !== null && inc.cost !== undefined) ? `$${parseFloat(inc.cost).toFixed(2)}` : '-';
+                const currentCostValue = (inc.cost !== null && inc.cost !== undefined && inc.cost !== '') ? String(inc.cost) : '';
                 const descriptionText = escapeHtml(inc.content ?? inc.description ?? '-');
                 const notesText = escapeHtml(inc.notes ?? '');
                 const sortedStatuses = (data.statuses ?? []).slice().sort((a, b) => a.id - b.id);
@@ -124,11 +136,25 @@
                 card.innerHTML = `
                     <div class="section-title">INFORMACIÓN DE LA INCIDENCIA :</div>
 
+                    ${isOlderThan24Hours && isOwner && !isAdmin ? `
+                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; color: #856404;">
+                        Esta incidencia tiene más de 24 horas y ya no puede ser editada ni borrada por el creador. Solo los administradores pueden hacer cambios.
+                    </div>
+                    ` : ''}
+
                     <div class="image-box">
                         ${imageUrl
                             ? `<img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia" class="openable-image" data-image="${escapeHtml(imageUrl)}">`
                             : `<span class="material-symbols-outlined">image</span>`}
                     </div>
+
+                    ${canOwnerModify ? `
+                    <div class="image-actions">
+                        <label for="upd-image" class="image-btn edit-image-btn" ${!editableByOwner && isOwner ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''} title="${!editableByOwner && isOwner ? 'No puedes editar ni borrar después de 24 horas' : ''}">CAMBIAR IMAGEN</label>
+                        <input type="file" id="upd-image" accept="image/*" style="display:none;" ${!editableByOwner && isOwner ? 'disabled' : ''}>
+                        ${imageUrl ? `<button type="button" class="delete-image-btn" id="delete-image-btn" ${!editableByOwner && isOwner ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} title="${!editableByOwner && isOwner ? 'No puedes editar ni borrar después de 24 horas' : ''}">ELIMINAR IMAGEN</button>` : ''}
+                    </div>
+                    ` : ''}
 
                     <div class="info-grid">
                         <label>REPORTADO POR :</label>
@@ -147,7 +173,7 @@
                         <input type="text" value="${descriptionText}" readonly>
                     </div>
 
-                    ${canEdit ? `
+                    ${canOwnerModify ? `
                     <div class="update-section">
                         <div class="update-title">${isAdmin ? 'ACTUALIZAR REPORTE (ADMINISTRADOR)' : 'ACTUALIZAR REPORTE'} :</div>
 
@@ -181,7 +207,7 @@
 
                             <div class="button-row">
                                 <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
-                                ${canDelete ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                                ${canDelete && canOwnerModify ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
                             </div>
                         ` : `
                             <!-- Solo para Admin -->
@@ -192,7 +218,7 @@
                                 </div>
                                 <div>
                                     <label for="upd-cost">COSTO</label>
-                                    <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00">
+                                    <input type="number" id="upd-cost" min="0" step="0.0001" placeholder="0.00" value="${currentCostValue}">
                                 </div>
                             </div>
                             <div class="update-row">
@@ -205,7 +231,7 @@
                             </label>
                             <div class="button-row">
                                 <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
-                                ${canDelete ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                                ${canDelete && canOwnerModify ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
                             </div>
                         `}
                     </div>
@@ -241,6 +267,17 @@
                             const notes = document.getElementById('upd-notes')?.value?.trim() || '';
                             const costVal = document.getElementById('upd-cost').value;
                             const set_completed_at = document.getElementById('upd-completed')?.checked;
+
+                            if (set_completed_at && costVal === '') {
+                                Swal.fire({
+                                    title: 'Costo requerido',
+                                    text: 'Debes capturar el costo antes de resolver la incidencia.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
 
                             if (costVal !== '' && parseFloat(costVal) < 0) {
                                 Swal.fire({
@@ -298,6 +335,18 @@
                     } else {
                         // Para Owner (no-admin)
                         document.getElementById('update-btn').addEventListener('click', async () => {
+                            // Validar 24 horas
+                            if (isOlderThan24Hours && isOwner) {
+                                Swal.fire({
+                                    title: 'Acción no permitida',
+                                    text: 'Solo puedes editar o borrar la incidencia dentro de 24 horas de su creación.',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
                             const description = document.getElementById('upd-description')?.value?.trim() || '';
                             const area_id = document.getElementById('upd-area').value;
                             const type_id = document.getElementById('upd-type').value;
@@ -372,6 +421,18 @@
                     const deleteBtn = document.getElementById('delete-btn');
                     if (deleteBtn) {
                         deleteBtn.addEventListener('click', async () => {
+                            // Validar 24 horas para propietarios
+                            if (isOlderThan24Hours && isOwner && !isAdmin) {
+                                Swal.fire({
+                                    title: 'Acción no permitida',
+                                    text: 'Solo puedes eliminar la incidencia dentro de 24 horas de su creación.',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
                             const confirm = await Swal.fire({
                                 title: '¿Eliminar incidencia?',
                                 text: 'Esta acción no se puede deshacer',
@@ -413,6 +474,173 @@
                                     Swal.fire({
                                         title: 'Error',
                                         text: 'Fallo de red.',
+                                        icon: 'error',
+                                        confirmButtonColor: '#d33',
+                                        confirmButtonText: 'Aceptar'
+                                    });
+                                }
+                            }
+                        });
+                    }
+
+                    // Manejo de imagen
+                    const imageInput = document.getElementById('upd-image');
+                    const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
+                    const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
+                    const CLOUDINARY_IMAGE_UPLOAD_URL = CLOUDINARY_CLOUD_NAME
+                        ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+                        : '';
+
+                    if (imageInput) {
+                        imageInput.addEventListener('change', async (e) => {
+                            // Validar 24 horas
+                            if (!editableByOwner && isOwner) {
+                                Swal.fire({
+                                    title: 'Acción no permitida',
+                                    text: 'Solo puedes editar la incidencia dentro de 24 horas de su creación.',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            const file = e.target.files[0];
+                            if (!file) return;
+
+                            if (file.size > 5 * 1024 * 1024) {
+                                Swal.fire({
+                                    title: 'Archivo muy grande',
+                                    text: 'La imagen no debe superar 5MB.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            if (!CLOUDINARY_IMAGE_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'No está configurado el servicio de imágenes.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            try {
+                                const formData = new FormData();
+                                formData.append('file', file);
+                                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+                                const uploadRes = await fetch(CLOUDINARY_IMAGE_UPLOAD_URL, {
+                                    method: 'POST',
+                                    body: formData
+                                });
+
+                                const uploadData = await uploadRes.json();
+
+                                if (uploadData.secure_url) {
+                                    // Enviar URL a backend
+                                    const r = await fetch(`/api/incidents/${encodeURIComponent(id)}/image`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ image_url: uploadData.secure_url })
+                                    });
+                                    const result = await r.json();
+                                    if (result.success) {
+                                        await Swal.fire({
+                                            title: 'Actualizado',
+                                            text: 'Imagen actualizada correctamente.',
+                                            icon: 'success',
+                                            timer: 1800,
+                                            timerProgressBar: true,
+                                            showConfirmButton: false,
+                                            confirmButtonColor: '#6A8042'
+                                        });
+                                        window.location.reload();
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: result.message ?? 'No se pudo actualizar la imagen.',
+                                            icon: 'error',
+                                            confirmButtonColor: '#d33',
+                                            confirmButtonText: 'Aceptar'
+                                        });
+                                    }
+                                } else {
+                                    throw new Error('No se recibió URL de la imagen');
+                                }
+                            } catch {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'Fallo al subir la imagen.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                            }
+                        });
+                    }
+
+                    const deleteImageBtn = document.getElementById('delete-image-btn');
+                    if (deleteImageBtn) {
+                        deleteImageBtn.addEventListener('click', async () => {
+                            // Validar 24 horas
+                            if (!editableByOwner && isOwner) {
+                                Swal.fire({
+                                    title: 'Acción no permitida',
+                                    text: 'Solo puedes editar la incidencia dentro de 24 horas de su creación.',
+                                    icon: 'warning',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            const confirm = await Swal.fire({
+                                title: '¿Eliminar imagen?',
+                                text: 'Se eliminará la imagen de la incidencia.',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#dc3545',
+                                confirmButtonText: 'Sí, eliminar',
+                                cancelButtonText: 'Cancelar'
+                            });
+
+                            if (confirm.isConfirmed) {
+                                try {
+                                    const r = await fetch(`/api/incidents/${encodeURIComponent(id)}/image`, {
+                                        method: 'DELETE',
+                                        headers: { 'Content-Type': 'application/json' }
+                                    });
+                                    const result = await r.json();
+                                    if (result.success) {
+                                        await Swal.fire({
+                                            title: 'Eliminada',
+                                            text: 'Imagen eliminada correctamente.',
+                                            icon: 'success',
+                                            timer: 1800,
+                                            timerProgressBar: true,
+                                            showConfirmButton: false,
+                                            confirmButtonColor: '#6A8042'
+                                        });
+                                        window.location.reload();
+                                    } else {
+                                        Swal.fire({
+                                            title: 'Error',
+                                            text: result.message ?? 'No se pudo eliminar la imagen.',
+                                            icon: 'error',
+                                            confirmButtonColor: '#d33',
+                                            confirmButtonText: 'Aceptar'
+                                        });
+                                    }
+                                } catch {
+                                    Swal.fire({
+                                        title: 'Error',
+                                        text: 'Fallo de red al eliminar la imagen.',
                                         icon: 'error',
                                         confirmButtonColor: '#d33',
                                         confirmButtonText: 'Aceptar'

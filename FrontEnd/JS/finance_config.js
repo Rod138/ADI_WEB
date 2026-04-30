@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fundAmountInput = document.getElementById('fund-amount');
     const fundConfirmInput = document.getElementById('fund-confirm');
     const saveFundBtn = document.getElementById('save-fund-btn');
+    const cancelFundBtn = document.getElementById('cancel-fund-btn');
     const currentFundText = document.getElementById('current-fund');
     const updatedAtText = document.getElementById('updated-at');
 
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const amountInput = document.getElementById('quota-amount');
     const confirmInput = document.getElementById('quota-confirm');
     const saveQuotaBtn = document.getElementById('save-quota-btn');
+    const cancelQuotaBtn = document.getElementById('cancel-quota-btn');
     const tbody = document.getElementById('quota-tbody');
 
     // ============ Constants ============
@@ -31,6 +33,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ============ Event Listeners ============
     saveFundBtn.addEventListener('click', handleSaveFund);
     saveQuotaBtn.addEventListener('click', handleSaveQuota);
+    cancelFundBtn.addEventListener('click', resetFundForm);
+    cancelQuotaBtn.addEventListener('click', resetQuotaForm);
 
     // ============ Fund Handling ============
     async function handleSaveFund() {
@@ -174,10 +178,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function setBalanceDisplay(balanceData) {
-        currentBalanceText.textContent = formatCurrency(balanceData.balance);
+        currentBalanceText.textContent = formatCompactCurrency(balanceData.balance);
+        currentBalanceText.title = formatCurrency(balanceData.balance);
         breakdownFundText.textContent = formatCurrency(balanceData.initialAmount);
         breakdownPaymentsText.textContent = `+${formatCurrency(balanceData.totalPayments)}`;
         breakdownExpensesText.textContent = `-${formatCurrency(balanceData.totalExpenses)}`;
+    }
+
+    function resetFundForm() {
+        fundAmountInput.value = '';
+        fundConfirmInput.checked = false;
+        fundAmountInput.focus();
+    }
+
+    function resetQuotaForm() {
+        initializeQuotaForm();
+        amountInput.value = '';
+        confirmInput.checked = false;
+        monthInput.focus();
     }
 
     function setFundDisplay(amount, date) {
@@ -212,6 +230,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         });
+    }
+
+    function formatCompactCurrency(value) {
+        const amount = Number(value || 0);
+        const compact = new Intl.NumberFormat('es-MX', {
+            style: 'currency',
+            currency: 'MXN',
+            notation: 'compact',
+            compactDisplay: 'short',
+            maximumFractionDigits: 1
+        });
+
+        return compact.format(amount);
     }
 
     function formatDateTime(value) {

@@ -96,7 +96,7 @@
         <!-- Form panel para levantar gasto (oculto por defecto) -->
         <section class="expense-form-panel" id="expense-form-panel" style="display:none;">
             <div class="expense-form-header">
-                <h2>LEVANTAR GASTO</h2>
+                <h2 id="expense-form-title">LEVANTAR GASTO</h2>
                 <button id="close-expense-form-btn" class="close-form-btn" aria-label="Cerrar">
                     <span class="material-symbols-outlined">close</span>
                 </button>
@@ -135,16 +135,18 @@
                     <col style="width: 65%">
                     <col style="width: 20%">
                     <col style="width: 15%">
+                    <col style="width: 20%">
                 </colgroup>
                 <thead>
                     <tr>
                         <th>Informacion</th>
                         <th>Fecha</th>
                         <th>Monto</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="expenses-tbody">
-                    <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
+                    <tr><td colspan="4" style="text-align:center">Cargando...</td></tr>
                 </tbody>
             </table>
         </div>

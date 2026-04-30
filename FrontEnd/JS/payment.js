@@ -136,14 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            await Swal.fire({
-                title: 'Pago enviado',
-                text: 'Tu comprobante quedo registrado y pendiente de validacion.',
-                icon: 'success',
-                timer: 1800,
-                timerProgressBar: true,
-                showConfirmButton: false
-            });
+            await notify('Pago enviado', 'Tu comprobante quedo registrado y pendiente de validacion.', 'success', 1800);
 
             amountPaidInput.value = '';
             proofInput.value = '';
@@ -323,8 +316,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         URL.revokeObjectURL(url);
     }
 
-    function notify(title, text, icon) {
-        return Swal.fire({ title, text, icon, confirmButtonColor: icon === 'error' ? '#d33' : '#ED7A13' });
+    function notify(title, text, icon, timer = 2200) {
+        return Swal.fire({
+            title,
+            text,
+            icon,
+            confirmButtonText: 'OK',
+            confirmButtonColor: icon === 'error' ? '#d33' : '#ED7A13',
+            showConfirmButton: true,
+            timer,
+            timerProgressBar: true
+        });
     }
 
     function formatCurrency(value) {

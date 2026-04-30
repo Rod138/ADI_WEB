@@ -86,6 +86,13 @@
                 </div>
             </a>
 
+            <a href="/accounting/cash-payment" class="menu-card button-4" data-admin-only="true">
+                <div class="card-content">
+                    <h2 class="card-title">CUOTA EN EFECTIVO</h2>
+                    <p class="card-subtitle">Registra una cuota ajena pagada en efectivo.</p>
+                </div>
+            </a>
+
             <a href="/accounting/finance-config" class="menu-card button-5" data-admin-only="true">
                 <div class="card-content">
                     <h2 class="card-title">CONFIGURACIÓN FINANCIERA</h2>
@@ -119,12 +126,12 @@
             });
 
             if (cardsGrid) {
-                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3', 'cards-count-4');
+                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3', 'cards-count-4', 'cards-count-5');
                 const visibleCards = Array.from(cardsGrid.querySelectorAll('.menu-card')).filter((card) => {
                     return card.style.display !== 'none';
                 });
 
-                if (visibleCards.length >= 1 && visibleCards.length <= 4) {
+                if (visibleCards.length >= 1 && visibleCards.length <= 5) {
                     cardsGrid.classList.add(`cards-count-${visibleCards.length}`);
                 }
             }

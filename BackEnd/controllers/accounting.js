@@ -22,6 +22,51 @@ const parseSessionUserId = (req) => {
     return parsed;
 };
 
+const EXPENSE_EDIT_WINDOW_HOURS = 24;
+
+const isExpenseWithinWindow = (expenseDate) => {
+    const created = new Date(expenseDate);
+    if (Number.isNaN(created.getTime())) return false;
+    const diffHours = (Date.now() - created.getTime()) / (1000 * 60 * 60);
+    return diffHours < EXPENSE_EDIT_WINDOW_HOURS;
+};
+
+const validateExpensePayload = ({ description, amount, image_data, expense_date, requireImage = true }) => {
+    const descriptionText = String(description || '').trim();
+    if (!descriptionText) {
+        return 'La descripcion es obligatoria.';
+    }
+    if (descriptionText.length < 3) {
+        return 'La descripcion debe tener al menos 3 caracteres.';
+    }
+    if (descriptionText.length > 150) {
+        return 'La descripcion no puede pasar de 150 caracteres.';
+    }
+
+    const parsedAmount = parseFloat(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+        return 'El costo debe ser mayor a 0.';
+    }
+
+    const imageText = String(image_data || '').trim();
+    if (requireImage) {
+        const isDataImage = /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(imageText);
+        const isHttpImage = /^https?:\/\//i.test(imageText);
+        if (!isDataImage && !isHttpImage) {
+            return 'La imagen debe ser un archivo de imagen valido.';
+        }
+    }
+
+    if (expense_date !== undefined && expense_date !== null && String(expense_date).trim()) {
+        const parsedDate = new Date(expense_date);
+        if (Number.isNaN(parsedDate.getTime())) {
+            return 'La fecha del gasto es invalida.';
+        }
+    }
+
+    return null;
+};
+
 const getSessionUser = async (req) => {
     const userId = parseSessionUserId(req);
     if (!userId) return null;
@@ -40,25 +85,13 @@ const getSessionUser = async (req) => {
 export const createTowerExpense = async (req, res) => {
     try {
         const { description, amount, image_data, expense_date } = req.body;
-
-        if (!description || !String(description).trim()) {
-            return res.status(400).json({ success: false, message: 'La descripcion es obligatoria.' });
-        }
-
-        if (!image_data || !String(image_data).trim()) {
-            return res.status(400).json({ success: false, message: 'Debes cargar una imagen.' });
-        }
-
-        const parsedAmount = parseFloat(amount);
-        if (isNaN(parsedAmount) || parsedAmount <= 0) {
-            return res.status(400).json({ success: false, message: 'El costo debe ser mayor a 0.' });
+        const validationError = validateExpensePayload({ description, amount, image_data, expense_date });
+        if (validationError) {
+            return res.status(400).json({ success: false, message: validationError });
         }
 
         const descriptionText = String(description).trim();
-        if (descriptionText.length > 150) {
-            return res.status(400).json({ success: false, message: 'La descripcion no puede pasar de 150 caracteres.' });
-        }
-
+        const parsedAmount = parseFloat(amount);
         const expenseDateIso = expense_date ? new Date(expense_date).toISOString() : new Date().toISOString();
 
         const { error } = await supabase
@@ -87,6 +120,92 @@ export const createTowerExpense = async (req, res) => {
         return res.status(201).json({ success: true, message: 'Gasto registrado correctamente.' });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno al registrar el gasto.' });
+    }
+};
+
+// Actualiza un gasto dentro de la ventana permitida.
+export const updateTowerExpense = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { description, amount, image_data } = req.body;
+
+        const { data: expense, error: fetchError } = await supabase
+            .from('tower_expenses')
+            .select('id, expense_date')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !expense) {
+            return res.status(404).json({ success: false, message: 'Gasto no encontrado.' });
+        }
+
+        if (!isExpenseWithinWindow(expense.expense_date)) {
+            return res.status(403).json({ success: false, message: 'El gasto ya no puede editarse porque excedio las 24 horas.' });
+        }
+
+        const validationError = validateExpensePayload({
+            description,
+            amount,
+            image_data,
+            expense_date: expense.expense_date,
+            requireImage: true
+        });
+        if (validationError) {
+            return res.status(400).json({ success: false, message: validationError });
+        }
+
+        const updates = {
+            description: String(description).trim(),
+            amount: parseFloat(amount),
+            url_image: String(image_data).trim()
+        };
+
+        const { error } = await supabase
+            .from('tower_expenses')
+            .update(updates)
+            .eq('id', id);
+
+        if (error) {
+            return res.status(500).json({ success: false, message: 'No se pudo actualizar el gasto.' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Gasto actualizado correctamente.' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno al actualizar el gasto.' });
+    }
+};
+
+// Elimina un gasto dentro de la ventana permitida.
+export const deleteTowerExpense = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const { data: expense, error: fetchError } = await supabase
+            .from('tower_expenses')
+            .select('id, expense_date')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !expense) {
+            return res.status(404).json({ success: false, message: 'Gasto no encontrado.' });
+        }
+
+        if (!isExpenseWithinWindow(expense.expense_date)) {
+            return res.status(403).json({ success: false, message: 'El gasto ya no puede borrarse porque excedio las 24 horas.' });
+        }
+
+        const { error } = await supabase
+            .from('tower_expenses')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            return res.status(500).json({ success: false, message: 'No se pudo eliminar el gasto.' });
+        }
+
+        return res.status(200).json({ success: true, message: 'Gasto eliminado correctamente.' });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'Error interno al eliminar el gasto.' });
     }
 };
 
@@ -496,9 +615,10 @@ export const getQuotaPaymentData = async (req, res) => {
 // Registra un pago mensual evitando duplicados por departamento, mes y anio.
 export const createQuotaPayment = async (req, res) => {
     try {
-        const { dep_id, year, month, amount_paid, amount_expected, url_image } = req.body;
+        const { dep_id, year, month, amount_paid, amount_expected, url_image, is_cash } = req.body;
         const sessionUser = await getSessionUser(req);
         const isManager = Number(sessionUser?.rol_id || 0) >= 2;
+        const isCashPayment = isManager && is_cash === true;
 
         const depIdNum = isManager
             ? parseInt(dep_id, 10)
@@ -527,7 +647,7 @@ export const createQuotaPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cantidad esperada invalida.' });
         }
 
-        if (!url_image || !String(url_image).trim()) {
+        if (!isCashPayment && (!url_image || !String(url_image).trim())) {
             return res.status(400).json({ success: false, message: 'Debes adjuntar el comprobante de pago.' });
         }
 
@@ -557,8 +677,8 @@ export const createQuotaPayment = async (req, res) => {
                 month: normalizedMonth,
                 amount_paid: amountPaidNum,
                 amount_expected: amountExpectedNum,
-                url_image: String(url_image).trim(),
-                validated: null,
+                url_image: isCashPayment ? null : String(url_image).trim(),
+                validated: isCashPayment ? true : null,
                 created_at: new Date().toISOString()
             });
 

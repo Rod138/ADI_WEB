@@ -263,6 +263,45 @@ tbody td h2 {
     color: #6E6E6E;
 }
 
+.expense-actions {
+    display: flex;
+    gap: 0.4rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.expense-edit-btn,
+.expense-delete-btn {
+    border: 0.0625rem solid #D9B894;
+    border-radius: 0.5rem;
+    background-color: #F5E6D8;
+    color: #5E4B37;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.3rem 0.55rem;
+    cursor: pointer;
+}
+
+.expense-edit-btn:hover:not(:disabled) {
+    background-color: #EFD5BE;
+}
+
+.expense-delete-btn {
+    border-color: #E3B9B9;
+    background-color: #F7E3E3;
+    color: #8A2F2F;
+}
+
+.expense-delete-btn:hover:not(:disabled) {
+    background-color: #F0D2D2;
+}
+
+.expense-edit-btn:disabled,
+.expense-delete-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
 tbody td:nth-child(2),
 tbody td:nth-child(3) {
     font-size: 1rem;

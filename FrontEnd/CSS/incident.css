@@ -144,6 +144,46 @@ body {
     color: #1E3006;
 }
 
+.image-actions {
+    width: min(100%, 26.25rem);
+    margin: 0 auto 1rem;
+    display: flex;
+    gap: 0.8rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.image-btn,
+.delete-image-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.edit-image-btn {
+    background-color: #6A8042;
+    color: #FFFADD;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.edit-image-btn:hover {
+    background-color: #5D723B;
+}
+
+.delete-image-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-image-btn:hover {
+    background-color: #c82333;
+}
+
 .info-grid,
 .update-section {
     width: min(100%, 31.25rem);
