@@ -75,7 +75,7 @@ export const getRoles = async (req, res) => {
 // POST /api/users  — crear nuevo usuario
 // Inserta un usuario con ID incremental y datos normalizados.
 export const createUser = async (req, res) => {
-    const { name, email, phone, password, rol_id, dep_id } = req.body;
+    const { name, email, phone, password, rol_id, dep_id, ap } = req.body;
 
     // Validar campos requeridos
     if (!name || !email || !phone || !password || !rol_id || !dep_id) {
@@ -91,24 +91,15 @@ export const createUser = async (req, res) => {
         });
     }
 
-    // Validar apellido paterno si se proporciona
-    if (ap && ap.trim()) {
-        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-        if (!apRegex.test(String(ap).trim())) {
+    // Normalizar y validar apellido paterno si se proporciona (solo apellido paterno)
+    let apPaternal = null;
+    if (ap && String(ap).trim()) {
+        apPaternal = String(ap).trim().split(/\s+/)[0];
+        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ]{1,30}$/;
+        if (!apRegex.test(apPaternal)) {
             return res.status(400).json({
                 success: false,
-                message: 'Apellido paterno: solo letras y espacios, máximo 30 caracteres'
-            });
-        }
-    }
-
-    // Validar apellido materno si se proporciona
-    if (am && am.trim()) {
-        const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-        if (!amRegex.test(String(am).trim())) {
-            return res.status(400).json({
-                success: false,
-                message: 'Apellido materno: solo letras y espacios, máximo 30 caracteres'
+                message: 'Apellido paterno: solo letras, sin espacios, máximo 30 caracteres'
             });
         }
     }
@@ -158,7 +149,8 @@ export const createUser = async (req, res) => {
             phone: String(phone).trim(),
             password,
             rol_id: parseInt(rol_id, 10),
-            dep_id: parseInt(dep_id, 10)
+            dep_id: parseInt(dep_id, 10),
+            ap: apPaternal
         });
         if (error) return res.status(500).json({ success: false, message: error.message ?? 'Error al crear usuario' });
         return res.status(201).json({ success: true });
@@ -223,7 +215,7 @@ export const getUserById = async (req, res) => {
 // Aplica actualizacion parcial permitiendo limpiar campos opcionales con null.
 export const updateUser = async (req, res) => {
     const { id } = req.params;
-    const allowed = ['name', 'email', 'phone', 'password', 'rol_id', 'dep_id'];
+    const allowed = ['name', 'email', 'phone', 'password', 'rol_id', 'dep_id', 'ap'];
     const updates = {};
 
     for (const field of allowed) {
@@ -247,23 +239,17 @@ export const updateUser = async (req, res) => {
     }
 
     if (updates.ap && updates.ap !== null) {
-        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-        if (!apRegex.test(String(updates.ap).trim())) {
+        // Normalizar a solo apellido paterno (primer token sin espacios)
+        const apPaternal = String(updates.ap).trim().split(/\s+/)[0];
+        const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ]{1,30}$/;
+        if (!apRegex.test(apPaternal)) {
             return res.status(400).json({
                 success: false,
-                message: 'Apellido paterno: solo letras y espacios, máximo 30 caracteres'
+                message: 'Apellido paterno: solo letras, sin espacios, máximo 30 caracteres'
             });
         }
-    }
 
-    if (updates.am && updates.am !== null) {
-        const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-        if (!amRegex.test(String(updates.am).trim())) {
-            return res.status(400).json({
-                success: false,
-                message: 'Apellido materno: solo letras y espacios, máximo 30 caracteres'
-            });
-        }
+        updates.ap = apPaternal;
     }
 
     if (updates.email) {
@@ -314,7 +300,6 @@ export const deleteUser = async (req, res) => {
         const { error } = await supabase.from('users').update({
             name: '-',
             ap: '-',
-            am: null,
             email: '-',
             phone: '-',
             password: '-',
@@ -357,7 +342,6 @@ export const updateDepartment = async (req, res) => {
                 await supabase.from('users').update({
                     name: '-',
                     ap: '-',
-                    am: null,
                     email: '-',
                     phone: '-',
                     password: '-',

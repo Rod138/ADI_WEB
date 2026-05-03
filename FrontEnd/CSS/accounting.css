@@ -118,47 +118,30 @@ body {
 .cards-grid {
     width: min(100%, 78rem);
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
     gap: 1.6rem;
     margin-top: 1.2rem;
 }
 
-.cards-grid.cards-count-1 {
-    width: min(100%, 26rem);
-    grid-template-columns: 1fr;
+/* Use auto-fit layout so the grid naturally adapts to available width
+   and keeps consistent spacing across viewport sizes. This avoids
+   complex manual spans that break on small screens. */
+
+/* Center the final card when there are 5 visible cards so the
+    configuration card doesn't stick to the left on wider layouts. */
+.cards-grid .menu-card.center-last {
+    justify-self: center;
 }
 
-.cards-grid.cards-count-2 {
-    width: min(100%, 44rem);
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.cards-grid.cards-count-3 {
-    width: min(100%, 62rem);
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.cards-grid.cards-count-4 {
-    width: min(100%, 78rem);
+/* When 5 cards are visible on wide screens, place the last one in the
+   visual center of the second row. */
+.cards-grid.cards-count-5 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-.cards-grid.cards-count-5 {
-    width: min(100%, 78rem);
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    justify-content: center;
-}
-
-.cards-grid.cards-count-5 .menu-card {
-    grid-column: span 2;
-}
-
-.cards-grid.cards-count-5 .menu-card:nth-child(4) {
+.cards-grid.cards-count-5 .menu-card.center-last {
     grid-column: 2 / span 2;
-}
-
-.cards-grid.cards-count-5 .menu-card:nth-child(5) {
-    grid-column: 4 / span 2;
+    width: min(100%, 20rem);
 }
 
 .menu-card {
@@ -277,6 +260,15 @@ footer p {
         margin-top: 1rem;
     }
 
+    .cards-grid.cards-count-5 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cards-grid.cards-count-5 .menu-card.center-last {
+        grid-column: 1 / -1;
+        width: min(100%, 22rem);
+    }
+
     .cards-grid.cards-count-1 {
         width: min(100%, 44rem);
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -318,6 +310,11 @@ footer p {
 @media (max-width: 42rem) {
     .cards-grid {
         grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .cards-grid.cards-count-5 .menu-card.center-last {
+        grid-column: auto;
         width: 100%;
     }
 

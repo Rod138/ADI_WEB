@@ -126,14 +126,61 @@
             });
 
             if (cardsGrid) {
-                cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3', 'cards-count-4', 'cards-count-5');
-                const visibleCards = Array.from(cardsGrid.querySelectorAll('.menu-card')).filter((card) => {
-                    return card.style.display !== 'none';
-                });
+                const applyCardsLayout = () => {
+                    cardsGrid.classList.remove('cards-count-1', 'cards-count-2', 'cards-count-3', 'cards-count-4', 'cards-count-5');
 
-                if (visibleCards.length >= 1 && visibleCards.length <= 5) {
-                    cardsGrid.classList.add(`cards-count-${visibleCards.length}`);
-                }
+                    const allCards = Array.from(cardsGrid.querySelectorAll('.menu-card'));
+                    const visibleCards = allCards.filter((card) => card.style.display !== 'none');
+
+                    if (visibleCards.length >= 1 && visibleCards.length <= 5) {
+                        cardsGrid.classList.add(`cards-count-${visibleCards.length}`);
+                    }
+
+                    // Reset inline layout tweaks before recalculating.
+                    cardsGrid.style.removeProperty('grid-template-columns');
+                    allCards.forEach((card) => {
+                        card.classList.remove('center-last');
+                        card.style.removeProperty('grid-column');
+                        card.style.removeProperty('justify-self');
+                        card.style.removeProperty('width');
+                    });
+
+                    if (visibleCards.length === 0) return;
+
+                    const lastVisible = visibleCards[visibleCards.length - 1];
+                    lastVisible.classList.add('center-last');
+
+                    if (visibleCards.length !== 5) return;
+
+                    // Force deterministic layout for 5 cards across breakpoints.
+                    const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+                    // Desktop: 4 columns + last card centered on row 2.
+                    if (viewportWidth > 1120) {
+                        cardsGrid.style.gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+                        lastVisible.style.gridColumn = '2 / span 2';
+                        lastVisible.style.justifySelf = 'center';
+                        lastVisible.style.width = 'min(100%, 20rem)';
+                        return;
+                    }
+
+                    // Tablet: 2 columns + last card centered full row.
+                    if (viewportWidth > 672) {
+                        cardsGrid.style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+                        lastVisible.style.gridColumn = '1 / -1';
+                        lastVisible.style.justifySelf = 'center';
+                        lastVisible.style.width = 'min(100%, 22rem)';
+                        return;
+                    }
+
+                    // Mobile: one card per row.
+                    cardsGrid.style.gridTemplateColumns = '1fr';
+                };
+
+                applyCardsLayout();
+                window.removeEventListener('resize', window.__adiAccountingResizeHandler);
+                window.__adiAccountingResizeHandler = applyCardsLayout;
+                window.addEventListener('resize', window.__adiAccountingResizeHandler);
             }
 
         });

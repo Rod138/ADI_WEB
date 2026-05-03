@@ -209,6 +209,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="email" id="new-email" minlength="6" maxlength="320">
                 </div>
                 <div class="edit-field">
+                    <label>Apellido paterno</label>
+                    <input type="text" id="new-ap" placeholder="Ej. Pérez" minlength="1" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
+                </div>
+                <div class="edit-field">
                     <label>Teléfono *</label>
                     <input type="tel" id="new-phone" placeholder="Ej. 5551234567" minlength="10" maxlength="10" pattern="^\d{10}$">
                 </div>
@@ -222,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         document.getElementById('new-user-submit-btn').onclick = async () => {
             const nameInput = document.getElementById('new-name');
+            const apInput = document.getElementById('new-ap');
             const emailInput = document.getElementById('new-email');
             const phoneInput = document.getElementById('new-phone');
             const passwordInput = document.getElementById('new-password');
@@ -229,6 +234,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const body = {
                 name:     nameInput.value.trim(),
                 email:    emailInput.value.trim(),
+                ap:       apInput ? String(apInput.value || '').trim().split(/\s+/)[0] : undefined,
                 phone:    phoneInput.value.trim(),
                 password: passwordInput.value,
                 rol_id:   1,
@@ -249,45 +255,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (body.ap) {
-                const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-                if (!apRegex.test(body.ap)) {
+                const apPaternal = String(body.ap || '').trim().split(/\s+/)[0];
+                const apRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ]{1,30}$/;
+                if (!apRegex.test(apPaternal)) {
                     Swal.fire({
                         title: 'Apellido paterno inválido',
-                        text: 'Solo letras y espacios, máximo 30 caracteres',
+                        text: 'Solo letras, sin espacios, máximo 30 caracteres',
                         icon: 'warning',
                         confirmButtonColor: '#ED7A13',
                         confirmButtonText: 'Aceptar'
                     });
                     return;
                 }
-            }
-
-            if (body.am) {
-                const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-                if (!amRegex.test(body.am)) {
-                    Swal.fire({
-                        title: 'Apellido materno inválido',
-                        text: 'Solo letras y espacios, máximo 30 caracteres',
-                        icon: 'warning',
-                        confirmButtonColor: '#ED7A13',
-                        confirmButtonText: 'Aceptar'
-                    });
-                    return;
-                }
-            }
-
-            if (body.am) {
-                const amRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{1,30}$/;
-                if (!amRegex.test(body.am)) {
-                    Swal.fire({
-                        title: 'Apellido materno inválido',
-                        text: 'Solo letras y espacios, máximo 30 caracteres',
-                        icon: 'warning',
-                        confirmButtonColor: '#ED7A13',
-                        confirmButtonText: 'Aceptar'
-                    });
-                    return;
-                }
+                body.ap = apPaternal;
             }
 
             const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;

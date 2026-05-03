@@ -90,12 +90,19 @@ export { ValidationPatterns };
 /**
  * Genera un JWT access token con 15 minutos de duración
  * @param {number} userId - ID del usuario
+ * @param {number} userId - ID del usuario
+ * @param {number|null} rolId - ID del rol del usuario
+ * @param {string|null} rolName - Nombre del rol del usuario
  * @returns {Promise<string>} JWT access token
  */
-export const generateAccessToken = async (userId) => {
+export const generateAccessToken = async (userId, rolId = null, rolName = null) => {
     const { default: jwt } = await import('jsonwebtoken');
+    const payload = { userId, type: 'access' };
+    if (rolId !== null && rolId !== undefined) payload.rol_id = rolId;
+    if (rolName !== null && rolName !== undefined) payload.rol_name = rolName;
+
     return jwt.sign(
-        { userId, type: 'access' },
+        payload,
         process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRY || '15m' }
     );

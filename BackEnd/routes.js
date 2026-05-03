@@ -59,12 +59,23 @@ router.post('/api/refresh-token', async (req, res) => {
             });
         }
 
-        const newAccessToken = await generateAccessToken(decoded.userId);
+        // Obtener datos del usuario y su rol para generar access token con información de rol
+        const { data: userData, error: userError } = await supabase.from('users').select('id, rol_id').eq('id', decoded.userId).single();
+        if (userError || !userData) {
+            return res.status(401).json({ success: false, message: 'Tu sesión terminó. Vuelve a iniciar sesión.' });
+        }
 
-        return res.status(200).json({
-            success: true,
-            accessToken: newAccessToken
-        });
+        let roleName = null;
+        try {
+            const { data: roleData, error: roleError } = await supabase.from('roles').select('name').eq('id', userData.rol_id).single();
+            if (!roleError && roleData) roleName = roleData.name;
+        } catch (e) {
+            // ignorar error y generar token sin nombre de rol
+        }
+
+        const newAccessToken = await generateAccessToken(userData.id, userData.rol_id, roleName);
+
+        return res.status(200).json({ success: true, accessToken: newAccessToken });
     } catch (error) {
         return res.status(500).json({
             success: false,

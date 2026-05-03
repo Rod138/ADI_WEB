@@ -100,8 +100,17 @@ export const login = async (req, res) => {
         }
 
         if (user.rol_id > 0) {
-            // Generar JWT tokens
-            const accessToken = await generateAccessToken(user.id);
+            // Obtener nombre del rol para incluirlo en el JWT
+            let roleName = null;
+            try {
+                const { data: roleData, error: roleError } = await supabase.from('roles').select('name').eq('id', user.rol_id).single();
+                if (!roleError && roleData) roleName = roleData.name;
+            } catch (e) {
+                // no bloquear inicio de sesión por error al obtener nombre del rol
+            }
+
+            // Generar JWT tokens (access token incluye rol)
+            const accessToken = await generateAccessToken(user.id, user.rol_id, roleName);
             const refreshToken = await generateRefreshToken(user.id);
 
             // Calcular fecha de expiración del refresh token según configuración.

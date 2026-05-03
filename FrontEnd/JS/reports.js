@@ -905,7 +905,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             month: monthName,
             year,
             condominioName: getNamedValue(['condominioName', 'condominio', 'residentialName', 'residencialNombre']) || 'Condominio ADI',
-            towerName: getNamedValue(['towerName', 'torreName', 'tower', 'torre']) || 'Torre principal',
+            towerName: 'Torre M',
             logoBase64,
             totalIncome,
             totalExpenses,
