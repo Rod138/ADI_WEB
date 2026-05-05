@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/expenses_board.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
@@ -39,11 +40,26 @@
         .role-badge #user-role {
             white-space: normal;
         }
+        .sidebar-toggle {
+            border: none;
+            background: transparent;
+            padding: 0;
+            margin-right: 0.25rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sidebar-toggle .material-symbols-outlined {
+            font-size: 1.9rem;
+        }
     </style>
 </head>
-<body data-min-role="1">
+<body class="sidebar-expanded" data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="true">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">TABLON DE GASTOS</div>
@@ -60,6 +76,76 @@
             </a>
         </div>
     </nav>
+
+    <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
+        <nav class="sidebar-nav" aria-label="Accesos rápidos">
+            <a class="sidebar-link" href="/main" data-label="Menú principal">
+                <span class="material-symbols-outlined">dashboard</span>
+                <div class="sidebar-link-copy">
+                    <strong>Menú principal</strong>
+                </div>
+            </a>
+            <div class="sidebar-link has-submenu" id="accounting-menu" data-label="Finanzas">
+                <span class="material-symbols-outlined">payments</span>
+                <div class="sidebar-link-copy">
+                    <strong>Finanzas</strong>
+                </div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+            </div>
+            <nav class="sidebar-submenu" id="accounting-submenu">
+                <a class="sidebar-sublink" href="/accounting" data-label="Tablero">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Finanzas</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración">
+                    <span class="material-symbols-outlined">settings</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Configuración</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/expenses-board" data-label="Gastos">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Gastos del condominio</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/payment" data-label="Pagos">
+                    <span class="material-symbols-outlined">payment</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Mis cuotas</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Cuotas de residentes</strong>
+                    </div>
+                </a>
+            </nav>
+            <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
+                <span class="material-symbols-outlined">warning</span>
+                <div class="sidebar-link-copy">
+                    <strong>Incidencias</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/reports" data-label="Reportes">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <div class="sidebar-link-copy">
+                    <strong>Reportes</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/departments" data-label="Departamentos">
+                <span class="material-symbols-outlined">apartment</span>
+                <div class="sidebar-link-copy">
+                    <strong>Departamentos</strong>
+                </div>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <div class="main-container">
         <div class="selects">
@@ -169,6 +255,22 @@
                 const roleSpan = document.getElementById('user-role');
                 if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
             }
+
+            // Highlight active sidebar link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (
+                    (href === '/accounting' && currentPath.startsWith('/accounting')) ||
+                    (href === '/incident-board' && currentPath.startsWith('/incident')) ||
+                    (href === '/reports' && currentPath === '/reports') ||
+                    (href === '/departments' && currentPath === '/departments')
+                ) {
+                    link.classList.add('active');
+                }
+            });
+            const headerLink = document.querySelector('.sidebar-header-link');
+            if (headerLink && currentPath === '/main') headerLink.classList.add('active');
         });
     </script>
     <footer>

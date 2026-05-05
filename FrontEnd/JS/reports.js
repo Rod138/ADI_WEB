@@ -9,8 +9,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const yearSelect = document.getElementById('report-year');
     const monthSelect = document.getElementById('report-month');
     const viewSelect = document.getElementById('report-view');
-    const chartWrap = document.getElementById('chart-wrap');
-    const tableWrap = document.getElementById('table-wrap');
+    const chartContainer = document.getElementById('chart-container');
+    const tableContainer = document.getElementById('table-container');
+    const emptyContainer = document.getElementById('empty-container');
     const emptyState = document.getElementById('reports-empty-state');
     const head = document.getElementById('reports-head');
     const body = document.getElementById('reports-body');
@@ -211,10 +212,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         const type = typeSelect.value;
         const selectedYear = yearSelect.value;
         const selectedMonth = monthSelect.value;
+        const wideOutputMode = mode === 'chart' || isMonthlyPdfType();
+
+        document.body.classList.toggle('reports-wide-output', wideOutputMode);
 
         if (isMonthlyPdfType()) {
-            chartWrap.style.display = 'none';
-            tableWrap.style.display = 'none';
+            chartContainer.style.display = 'none';
+            tableContainer.style.display = 'none';
+            emptyContainer.style.display = 'block';
             head.innerHTML = '';
             body.innerHTML = '';
             lastRenderedHeaders = [];
@@ -224,12 +229,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (mode === 'chart') {
-            chartWrap.style.display = 'block';
-            tableWrap.style.display = 'none';
+            chartContainer.style.display = 'block';
+            tableContainer.style.display = 'none';
+            emptyContainer.style.display = 'none';
             renderChart(type, selectedYear, selectedMonth);
         } else {
-            chartWrap.style.display = 'none';
-            tableWrap.style.display = 'block';
+            chartContainer.style.display = 'none';
+            tableContainer.style.display = 'block';
+            emptyContainer.style.display = 'none';
             renderTable(type, selectedYear, selectedMonth);
         }
     }
@@ -296,7 +303,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (!incidentStats.length) {
-                chartWrap.style.display = 'none';
+                chartContainer.style.display = 'none';
+                tableContainer.style.display = 'none';
+                emptyContainer.style.display = 'block';
                 showEmptyState('Sin datos para el mes y año seleccionados.');
                 lastRenderedHeaders = [];
                 lastRenderedRows = [];
@@ -329,7 +338,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!periodKeys.length || !hasPlottableData) {
-            chartWrap.style.display = 'none';
+            chartContainer.style.display = 'none';
+            tableContainer.style.display = 'none';
+            emptyContainer.style.display = 'block';
             showEmptyState('Sin datos para el mes y año seleccionados.');
             lastRenderedHeaders = [];
             lastRenderedRows = [];
@@ -427,13 +438,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         head.innerHTML = `<tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr>`;
 
         if (!renderedRows.length) {
-            tableWrap.style.display = 'none';
+            chartContainer.style.display = 'none';
+            tableContainer.style.display = 'none';
+            emptyContainer.style.display = 'block';
             showEmptyState('Sin datos para el mes y año seleccionados.');
             head.innerHTML = '';
             body.innerHTML = '';
             lastRenderedHeaders = [];
             lastRenderedRows = [];
         } else {
+            chartContainer.style.display = 'none';
+            tableContainer.style.display = 'block';
+            emptyContainer.style.display = 'none';
             body.innerHTML = renderedRows.map(row => buildStyledRow(row, type)).join('');
             lastRenderedHeaders = headers;
             lastRenderedRows = renderedRows;

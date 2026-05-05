@@ -1,16 +1,43 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/reports.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Reportes</title>
+    <title>Reportes — ADI</title>
+    <style>
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            background: rgba(106, 128, 66, 0.12);
+            border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+            border-radius: 1.25rem;
+            font-family: "Inter", sans-serif;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #5D723B;
+            text-transform: uppercase;
+            letter-spacing: 0.03125rem;
+        }
+        .role-badge > span:first-child {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #6A8042;
+        }
+        .role-badge #user-role {
+            white-space: normal;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
@@ -18,89 +45,162 @@
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/reports.js" defer></script>
 </head>
-<body data-min-role="1">
+<body class="sidebar-expanded" data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
-            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI">
         </div>
         <div class="nav-title">REPORTES</div>
         <div class="nav-actions">
-            <div class="role-badge">
-                <span></span>
-                <span id="user-role">Rol</span>
-            </div>
-            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
-                <span class="material-symbols-outlined">person</span>
-            </a>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
-                <span class="material-symbols-outlined">logout</span>
-            </a>
+            <div class="role-badge"><span></span><span id="user-role">Rol</span></div>
+            <a href="/profile" class="nav-icon-btn"><span class="material-symbols-outlined">person</span></a>
+            <a id="logout-btn" class="nav-icon-btn" href="/"><span class="material-symbols-outlined">logout</span></a>
         </div>
     </nav>
 
-    <main class="main-container reports-page">
-        <section class="filters-panel">
-            <div class="filter-group">
-                <label for="report-type">Tipo:</label>
-                <select id="report-type">
-                    <option value="payments">Pagos de cuota</option>
-                    <option value="balance">Balance</option>
-                    <option value="incident-types">Tipos de incidencia</option>
-                </select>
+    <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
+        <nav class="sidebar-nav" aria-label="Accesos rápidos">
+            <a class="sidebar-link" href="/main" data-label="Menú principal">
+                <span class="material-symbols-outlined">dashboard</span>
+                <div class="sidebar-link-copy">
+                    <strong>Menú principal</strong>
+                </div>
+            </a>
+            <div class="sidebar-link has-submenu" id="accounting-menu" data-label="Finanzas">
+                <span class="material-symbols-outlined">payments</span>
+                <div class="sidebar-link-copy">
+                    <strong>Finanzas</strong>
+                </div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
             </div>
-            <div class="filter-group">
-                <label for="report-year">Año:</label>
-                <select id="report-year">
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="report-month">Mes:</label>
-                <select id="report-month">
-                    <option value="any">Todos</option>
-                </select>
-            </div>
-            <div class="filter-group">
-                <label for="report-view">Formato de salida:</label>
-                <select id="report-view">
-                    <option value="chart">Grafica</option>
-                    <option value="table">Tabla</option>
-                    <option value="monthly-financial-pdf" selected>Balance PDF</option>
-                </select>
-            </div>
-        </section>
+            <nav class="sidebar-submenu" id="accounting-submenu">
+                <a class="sidebar-sublink" href="/accounting" data-label="Tablero">
+                    <span class="material-symbols-outlined">dashboard</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Finanzas</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración">
+                    <span class="material-symbols-outlined">settings</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Configuración</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/expenses-board" data-label="Gastos">
+                    <span class="material-symbols-outlined">receipt_long</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Gastos del condominio</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/payment" data-label="Pagos">
+                    <span class="material-symbols-outlined">payment</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Mis cuotas</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Cuotas de residentes</strong>
+                    </div>
+                </a>
+            </nav>
+            <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
+                <span class="material-symbols-outlined">warning</span>
+                <div class="sidebar-link-copy">
+                    <strong>Incidencias</strong>
+                </div>
+            </a>
+            <a class="sidebar-link active" href="/reports" data-label="Reportes">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <div class="sidebar-link-copy">
+                    <strong>Reportes</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/departments" data-label="Departamentos">
+                <span class="material-symbols-outlined">apartment</span>
+                <div class="sidebar-link-copy">
+                    <strong>Departamentos</strong>
+                </div>
+            </a>
+        </nav>
+    </aside>
 
-        <section class="result-panel">
-            <div class="chart-wrap" id="chart-wrap">
-                <canvas id="reports-chart"></canvas>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-container reports-page" role="main">
+        <div class="page-inner">
+            <div class="filters-panel">
+                <div class="filters-wrapper">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="report-type">Tipo</label>
+                            <select id="report-type" class="filter-select">
+                                <option value="payments">Pagos de cuota</option>
+                                <option value="balance">Balance</option>
+                                <option value="incident-types">Tipos de incidencia</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="report-year">Año</label>
+                            <select id="report-year" class="filter-select"></select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="report-month">Mes</label>
+                            <select id="report-month" class="filter-select"><option value="any">Todos</option></select>
+                        </div>
+
+                        <div class="filter-group">
+                            <label for="report-view">Vista</label>
+                            <select id="report-view" class="filter-select">
+                                <option value="chart">Gráfica</option>
+                                <option value="table">Tabla</option>
+                                <option value="monthly-financial-pdf">Balance PDF</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="table-wrap" id="table-wrap" style="display:none">
-                <table id="reports-table">
-                    <thead id="reports-head"></thead>
-                    <tbody id="reports-body"></tbody>
-                </table>
+            <div class="result-panel">
+                <div class="chart-container" id="chart-container">
+                    <div class="chart-wrap"><canvas id="reports-chart"></canvas></div>
+                </div>
+                <div class="table-container" id="table-container" style="display:none">
+                    <div class="table-wrap">
+                        <table id="reports-table">
+                            <thead id="reports-head"></thead>
+                            <tbody id="reports-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="empty-container" id="empty-container" style="display:none">
+                    <div id="reports-empty-state" class="reports-empty-state"></div>
+                </div>
             </div>
-            <div id="reports-empty-state" class="reports-empty-state" style="display:none"></div>
-        </section>
+
+            <div class="bottom-actions">
+                <a href="/main" class="btn-back">REGRESAR</a>
+                <div class="download-actions"><button id="download-pdf-btn" class="btn-download">DESCARGAR</button></div>
+            </div>
+        </div>
     </main>
 
-    <div class="bottom-actions">
-        <div class="download-actions">
-            <button id="download-pdf-btn" class="btn-download">DESCARGAR</button>
-        </div>
-        <a href="/main" class="btn-back">REGRESAR</a>
-    </div>
+    <footer><p>X-CORP</p></footer>
 
-    <footer>
-        <p>X-CORP</p>
-    </footer>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = window.ADIAuth?.getCurrentUser?.();
-            if (user) {
-                const roleSpan = document.getElementById('user-role');
-                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
+        // Initialize user role badge
+        const userSession = safeParseUserSession();
+        if (userSession) {
+            const roleElement = document.getElementById('user-role');
+            if (roleElement) {
+                roleElement.textContent = getRoleLabel(userSession.rol_id) || 'Usuario';
             }
-        });
+        }
     </script>
 </body>
 </html>

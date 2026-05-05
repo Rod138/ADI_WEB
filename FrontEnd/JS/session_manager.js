@@ -229,6 +229,138 @@ async function enforcePageRole(user) {
     return false;
 }
 
+// Aplica comportamiento compartido de sidebar en vistas autenticadas.
+function initializeSharedSidebarBehavior() {
+    const currentPath = window.location.pathname;
+
+    // Estas vistas ya incluyen la version completa de la logica en su propio script.
+    if (currentPath === '/main' || currentPath === '/profile' || currentPath === '/notifications') {
+        return;
+    }
+
+    const body = document.body;
+    const sidebar = document.getElementById('adi-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const toggle = document.getElementById('sidebar-toggle');
+
+    if (!body || !sidebar || !toggle) {
+        return;
+    }
+
+    let isDesktop = window.innerWidth > 768;
+    const sidebarState = localStorage.getItem('sidebarExpanded');
+    const initialExpanded = sidebarState === null ? true : sidebarState === 'true';
+
+    const setSidebarExpanded = (expanded) => {
+        body.classList.toggle('sidebar-expanded', expanded);
+        body.classList.toggle('sidebar-collapsed', !expanded);
+        toggle.setAttribute('aria-expanded', String(expanded));
+
+        if (isDesktop) {
+            localStorage.setItem('sidebarExpanded', String(expanded));
+        }
+    };
+
+    const setSidebarOpen = (open) => {
+        body.classList.toggle('sidebar-open', open);
+        body.classList.toggle('sidebar-backdrop-active', open);
+    };
+
+    if (isDesktop) {
+        setSidebarExpanded(initialExpanded);
+        setSidebarOpen(false);
+    } else {
+        body.classList.add('sidebar-expanded');
+        body.classList.remove('sidebar-collapsed');
+        setSidebarOpen(false);
+    }
+
+    // Captura el click antes que handlers legacy para evitar doble toggle.
+    toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+
+        if (isDesktop) {
+            const currentExpanded = body.classList.contains('sidebar-expanded');
+            setSidebarExpanded(!currentExpanded);
+        } else {
+            setSidebarOpen(!body.classList.contains('sidebar-open'));
+        }
+    }, true);
+
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            if (!isDesktop) {
+                setSidebarOpen(false);
+            }
+        });
+    }
+
+    sidebar.addEventListener('click', (e) => {
+        if (!isDesktop && e.target.closest('a.sidebar-link, a.sidebar-sublink')) {
+            setSidebarOpen(false);
+        }
+    });
+
+    const accountingMenu = document.getElementById('accounting-menu');
+    const accountingSubmenu = document.getElementById('accounting-submenu');
+    if (accountingMenu && accountingSubmenu) {
+        accountingMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            accountingMenu.classList.toggle('open');
+            accountingSubmenu.classList.toggle('open');
+        });
+
+        if (currentPath.includes('/accounting')) {
+            accountingMenu.classList.add('open');
+            accountingSubmenu.classList.add('open');
+        }
+    }
+
+    document.querySelectorAll('.sidebar-link:not(.has-submenu)').forEach((link) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        if (href === currentPath
+            || (href === '/incident-board' && currentPath.includes('/incident'))
+            || (href === '/departments' && currentPath.includes('/departments'))
+            || (href === '/reports' && currentPath.includes('/reports'))) {
+            link.classList.add('active');
+        }
+    });
+
+    document.querySelectorAll('.sidebar-sublink').forEach((link) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        if (href === currentPath || (href === '/accounting' && currentPath.startsWith('/accounting'))) {
+            link.classList.add('active');
+        }
+    });
+
+    document.querySelectorAll('.sidebar-link-copy strong').forEach((label) => {
+        if ((label.textContent || '').trim().length > 18) {
+            label.classList.add('is-long-label');
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        const nowDesktop = window.innerWidth > 768;
+        if (nowDesktop === isDesktop) return;
+
+        isDesktop = nowDesktop;
+
+        if (isDesktop) {
+            const savedState = localStorage.getItem('sidebarExpanded');
+            const shouldExpand = savedState === null ? true : savedState === 'true';
+            setSidebarExpanded(shouldExpand);
+            setSidebarOpen(false);
+        } else {
+            body.classList.remove('sidebar-collapsed');
+            body.classList.add('sidebar-expanded');
+            setSidebarOpen(false);
+        }
+    });
+}
+
     window.ADIAuth = {
         roles: ADI_ROLES,
         getCurrentUser: safeParseUserSession,
@@ -257,6 +389,7 @@ async function enforcePageRole(user) {
         if (!allowed) return;
 
         applyRoleVisibility(user);
+        initializeSharedSidebarBehavior();
 
         const span = document.getElementById('user-name');
         if (span) span.textContent = user.name;

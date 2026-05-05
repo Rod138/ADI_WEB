@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             })
             : '-';
 
+        const isValidated = Number(receipt.validated) === 2 || receipt.validated === true;
+        const statusText = isValidated ? 'Completado' : 'Pendiente';
+        const statusClass = isValidated ? 'status-completado' : 'status-pendiente';
+
         const amountPaid = receipt.amount_paid !== null && receipt.amount_paid !== undefined
             ? `$${parseFloat(receipt.amount_paid).toFixed(2)}`
             : '-';
@@ -40,44 +44,87 @@ document.addEventListener('DOMContentLoaded', async () => {
         const imageUrl = String(receipt.url_image || '').trim();
         const hasImage = imageUrl && imageUrl.toLowerCase() !== 'null';
         const imageMarkup = hasImage
-            ? `<img src="${escapeHtml(imageUrl)}" alt="Comprobante">`
+            ? `<img src="${escapeHtml(imageUrl)}" alt="Comprobante" class="receipt-image" title="Clic para ampliar">`
             : '<span class="material-symbols-outlined">image</span>';
 
         card.innerHTML = `
-            <div class="form-grid">
-                <label>TIPO :</label>
-                <input type="text" value="Comprobante de cuota" readonly>
+            <div class="receipt-detail-shell">
+                <header class="receipt-detail-header">
+                    <div>
+                        <p class="detail-overline">Comprobante #${escapeHtml(receiptId)}</p>
+                        <h2>Revision de pago</h2>
+                    </div>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </header>
 
-                <label>FECHA :</label>
-                <input type="text" value="${escapeHtml(dateText)}" readonly>
+                <section class="detail-grid">
+                    <div class="detail-field">
+                        <label>Tipo</label>
+                        <input type="text" value="Comprobante de cuota" readonly>
+                    </div>
+                    <div class="detail-field">
+                        <label>Fecha</label>
+                        <input type="text" value="${escapeHtml(dateText)}" readonly>
+                    </div>
+                    <div class="detail-field">
+                        <label>Monto pagado</label>
+                        <input type="text" value="${amountPaid}" readonly>
+                    </div>
+                    <div class="detail-field">
+                        <label>Departamento</label>
+                        <input type="text" value="${escapeHtml(receipt.department_name || `DEP ${receipt.dep_id}`)}" readonly>
+                    </div>
+                </section>
 
-                <label>COSTO :</label>
-                <input type="text" value="${amountPaid}" readonly>
-
-                <div class="obs-row">
-                    <label>OBSERVACIONES</label>
-                    <span>${observation.length} / 150</span>
+                <div class="detail-field detail-field-full">
+                    <div class="obs-row">
+                        <label>Observaciones</label>
+                        <span>${observation.length} / 150</span>
+                    </div>
+                    <input type="text" value="${escapeHtml(observation)}" readonly>
                 </div>
-                <input type="text" value="${escapeHtml(observation)}" readonly>
 
-                <div class="image-box">
-                    ${imageMarkup}
+                <div class="image-area">
+                    <p class="image-label">Comprobante (clic para ampliar)</p>
+                    <div class="image-box ${hasImage ? 'has-image' : ''}">
+                        ${imageMarkup}
+                    </div>
                 </div>
 
                 ${canValidate ? `
-                <label class="checkbox-label">
-                    <input type="checkbox" id="validated-check" ${receipt.validated ? 'checked' : ''}>
-                    MARCAR COMPROBANTE COMO VALIDADO
-                </label>
-                <button id="save-validate-btn" class="btn-upload">GUARDAR</button>
+                <div class="validation-actions">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="validated-check" ${isValidated ? 'checked' : ''}>
+                        Marcar comprobante como validado
+                    </label>
+                    <button id="save-validate-btn" class="btn-upload">Guardar</button>
+                </div>
                 ` : `
-                <label class="checkbox-label disabled-label">
-                    <input type="checkbox" disabled ${receipt.validated ? 'checked' : ''}>
-                    ${receipt.validated ? 'COMPROBANTE VALIDADO' : 'COMPROBANTE PENDIENTE'}
-                </label>
+                <div class="validation-actions readonly-actions">
+                    <label class="checkbox-label disabled-label">
+                        <input type="checkbox" disabled ${isValidated ? 'checked' : ''}>
+                        ${isValidated ? 'Comprobante validado' : 'Comprobante pendiente'}
+                    </label>
+                </div>
                 `}
             </div>
         `;
+
+        if (hasImage) {
+            const imageElement = card.querySelector('.receipt-image');
+            if (imageElement) {
+                imageElement.addEventListener('click', () => {
+                    Swal.fire({
+                        title: 'Comprobante',
+                        imageUrl,
+                        imageAlt: 'Comprobante de pago',
+                        confirmButtonText: 'Cerrar',
+                        confirmButtonColor: '#6A8042',
+                        width: 'min(92vw, 62.5rem)'
+                    });
+                });
+            }
+        }
 
         if (canValidate) {
             const saveBtn = document.getElementById('save-validate-btn');

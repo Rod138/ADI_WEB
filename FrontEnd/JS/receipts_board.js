@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const validationSelect = document.getElementById('validation');
     const dateSelect = document.getElementById('date');
     const departmentSelect = document.getElementById('department');
+    const orderSelect = document.getElementById('order-by');
     const paginationBox = document.getElementById('receipts-pagination');
     const prevBtn = document.getElementById('rcp-prev-btn');
     const nextBtn = document.getElementById('rcp-next-btn');
@@ -38,6 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     validationSelect.addEventListener('change', applyFilters);
     dateSelect.addEventListener('change', applyFilters);
     departmentSelect.addEventListener('change', applyFilters);
+    orderSelect.addEventListener('change', applyFilters);
 
     prevBtn.addEventListener('click', () => {
         if (currentPage <= 1) return;
@@ -88,8 +90,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const validation = validationSelect.value;
         if (validation !== 'any') {
-            const asBool = validation === 'true';
-            filtered = filtered.filter(r => Boolean(r.validated) === asBool);
+            if (validation === 'true') {
+                filtered = filtered.filter(r => isReceiptValidated(r.validated));
+            } else {
+                filtered = filtered.filter(r => !isReceiptValidated(r.validated));
+            }
         }
 
         const date = dateSelect.value;
@@ -101,6 +106,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (dep !== 'any') {
             filtered = filtered.filter(r => String(r.dep_id) === dep);
         }
+
+        const orderBy = orderSelect.value;
+        filtered.sort((a, b) => {
+            const da = new Date(a.created_at);
+            const db = new Date(b.created_at);
+            return orderBy === 'timedown' ? db - da : da - db;
+        });
 
         filteredReceipts = filtered;
         currentPage = 1;
@@ -126,7 +138,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextBtn.disabled = currentPage === totalPages;
 
         tbody.innerHTML = pageItems.map(r => {
-            const validatedText = r.validated ? 'Validado' : 'Pendiente';
+            const validatedText = isReceiptValidated(r.validated) ? 'Validado' : 'Pendiente';
+            const statusClass = normalizeStatusClass(validatedText);
+            const statusHtml = `<span class="status-badge status-${statusClass}">${validatedText}</span>`;
             const dateText = r.created_at
                 ? new Date(r.created_at).toLocaleString('es-MX', {
                     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
@@ -137,12 +151,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             return `
                 <tr class="clickable-row" data-id="${r.id}" style="cursor:pointer">
-                    <td>${validatedText}</td>
+                    <td>
+                        <h2 class="receipt-department">${depText}</h2>
+                    </td>
                     <td>${dateText}</td>
-                    <td>${depText}</td>
+                    <td>${statusHtml}</td>
                 </tr>
             `;
         }).join('');
+    }
+
+    // Normaliza texto a clase CSS segura para badges
+    function normalizeStatusClass(str) {
+        return String(str || '').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9\-]/g, '') || 'unknown';
+    }
+
+    // Compatibilidad de estado: backend actual usa boolean, pero puede existir legado con 1/2.
+    function isReceiptValidated(value) {
+        if (value === true) return true;
+        if (value === false || value === null || value === undefined) return false;
+
+        if (typeof value === 'number') {
+            return value === 2;
+        }
+
+        const normalized = String(value).trim().toLowerCase();
+        if (normalized === 'true' || normalized === '2') return true;
+        if (normalized === 'false' || normalized === '1' || normalized === '0' || normalized === 'null') return false;
+
+        return false;
     }
 
     // Normaliza fecha a clave mensual para filtros agrupados.

@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/receipts_board.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
@@ -41,9 +42,12 @@
         }
     </style>
 </head>
-<body data-min-role="2">
+<body class="sidebar-expanded" data-min-role="2">
     <nav class="top-nav">
         <div class="nav-brand">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="false">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
         <div class="nav-title">TABLÓN DE COMPROBANTES</div>
@@ -60,6 +64,40 @@
             </a>
         </div>
     </nav>
+
+    <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
+        <a class="sidebar-header-link" href="/main" aria-label="Ir al Menú Principal">
+            <div class="sidebar-header-icon">
+                <span class="material-symbols-outlined">dashboard</span>
+            </div>
+            <div class="sidebar-header-copy">
+                <span class="sidebar-kicker">MENÚ</span>
+                <strong>PRINCIPAL</strong>
+            </div>
+        </a>
+        <nav class="sidebar-nav" aria-label="Accesos rápidos">
+            <a class="sidebar-link" href="/accounting">
+                <span class="material-symbols-outlined">payments</span>
+                <div class="sidebar-link-copy">
+                    <strong>Finanzas</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/incident-board">
+                <span class="material-symbols-outlined">warning</span>
+                <div class="sidebar-link-copy">
+                    <strong>Incidencias</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/departments">
+                <span class="material-symbols-outlined">apartment</span>
+                <div class="sidebar-link-copy">
+                    <strong>Departamentos</strong>
+                </div>
+            </a>
+        </nav>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <div class="main-container">
         <div class="selects">
@@ -83,15 +121,27 @@
                     <option value="any">Cualquiera</option>
                 </select>
             </div>
+            <div class="filter-group">
+                <label for="order-by">Ordenar por</label>
+                <select id="order-by">
+                    <option value="timedown">Fecha descendente</option>
+                    <option value="timeup">Fecha ascendente</option>
+                </select>
+            </div>
         </div>
 
         <div class="table-container">
             <table>
+                <colgroup>
+                    <col style="width: 52%">
+                    <col style="width: 28%">
+                    <col style="width: 20%">
+                </colgroup>
                 <thead>
                     <tr>
-                        <th>VALIDACION</th>
+                        <th>INFORMACION</th>
                         <th>FECHA</th>
-                        <th>DEPARTAMENTO</th>
+                        <th>ESTADO</th>
                     </tr>
                 </thead>
                 <tbody id="receipts-tbody">
@@ -116,6 +166,43 @@
                 const roleSpan = document.getElementById('user-role');
                 if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
             }
+
+            // Sidebar toggle functionality
+            const sidebar = document.getElementById('adi-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const toggle = document.getElementById('sidebar-toggle');
+
+            const setSidebarOpen = (open) => {
+                document.body.classList.toggle('sidebar-open', open);
+                toggle?.setAttribute('aria-expanded', String(open));
+            };
+
+            toggle?.addEventListener('click', () => {
+                setSidebarOpen(!document.body.classList.contains('sidebar-open'));
+            });
+
+            backdrop?.addEventListener('click', () => setSidebarOpen(false));
+
+            sidebar?.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768 && e.target.closest('a')) {
+                    setSidebarOpen(false);
+                }
+            });
+
+            if (window.innerWidth <= 768) {
+                setSidebarOpen(false);
+            }
+
+            // Highlight active sidebar link
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                const href = link.getAttribute('href');
+                if (href === currentPath || (currentPath.includes('/accounting') && href === '/accounting')) {
+                    link.classList.add('active');
+                }
+            });
+            const headerLink = document.querySelector('.sidebar-header-link');
+            if (headerLink && currentPath === '/main') headerLink.classList.add('active');
         });
     </script>
     <footer>

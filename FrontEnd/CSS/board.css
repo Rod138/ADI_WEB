@@ -329,8 +329,8 @@ tbody td:nth-child(3) {
     text-decoration: none;
     border-radius: 0.75rem;
     width: 11.5rem;
-    height: 3rem;
-    line-height: 3rem;
+    height: 2.8rem;
+    line-height: 2.8rem;
     text-align: center;
     font-size: 1.2rem;
 }
@@ -421,4 +421,65 @@ footer p {
     .main-container {
         width: 95%;
     }
+}
+
+/* Status badges for boards (consistent across tablones)
+   Improved contrast, size and border to render well on table cells */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 0.6rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Use design tokens where possible for consistency */
+.status-validado,
+.status-validated {
+    background: #2e7d32; /* completed - green */
+    color: #ffffff;
+    border-color: rgba(0,0,0,0.08);
+}
+
+/* synonyms to handle different backend labels */
+.status-completado,
+.status-completed {
+    background: #2e7d32; /* completed - green */
+    color: #ffffff;
+}
+
+.status-pendiente,
+.status-pending {
+    background: #d32f2f; /* pending - red */
+    color: #ffffff;
+    border-color: rgba(0,0,0,0.06);
+}
+
+.status-abierto,
+.status-open {
+    background: #1976d2; /* blue */
+    color: #ffffff;
+}
+
+.status-enproceso,
+.status-inprogress {
+    background: #FFB74D; /* amber */
+    color: #212121;
+}
+
+.status-cerrado,
+.status-resolved {
+    background: #6c757d; /* gray */
+    color: #ffffff;
+}
+
+.status-unknown {
+    background: #BDBDBD;
+    color: #222222;
 }

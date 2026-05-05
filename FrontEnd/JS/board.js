@@ -155,6 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const typeName   = escapeHtml(typesMap[inc.type_id]   ?? inc.type_id   ?? '-');
             const areaName   = escapeHtml(areasMap[inc.area_id]   ?? inc.area_id   ?? '-');
             const statusName = escapeHtml(statusesMap[inc.status_id] ?? inc.status_id ?? '-');
+            const statusClass = normalizeStatusClass(statusName);
             const rawContent = String(inc.content ?? inc.description ?? '');
             const truncatedContent = truncateText(rawContent, 100);
             const content = escapeHtml(truncatedContent);
@@ -168,9 +169,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <small><strong>Área:</strong> ${areaName}</small>
                     </td>
                     <td>${date}</td>
-                    <td>${statusName}</td>
+                    <td><span class="status-badge status-${statusClass}">${statusName}</span></td>
                 </tr>`;
         }).join('');
+    }
+
+    // Normaliza texto a clase CSS segura para badges
+    function normalizeStatusClass(str) {
+        return String(str || '').toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9\-]/g, '') || 'unknown';
     }
 
     // Recorta texto largo para mejorar legibilidad en la tabla.

@@ -205,12 +205,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <input type="text" id="new-name" placeholder="Ej. Juan" minlength="3" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
                 </div>
                 <div class="edit-field">
-                    <label>Email *</label>
-                    <input type="email" id="new-email" minlength="6" maxlength="320">
-                </div>
-                <div class="edit-field">
                     <label>Apellido paterno</label>
                     <input type="text" id="new-ap" placeholder="Ej. Pérez" minlength="1" maxlength="30" pattern="^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$">
+                </div>
+                <div class="edit-field">
+                    <label>Email *</label>
+                    <input type="email" id="new-email" minlength="6" maxlength="320">
                 </div>
                 <div class="edit-field">
                     <label>Teléfono *</label>
@@ -367,9 +367,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Construye vista de usuario y habilita acciones segun rol del sesionante.
     function renderUserCard(user, roles) {
         const canDelete = session && Number(session.rol_id) >= 3;
+        const fullName = [user.name, user.ap].filter(Boolean).join(' ').trim() || '—';
 
         const fields = [
-            ['Nombre',     user.name],
+            ['Nombre',     fullName],
             ['Email',      user.email],
             ['Teléfono',   user.phone],
         ];

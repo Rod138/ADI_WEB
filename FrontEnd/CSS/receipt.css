@@ -166,7 +166,16 @@ body {
 .image-box img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+}
+
+.image-box.has-image img {
+    cursor: zoom-in;
+    transition: transform 0.18s ease;
+}
+
+.image-box.has-image img:hover {
+    transform: scale(1.02);
 }
 
 .image-box .material-symbols-outlined {
@@ -332,4 +341,207 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+}
+
+/* Detail view refresh */
+.main-container {
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: 1.4rem 1rem 2rem;
+}
+
+.receipt-card {
+    width: min(100%, 76rem);
+    margin: 0 auto;
+    background: linear-gradient(180deg, #f9f9f9 0%, #f2f2f2 100%);
+    border: 0.0625rem solid #e4e4e4;
+    border-radius: 1rem;
+    padding: 1.1rem;
+    box-shadow: 0 0.1875rem 0.625rem rgba(0, 0, 0, 0.08);
+}
+
+.receipt-detail-shell {
+    width: min(100%, 58rem);
+    margin: 0 auto;
+}
+
+.receipt-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.detail-overline {
+    font-size: 0.73rem;
+    text-transform: uppercase;
+    color: #6b6b6b;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.2rem;
+}
+
+.receipt-detail-header h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    color: #1e3006;
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+}
+
+.detail-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.detail-field label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    color: #5c6c3f;
+    letter-spacing: 0.04em;
+}
+
+.detail-field input {
+    width: 100%;
+    height: 2.2rem;
+    border-radius: 0.75rem;
+    border: 0.0625rem solid #e5cca9;
+    background-color: #efe4d8;
+    color: #2a2a2a;
+    padding: 0 0.75rem;
+    font-size: 0.95rem;
+}
+
+.detail-field-full {
+    margin-top: 0.8rem;
+}
+
+.obs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.28rem;
+}
+
+.obs-row span {
+    font-size: 0.74rem;
+    color: #808080;
+}
+
+.image-area {
+    margin-top: 0.9rem;
+}
+
+.image-label {
+    font-size: 0.76rem;
+    color: #5c6c3f;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.35rem;
+}
+
+.image-box {
+    width: 100%;
+    min-height: 14rem;
+    border: 0.125rem solid #e5cca9;
+    border-radius: 0.9rem;
+    background: #f6ece1;
+}
+
+.image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.image-box.has-image img {
+    cursor: zoom-in;
+    transition: transform 0.2s ease;
+}
+
+.image-box.has-image img:hover {
+    transform: scale(1.01);
+}
+
+.validation-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.checkbox-label {
+    margin: 0;
+    font-size: 0.82rem;
+    color: #3f4b2c;
+}
+
+.btn-upload {
+    margin: 0;
+    background-color: #efe4d8;
+    border: 0.0625rem solid #e5cca9;
+    color: #5e4b37;
+    border-radius: 0.75rem;
+    min-width: 8.75rem;
+    height: 2.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.btn-upload:hover {
+    background-color: #e8d7c5;
+}
+
+.bottom-actions {
+    width: min(100%, 76rem);
+    margin: 1rem auto 0;
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 95%;
+        padding: 1rem 0.45rem 1.4rem;
+    }
+
+    .receipt-card {
+        padding: 0.8rem;
+    }
+
+    .receipt-detail-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .receipt-detail-header h2 {
+        font-size: 1.2rem;
+    }
+
+    .detail-grid {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
+
+    .image-box {
+        min-height: 10.5rem;
+    }
+
+    .validation-actions {
+        align-items: stretch;
+    }
+
+    .btn-upload {
+        width: 100%;
+    }
+
+    .bottom-actions {
+        justify-content: center;
+    }
 }

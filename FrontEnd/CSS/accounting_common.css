@@ -125,3 +125,55 @@ body {
     display: flex;
     flex-direction: column;
 }
+
+/* Status badges shared with other boards (receipts/expenses) */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 7rem;
+    padding: 0.34rem 0.78rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    border: 1px solid rgba(0,0,0,0.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.12);
+}
+
+.status-validado,
+.status-validated {
+    background: linear-gradient(180deg, #2f8f3a 0%, #2e7d32 100%); /* completed - green */
+    color: #ffffff;
+}
+.status-completado,
+.status-completed {
+    background: linear-gradient(180deg, #2f8f3a 0%, #2e7d32 100%);
+    color: #ffffff;
+}
+.status-pendiente,
+.status-pending {
+    background: linear-gradient(180deg, #e53935 0%, #d32f2f 100%); /* pending - red */
+    color: #ffffff;
+}
+.status-abierto,
+.status-open {
+    background: #1976d2;
+    color: #ffffff;
+}
+.status-enproceso,
+.status-inprogress {
+    background: #FFB74D;
+    color: #222222;
+}
+.status-cerrado,
+.status-resolved {
+    background: #6c757d;
+    color: #ffffff;
+}
+.status-unknown {
+    background: #BDBDBD;
+    color: #222222;
+}
