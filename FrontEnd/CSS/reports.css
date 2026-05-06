@@ -33,7 +33,7 @@ body.sidebar-collapsed .main-container.reports-page {
 /* Inner page wrapper */
 .reports-page .page-inner {
     width: 100%;
-    max-width: 1400px;
+    max-width: 72rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -70,7 +70,7 @@ body.sidebar-collapsed .main-container.reports-page {
 
 .reports-page .filters-wrapper {
     width: 100%;
-    max-width: 100%;
+    max-width: 72rem;
     background: #ffffff;
     border: 1px solid #e8e8e8;
     border-radius: 0.6rem;
@@ -132,6 +132,8 @@ body.sidebar-collapsed .main-container.reports-page {
 /* ===== RESULT PANEL ===== */
 .reports-page .result-panel {
     width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
@@ -155,18 +157,23 @@ body.sidebar-collapsed .main-container.reports-page {
     border-radius: 0.6rem;
     padding: 1rem;
     box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .reports-page #reports-chart {
     max-width: 800px;
     /* o el tamaño que quieras */
     width: 100%;
+    display: block;
+    margin: 0 auto;
 }
 
 /* Table container */
 .reports-page .table-container {
-    width: auto;
-    max-width: 95%;
+    width: 100%;
+    max-width: 72rem;
     margin: 0 auto;
 }
 
@@ -222,8 +229,8 @@ body.sidebar-collapsed .main-container.reports-page {
 
 /* Empty container */
 .reports-page .empty-container {
-    width: auto;
-    max-width: 95%;
+    width: 100%;
+    max-width: 72rem;
     margin: 0 auto;
 }
 
@@ -246,11 +253,12 @@ body.sidebar-collapsed .main-container.reports-page {
 /* ===== BOTTOM ACTIONS ===== */
 .reports-page .bottom-actions {
     width: 100%;
+    max-width: 72rem;
+    margin: 1rem auto 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
-    margin-top: 1rem;
 }
 
 .reports-page .download-actions {
@@ -337,6 +345,24 @@ body.sidebar-collapsed .main-container.reports-page {
     .reports-page .table-wrap {
         max-height: 35rem;
         overflow-y: auto;
+    }
+
+    /* Robust centering for chart/pdf modes; avoids relying on :has browser support */
+    body.reports-wide-output .reports-page .result-panel {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 72rem;
+        margin: 0 auto;
+    }
+
+    body.reports-wide-output .reports-page .chart-container,
+    body.reports-wide-output .reports-page .empty-container {
+        width: 100%;
+        max-width: 72rem;
+        margin: 0 auto;
     }
 }
 

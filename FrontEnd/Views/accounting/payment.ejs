@@ -152,17 +152,25 @@
 
     <main class="main-container">
         <section class="left-form-panel">
-            <label for="pay-month">MES CORRESPONDIENTE:</label>
-            <select id="pay-month"></select>
+            <div class="form-field">
+                <label for="pay-month">MES CORRESPONDIENTE:</label>
+                <select id="pay-month"></select>
+            </div>
 
-            <label for="pay-year">AÑO:</label>
-            <input id="pay-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+            <div class="form-field">
+                <label for="pay-year">AÑO:</label>
+                <input id="pay-year" type="number" min="2000" max="2100" step="1" placeholder="2026">
+            </div>
 
-            <label for="pay-amount">CANTIDAD PAGADA:</label>
-            <input id="pay-amount" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+            <div class="form-field">
+                <label for="pay-amount">CANTIDAD PAGADA:</label>
+                <input id="pay-amount" type="number" min="0" step="0.01" placeholder="Ej. 100.00">
+            </div>
 
-            <label for="pay-expected">CUOTA ESPERADA:</label>
-            <input id="pay-expected" type="number" min="0" step="0.01" placeholder="Ej. 100.00" readonly>
+            <div class="form-field">
+                <label for="pay-expected">CUOTA ESPERADA:</label>
+                <input id="pay-expected" type="number" min="0" step="0.01" placeholder="Ej. 100.00" readonly>
+            </div>
 
             <label for="pay-proof">COMPROBANTE (IMAGEN O PDF):</label>
             <label class="proof-upload-box" for="pay-proof">

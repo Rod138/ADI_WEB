@@ -135,7 +135,7 @@ body.sidebar-collapsed .top-nav {
     margin-left: 16rem;
     margin-top: 5rem;
     max-width: calc(100% - 16rem);
-    padding: 1.6rem 1.25rem 1.2rem;
+    padding: 2rem 1.25rem 1.2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -842,16 +842,20 @@ textarea:focus {
 }
 /* Unified Content Width */
 @media (min-width: 48rem) {
-    .main-container {
-        width: auto;
-        margin-left: 16rem;
-        max-width: calc(100% - 16rem);
-        margin-top: 5rem;
+    /* Global centering for all views within available area (viewport - sidebar) */
+    body .main-container {
+        width: calc(100% - 16rem) !important;
+        max-width: calc(100% - 16rem) !important;
+        margin-left: 16rem !important;
+        margin-right: 0 !important;
+        margin-top: 5rem !important;
+        align-items: center;
     }
 
     body.sidebar-collapsed .main-container {
-        margin-left: 5.5rem;
-        max-width: calc(100% - 5.5rem);
+        width: calc(100% - 5.5rem) !important;
+        max-width: calc(100% - 5.5rem) !important;
+        margin-left: 5.5rem !important;
     }
 }
 
@@ -881,9 +885,10 @@ textarea:focus {
     }
 
     .main-container {
-        margin-left: 0;
-        max-width: 100%;
-        margin-top: 5rem;
+        width: 100% !important;
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        margin-top: 5rem !important;
     }
 
     body.sidebar-open .main-container {

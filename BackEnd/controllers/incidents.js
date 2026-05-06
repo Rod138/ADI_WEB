@@ -188,7 +188,7 @@ export const updateIncident = async (req, res) => {
         // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, created_at')
+            .select('usr_id, created_at, area_id, image_url, image')
             .eq('id', id)
             .single();
 
@@ -212,13 +212,7 @@ export const updateIncident = async (req, res) => {
             });
         }
 
-        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
-        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
-            return res.status(403).json({
-                success: false,
-                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación. Después solo un administrador puede resolverla.'
-            });
-        }
+        const isOwnIncidentPastWindow = isOwner && !isIncidentEditable(incident.created_at);
 
         const updates = {};
 
@@ -258,6 +252,12 @@ export const updateIncident = async (req, res) => {
 
         // Campos que OWNER (o ADMIN) pueden editar - estos son campos de reporte
         if (description !== undefined && description !== null) {
+            if (isOwnIncidentPastWindow) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                });
+            }
             const descriptionText = String(description).trim();
             if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
                 return res.status(400).json({
@@ -268,17 +268,35 @@ export const updateIncident = async (req, res) => {
             updates.description = descriptionText;
         }
         if (area_id !== undefined && area_id !== null && area_id !== '') {
+            if (isOwnIncidentPastWindow) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                });
+            }
             const parsed = parseInt(area_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'area_id inválido' });
             updates.area_id = parsed;
         }
         if (type_id !== undefined && type_id !== null && type_id !== '') {
+            if (isOwnIncidentPastWindow) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                });
+            }
             const parsed = parseInt(type_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'type_id inválido' });
             updates.type_id = parsed;
         }
         const normalizedImage = image !== undefined ? image : image_url;
         if (normalizedImage !== undefined && normalizedImage !== null) {
+            if (isOwnIncidentPastWindow) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                });
+            }
             // Si hay una imagen anterior, eliminarla de Cloudinary
             if (incident.image_url || incident.image) {
                 const oldImageUrl = incident.image_url ?? incident.image;
@@ -509,8 +527,8 @@ export const updateIncidentImage = async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
-        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+        // Verificar ventana de edición (24 horas) para propietarios (incluye admin propietario)
+        if (isOwner && !isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
@@ -569,8 +587,8 @@ export const deleteIncidentImage = async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
-        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+        // Verificar ventana de edición (24 horas) para propietarios (incluye admin propietario)
+        if (isOwner && !isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'

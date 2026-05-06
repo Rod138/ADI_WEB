@@ -140,10 +140,7 @@
                     <option value="mine">Mis incidencias</option>
                 </select>
             </div>
-            <a href="/incident-create" class="btn-create-incident" aria-label="Crear incidencia">
-                <span class="material-symbols-outlined">add_circle</span>
-                <span>CREAR</span>
-            </a>
+            <button type="button" class="btn-clear-filters" id="clear-filters-btn">LIMPIAR FILTROS</button>
         </div>
         <div class="table-container">
             <table>
@@ -160,6 +157,14 @@
                         </tr>
                     </thead>
                     <tbody id="incidents-tbody">
+                        <tr class="create-incident-row">
+                            <td colspan="3">
+                                <a href="/incident-create" class="btn-create-incident" aria-label="Crear incidencia">
+                                    <span class="material-symbols-outlined">add_circle</span>
+                                    <span>CREAR INCIDENCIA</span>
+                                </a>
+                            </td>
+                        </tr>
                         <tr><td colspan="3" style="text-align:center">Cargando...</td></tr>
                     </tbody>
                 </table>

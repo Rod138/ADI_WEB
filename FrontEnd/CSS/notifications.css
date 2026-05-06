@@ -109,8 +109,10 @@ body {
 }
 
 .notifications-card {
-    width: min(100%, 57.5rem);
+    width: 100%;
+    max-width: 80%;
     min-height: 30rem;
+    margin: 0 auto;
     background-color: #E8E4C7;
     border: 0.25rem solid #E9B07B;
     border-radius: 1.8rem;
@@ -225,6 +227,17 @@ body {
     font-size: 1.2rem;
 }
 
+/* Unread notification emphasis */
+.notification-item.unread .noti-icon {
+    border-color: #d9534f;
+    color: #d9534f;
+    background-color: rgba(217,83,79,0.06);
+}
+.notification-item.unread .notification-content h3,
+.notification-item.unread .notification-content p {
+    font-weight: 700;
+}
+
 .notification-content h3 {
     font-size: 1.8rem;
     color: #1E3006;
@@ -283,7 +296,9 @@ body {
 }
 
 .bottom-actions {
-    width: 57.5rem;
+    width: 80%;
+    max-width: 80%;
+    margin: 0 auto;
     display: flex;
     justify-content: flex-end;
 }
@@ -379,6 +394,43 @@ body {
         font-size: 0.85rem;
     }
 }
+
+/* Ensure noti-icon stays perfectly round and scales on small screens */
+.noti-icon {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    line-height: 1;
+}
+
+@media (max-width: 48rem) {
+    .noti-icon {
+        width: 2rem;
+        height: 2rem;
+        font-size: 1rem;
+    }
+
+    .notification-item {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .notifications-card {
+        width: 100%;
+        max-width: 80%;
+        min-height: 18rem;
+    }
+}
+
+/* Tight round unread badge for desktop */
+.notification-item .noti-icon {
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.notification-item.unread .noti-icon {
+    border-color: #d9534f;
+    color: #d9534f;
+    background-color: rgba(217,83,79,0.06);
+}
+
 
 footer {
     margin-top: auto;

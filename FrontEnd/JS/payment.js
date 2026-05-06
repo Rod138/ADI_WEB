@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         : '';
 
     const MONTHS = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    const PAGE_SIZE = 8;
+    const PAGE_SIZE = 10;
 
     let currentPage = 1;
     let allRows = [];
@@ -68,6 +68,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     downloadBtn.addEventListener('click', downloadCsv);
+
+    tbody.addEventListener('click', (event) => {
+        const proofButton = event.target.closest('.proof-link');
+        if (!proofButton) return;
+
+        const proofUrl = proofButton.dataset.proof || '';
+        const proofType = proofButton.dataset.proofType || 'image';
+        openProofPreview(proofUrl, proofType);
+    });
 
     proofInput.addEventListener('change', () => {
         const proofName = document.getElementById('proof-name');
@@ -233,17 +242,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             const paid = formatCurrency(r.amount_paid);
             const expected = formatCurrency(r.amount_expected);
             const proof = r.url_image
-                ? `<a href="${escapeHtml(r.url_image)}" target="_blank" rel="noopener noreferrer">Ver</a>`
+                ? `<button type="button" class="proof-link" data-proof="${escapeHtml(r.url_image)}" data-proof-type="${getProofType(r.url_image)}">Ver</button>`
                 : '<span>-</span>';
 
             return `
                 <tr>
-                    <td>${status}</td>
+                    <td class="cell-status">${status}</td>
                     <td>${createdAt}</td>
                     <td>${period}</td>
                     <td>${paid}</td>
                     <td>${expected}</td>
-                    <td>${proof}</td>
+                    <td class="cell-proof">${proof}</td>
                 </tr>
             `;
         }).join('');
@@ -251,12 +260,45 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function buildStatusBadge(validated) {
         if (validated === true) {
-            return '<span style="color:#0f5132;font-weight:700">VALIDADO</span>';
+            return '<span class="status-badge status-validado">VALIDADO</span>';
         }
         if (validated === false) {
-            return '<span style="color:#842029;font-weight:700">RECHAZADO</span>';
+            return '<span class="status-badge status-rechazado">RECHAZADO</span>';
         }
-        return '<span style="color:#7a4f01;font-weight:700">PENDIENTE</span>';
+        return '<span class="status-badge status-pendiente">PENDIENTE</span>';
+    }
+
+    function getProofType(url) {
+        const normalized = String(url || '').toLowerCase();
+        return normalized.includes('.pdf') ? 'pdf' : 'image';
+    }
+
+    function openProofPreview(proofUrl, proofType) {
+        if (!proofUrl) return;
+
+        if (proofType === 'pdf') {
+            Swal.fire({
+                title: 'Comprobante PDF',
+                html: `
+                    <div style="display:flex;flex-direction:column;gap:0.75rem;align-items:center">
+                        <p style="margin:0;color:#444">El comprobante es un PDF. Puedes abrirlo en una pestaña nueva.</p>
+                        <a href="${escapeHtml(proofUrl)}" target="_blank" rel="noopener noreferrer" class="btn-back" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none;min-width:11rem">Abrir comprobante</a>
+                    </div>
+                `,
+                confirmButtonText: 'Cerrar',
+                confirmButtonColor: '#6A8042'
+            });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Comprobante',
+            imageUrl: proofUrl,
+            imageAlt: 'Comprobante de pago',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#6A8042',
+            width: 'min(92vw, 62.5rem)'
+        });
     }
 
     function statusKey(validated) {

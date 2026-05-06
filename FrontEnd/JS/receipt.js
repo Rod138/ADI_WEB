@@ -32,9 +32,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             })
             : '-';
 
-        const isValidated = Number(receipt.validated) === 2 || receipt.validated === true;
-        const statusText = isValidated ? 'Completado' : 'Pendiente';
-        const statusClass = isValidated ? 'status-completado' : 'status-pendiente';
+        function receiptStatus(value) {
+            if (value === true) return 'approved';
+            if (value === false) return 'rejected';
+            if (value === null || value === undefined) return 'pending';
+            if (Number(value) === 2) return 'approved';
+            if (Number(value) === 1) return 'rejected';
+            return 'pending';
+        }
+
+        const status = receiptStatus(receipt.validated);
+        let statusText = 'Pendiente';
+        let statusClass = 'status-pendiente';
+        if (status === 'approved') {
+            statusText = 'Validado';
+            statusClass = 'status-completado';
+        } else if (status === 'rejected') {
+            statusText = 'Rechazado';
+            statusClass = 'status-rechazado';
+        }
 
         const amountPaid = receipt.amount_paid !== null && receipt.amount_paid !== undefined
             ? `$${parseFloat(receipt.amount_paid).toFixed(2)}`
@@ -93,18 +109,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 ${canValidate ? `
                 <div class="validation-actions">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="validated-check" ${isValidated ? 'checked' : ''}>
-                        Marcar comprobante como validado
-                    </label>
-                    <button id="save-validate-btn" class="btn-upload">Guardar</button>
+                    <button id="approve-btn" class="btn-upload">Aprobar</button>
+                    <button id="reject-btn" class="btn-upload" style="background:#842029;color:#fff;margin-left:0.5rem">Rechazar</button>
                 </div>
                 ` : `
                 <div class="validation-actions readonly-actions">
-                    <label class="checkbox-label disabled-label">
-                        <input type="checkbox" disabled ${isValidated ? 'checked' : ''}>
-                        ${isValidated ? 'Comprobante validado' : 'Comprobante pendiente'}
-                    </label>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
                 </div>
                 `}
             </div>
@@ -127,49 +137,59 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (canValidate) {
-            const saveBtn = document.getElementById('save-validate-btn');
-            const check = document.getElementById('validated-check');
+            const approveBtn = document.getElementById('approve-btn');
+            const rejectBtn = document.getElementById('reject-btn');
 
-            saveBtn.addEventListener('click', async () => {
-                saveBtn.disabled = true;
+            approveBtn.addEventListener('click', async () => {
+                approveBtn.disabled = true;
                 try {
                     const patchRes = await fetch(`/api/accounting/receipts/${encodeURIComponent(receiptId)}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ validated: check.checked })
+                        body: JSON.stringify({ validated: true })
                     });
-
                     const patchData = await patchRes.json();
                     if (!patchData.success) {
-                        Swal.fire({
-                            title: 'Error al actualizar',
-                            text: patchData.message || 'No se pudo actualizar.',
-                            icon: 'error',
-                            confirmButtonColor: '#d33',
-                            confirmButtonText: 'Aceptar'
-                        });
-                        return;
+                        return Swal.fire('Error', patchData.message || 'No se pudo actualizar.', 'error');
                     }
-
-                    await Swal.fire({
-                        title: 'Comprobante actualizado',
-                        text: check.checked ? 'El comprobante quedó validado.' : 'El comprobante quedó marcado como no validado.',
-                        icon: 'success',
-                        timer: 1600,
-                        timerProgressBar: true,
-                        showConfirmButton: false,
-                        confirmButtonColor: '#6A8042'
-                    });
-                } catch (error) {
-                    Swal.fire({
-                        title: 'Error de conexión',
-                        text: 'Fallo de red.',
-                        icon: 'error',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'Aceptar'
-                    });
+                    await Swal.fire({ title: 'Comprobante validado', icon: 'success', timer: 1200, showConfirmButton: false });
+                    window.location.reload();
+                } catch (err) {
+                    Swal.fire('Error de conexión', 'Fallo de red.', 'error');
                 } finally {
-                    saveBtn.disabled = false;
+                    approveBtn.disabled = false;
+                }
+            });
+
+            rejectBtn.addEventListener('click', async () => {
+                const confirm = await Swal.fire({
+                    title: 'Confirmar rechazo',
+                    text: '¿Deseas marcar este comprobante como rechazado?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, rechazar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#842029'
+                });
+                if (!confirm.isConfirmed) return;
+
+                rejectBtn.disabled = true;
+                try {
+                    const patchRes = await fetch(`/api/accounting/receipts/${encodeURIComponent(receiptId)}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ validated: false })
+                    });
+                    const patchData = await patchRes.json();
+                    if (!patchData.success) {
+                        return Swal.fire('Error', patchData.message || 'No se pudo actualizar.', 'error');
+                    }
+                    await Swal.fire({ title: 'Comprobante rechazado', icon: 'success', timer: 1200, showConfirmButton: false });
+                    window.location.reload();
+                } catch (err) {
+                    Swal.fire('Error de conexión', 'Fallo de red.', 'error');
+                } finally {
+                    rejectBtn.disabled = false;
                 }
             });
         }

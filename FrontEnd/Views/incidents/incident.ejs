@@ -163,18 +163,21 @@
                 const isAdmin = user && Number(user.rol_id) >= 3;
                 const isOwner = user && Number(user.id) === Number(inc.usr_id);
                 const canEdit = isAdmin || isOwner;
-                const canDelete = isAdmin || isOwner;
 
                 // Verificar si la incidencia tiene más de 24 horas
                 const createdAt = new Date(inc.created_at);
                 const now = new Date();
                 const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
                 const isOlderThan24Hours = hoursDiff >= 24;
-                const canEditFields = !isOlderThan24Hours || isAdmin; // Admin siempre puede editar
-                const editableByOwner = canEdit && canEditFields;
-                const canOwnerModify = isAdmin || (isOwner && !isOlderThan24Hours);
+                const canEditReport = isAdmin
+                    ? (!isOwner || !isOlderThan24Hours)
+                    : (isOwner && !isOlderThan24Hours);
+                const canResolve = isAdmin;
+                const canDelete = isAdmin || (isOwner && !isOlderThan24Hours);
+                const canManageImage = canEditReport;
+                const canShowUpdateSection = canEditReport || canResolve;
 
-                document.getElementById('nav-title').textContent = editableByOwner ? 'EDITAR INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
+                document.getElementById('nav-title').textContent = canShowUpdateSection ? 'EDITAR / RESOLVER INCIDENCIA' : 'INSPECCIONAR INCIDENCIA';
                 const date = inc.created_at
                     ? new Date(inc.created_at).toLocaleString('es-MX', {
                         year: 'numeric', month: 'long', day: 'numeric',
@@ -197,23 +200,17 @@
                 card.innerHTML = `
                     <div class="section-title">INFORMACIÓN DE LA INCIDENCIA :</div>
 
-                    ${isOlderThan24Hours && isOwner && !isAdmin ? `
-                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem; color: #856404;">
-                        Esta incidencia tiene más de 24 horas y ya no puede ser editada ni borrada por el creador. Solo los administradores pueden hacer cambios.
-                    </div>
-                    ` : ''}
-
                     <div class="image-box">
                         ${imageUrl
                             ? `<img src="${escapeHtml(imageUrl)}" alt="Imagen de la incidencia" class="openable-image" data-image="${escapeHtml(imageUrl)}">`
                             : `<span class="material-symbols-outlined">image</span>`}
                     </div>
 
-                    ${canOwnerModify ? `
+                    ${canManageImage ? `
                     <div class="image-actions">
-                        <label for="upd-image" class="image-btn edit-image-btn" ${!editableByOwner && isOwner ? 'style="opacity: 0.5; cursor: not-allowed;"' : ''} title="${!editableByOwner && isOwner ? 'No puedes editar ni borrar después de 24 horas' : ''}">CAMBIAR IMAGEN</label>
-                        <input type="file" id="upd-image" accept="image/*" style="display:none;" ${!editableByOwner && isOwner ? 'disabled' : ''}>
-                        ${imageUrl ? `<button type="button" class="delete-image-btn" id="delete-image-btn" ${!editableByOwner && isOwner ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''} title="${!editableByOwner && isOwner ? 'No puedes editar ni borrar después de 24 horas' : ''}">ELIMINAR IMAGEN</button>` : ''}
+                        <label for="upd-image" class="image-btn edit-image-btn">CAMBIAR IMAGEN</label>
+                        <input type="file" id="upd-image" accept="image/*" style="display:none;">
+                        ${imageUrl ? `<button type="button" class="delete-image-btn" id="delete-image-btn">ELIMINAR IMAGEN</button>` : ''}
                     </div>
                     ` : ''}
 
@@ -234,12 +231,10 @@
                         <input type="text" value="${descriptionText}" readonly>
                     </div>
 
-                    ${canOwnerModify ? `
+                    ${canShowUpdateSection ? `
                     <div class="update-section">
-                        <div class="update-title">${isAdmin ? 'ACTUALIZAR REPORTE (ADMINISTRADOR)' : 'ACTUALIZAR REPORTE'} :</div>
-
-                        ${!isAdmin ? `
-                            <!-- Solo para Owners (no-admin) -->
+                        ${canEditReport ? `
+                            <div class="update-title">ACTUALIZAR REPORTE :</div>
                             <div class="update-row">
                                 <label for="upd-description">DESCRIPCIÓN</label>
                                 <textarea id="upd-description" maxlength="100">${descriptionText}</textarea>
@@ -267,11 +262,12 @@
                             </div>
 
                             <div class="button-row">
-                                <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
-                                ${canDelete && canOwnerModify ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                                <button class="update-btn" id="update-report-btn">GUARDAR CAMBIOS DEL REPORTE</button>
                             </div>
-                        ` : `
-                            <!-- Solo para Admin -->
+                        ` : ''}
+
+                        ${canResolve ? `
+                            <div class="update-title">RESOLUCIÓN (ADMINISTRADOR) :</div>
                             <div class="update-row two-cols">
                                 <div>
                                     <label for="upd-status">ESTADO</label>
@@ -291,10 +287,15 @@
                                 MARCAR FECHA DE COMPLETADO COMO AHORA
                             </label>
                             <div class="button-row">
-                                <button class="update-btn" id="update-btn">GUARDAR CAMBIOS</button>
-                                ${canDelete && canOwnerModify ? `<button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>` : ''}
+                                <button class="update-btn" id="resolve-btn">GUARDAR RESOLUCIÓN</button>
                             </div>
-                        `}
+                        ` : ''}
+
+                        ${canDelete ? `
+                        <div class="button-row">
+                            <button type="button" class="delete-btn" id="delete-btn">ELIMINAR</button>
+                        </div>
+                        ` : ''}
                     </div>
                     ` : ''}
                 `;
@@ -313,8 +314,80 @@
                 }
 
                 if (canEdit) {
-                    // Para Admin
-                    if (isAdmin) {
+                    const patchIncident = async (body, successMessage = 'Reporte actualizado correctamente.') => {
+                        try {
+                            const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(body)
+                            });
+                            const result = await r.json();
+                            if (result.success) {
+                                await Swal.fire({
+                                    title: 'Actualizado',
+                                    text: successMessage,
+                                    icon: 'success',
+                                    timer: 1800,
+                                    timerProgressBar: true,
+                                    showConfirmButton: false,
+                                    confirmButtonColor: '#6A8042'
+                                });
+                                window.location.reload();
+                                return;
+                            }
+                            Swal.fire({
+                                title: 'Error',
+                                text: result.message ?? 'No se pudo actualizar.',
+                                icon: 'error',
+                                confirmButtonColor: '#d33',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        } catch {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Fallo de red.',
+                                icon: 'error',
+                                confirmButtonColor: '#d33',
+                                confirmButtonText: 'Aceptar'
+                            });
+                        }
+                    };
+
+                    const updateReportBtn = document.getElementById('update-report-btn');
+                    if (updateReportBtn) {
+                        updateReportBtn.addEventListener('click', async () => {
+                            const description = document.getElementById('upd-description')?.value?.trim() || '';
+                            const area_id = document.getElementById('upd-area')?.value;
+                            const type_id = document.getElementById('upd-type')?.value;
+
+                            if (!description) {
+                                Swal.fire({
+                                    title: 'Campo requerido',
+                                    text: 'La descripción es obligatoria.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            if (description.length > 100) {
+                                Swal.fire({
+                                    title: 'Descripción demasiado larga',
+                                    text: 'La descripción debe tener máximo 100 caracteres.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            await patchIncident({ description, area_id, type_id });
+                        });
+                    }
+
+                    const resolveBtn = document.getElementById('resolve-btn');
+                    if (resolveBtn) {
                         const notesInput = document.getElementById('upd-notes');
                         const counter = document.getElementById('char-counter');
                         if (notesInput && counter) {
@@ -323,10 +396,10 @@
                             });
                         }
 
-                        document.getElementById('update-btn').addEventListener('click', async () => {
-                            const status_id = document.getElementById('upd-status').value;
+                        resolveBtn.addEventListener('click', async () => {
+                            const status_id = document.getElementById('upd-status')?.value;
                             const notes = document.getElementById('upd-notes')?.value?.trim() || '';
-                            const costVal = document.getElementById('upd-cost').value;
+                            const costVal = document.getElementById('upd-cost')?.value ?? '';
                             const set_completed_at = document.getElementById('upd-completed')?.checked;
 
                             if (set_completed_at && costVal === '') {
@@ -356,134 +429,15 @@
                             if (costVal !== '') body.cost = costVal;
                             if (set_completed_at) body.set_completed_at = true;
 
-                            try {
-                                const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(body)
-                                });
-                                const result = await r.json();
-                                if (result.success) {
-                                    await Swal.fire({
-                                        title: 'Actualizado',
-                                        text: 'Reporte actualizado correctamente.',
-                                        icon: 'success',
-                                        timer: 1800,
-                                        timerProgressBar: true,
-                                        showConfirmButton: false,
-                                        confirmButtonColor: '#6A8042'
-                                    });
-                                    window.location.reload();
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: result.message ?? 'No se pudo actualizar.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#d33',
-                                        confirmButtonText: 'Aceptar'
-                                    });
-                                }
-                            } catch {
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'Fallo de red.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                            }
-                        });
-                    } else {
-                        // Para Owner (no-admin)
-                        document.getElementById('update-btn').addEventListener('click', async () => {
-                            // Validar 24 horas
-                            if (isOlderThan24Hours && isOwner) {
-                                Swal.fire({
-                                    title: 'Acción no permitida',
-                                    text: 'Solo puedes editar o borrar la incidencia dentro de 24 horas de su creación.',
-                                    icon: 'warning',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                                return;
-                            }
-
-                            const description = document.getElementById('upd-description')?.value?.trim() || '';
-                            const area_id = document.getElementById('upd-area').value;
-                            const type_id = document.getElementById('upd-type').value;
-
-                            if (!description) {
-                                Swal.fire({
-                                    title: 'Campo requerido',
-                                    text: 'La descripción es obligatoria.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                                return;
-                            }
-
-                            if (description.length > 100) {
-                                Swal.fire({
-                                    title: 'Descripción demasiado larga',
-                                    text: 'La descripción debe tener máximo 100 caracteres.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                                return;
-                            }
-
-                            const body = {
-                                description,
-                                area_id,
-                                type_id
-                            };
-
-                            try {
-                                const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify(body)
-                                });
-                                const result = await r.json();
-                                if (result.success) {
-                                    await Swal.fire({
-                                        title: 'Actualizado',
-                                        text: 'Reporte actualizado correctamente.',
-                                        icon: 'success',
-                                        timer: 1800,
-                                        timerProgressBar: true,
-                                        showConfirmButton: false,
-                                        confirmButtonColor: '#6A8042'
-                                    });
-                                    window.location.reload();
-                                } else {
-                                    Swal.fire({
-                                        title: 'Error',
-                                        text: result.message ?? 'No se pudo actualizar.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#d33',
-                                        confirmButtonText: 'Aceptar'
-                                    });
-                                }
-                            } catch {
-                                Swal.fire({
-                                    title: 'Error',
-                                    text: 'Fallo de red.',
-                                    icon: 'error',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                            }
+                            await patchIncident(body, 'Resolución actualizada correctamente.');
                         });
                     }
 
                     const deleteBtn = document.getElementById('delete-btn');
                     if (deleteBtn) {
                         deleteBtn.addEventListener('click', async () => {
-                            // Validar 24 horas para propietarios
-                            if (isOlderThan24Hours && isOwner && !isAdmin) {
+                            // Validar 24 horas para propietarios, incluyendo admin propietario
+                            if (isOlderThan24Hours && isOwner) {
                                 Swal.fire({
                                     title: 'Acción no permitida',
                                     text: 'Solo puedes eliminar la incidencia dentro de 24 horas de su creación.',
@@ -554,18 +508,6 @@
 
                     if (imageInput) {
                         imageInput.addEventListener('change', async (e) => {
-                            // Validar 24 horas
-                            if (!editableByOwner && isOwner) {
-                                Swal.fire({
-                                    title: 'Acción no permitida',
-                                    text: 'Solo puedes editar la incidencia dentro de 24 horas de su creación.',
-                                    icon: 'warning',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                                return;
-                            }
-
                             const file = e.target.files[0];
                             if (!file) return;
 
@@ -649,18 +591,6 @@
                     const deleteImageBtn = document.getElementById('delete-image-btn');
                     if (deleteImageBtn) {
                         deleteImageBtn.addEventListener('click', async () => {
-                            // Validar 24 horas
-                            if (!editableByOwner && isOwner) {
-                                Swal.fire({
-                                    title: 'Acción no permitida',
-                                    text: 'Solo puedes editar la incidencia dentro de 24 horas de su creación.',
-                                    icon: 'warning',
-                                    confirmButtonColor: '#d33',
-                                    confirmButtonText: 'Aceptar'
-                                });
-                                return;
-                            }
-
                             const confirm = await Swal.fire({
                                 title: '¿Eliminar imagen?',
                                 text: 'Se eliminará la imagen de la incidencia.',

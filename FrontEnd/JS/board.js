@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusSelect = document.getElementById('status');
     const orderSelect = document.getElementById('order-by');
     const creatorSelect = document.getElementById('creator-filter');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
     const paginationBox = document.getElementById('incidents-pagination');
     const prevBtn = document.getElementById('inc-prev-btn');
     const nextBtn = document.getElementById('inc-next-btn');
@@ -52,6 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     statusSelect.addEventListener('change', applyFilters);
     orderSelect.addEventListener('change', applyFilters);
     if (creatorSelect) creatorSelect.addEventListener('change', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
 
     // Llena combos de filtro con catalogos recibidos del backend.
     function populateFilters(types, areas, statuses) {
@@ -108,6 +110,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredIncidents);
     }
 
+    function clearFilters() {
+        typeSelect.value = 'any';
+        areaSelect.value = 'any';
+        statusSelect.value = 'any';
+        orderSelect.value = 'timedown';
+        if (creatorSelect) creatorSelect.value = 'any';
+        applyFilters();
+    }
+
     prevBtn.addEventListener('click', () => {
         if (currentPage <= 1) return;
         currentPage -= 1;
@@ -129,7 +140,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Renderiza solo la pagina actual y actualiza controles de paginacion.
     function renderTable(incidents) {
         if (!incidents.length) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Sin incidencias</td></tr>';
+            tbody.innerHTML = `
+                <tr class="create-incident-row">
+                    <td colspan="3">
+                        <a href="/incident-create" class="btn-create-incident" aria-label="Crear incidencia">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            <span>CREAR INCIDENCIA</span>
+                        </a>
+                    </td>
+                </tr>
+                <tr><td colspan="3" style="text-align:center">Sin incidencias</td></tr>
+            `;
             paginationBox.style.display = 'none';
             return;
         }
@@ -144,7 +165,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 
-        tbody.innerHTML = pageItems.map(inc => {
+        tbody.innerHTML = `
+            <tr class="create-incident-row">
+                <td colspan="3">
+                    <a href="/incident-create" class="btn-create-incident" aria-label="Crear incidencia">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        <span>CREAR INCIDENCIA</span>
+                    </a>
+                </td>
+            </tr>
+            ${pageItems.map(inc => {
 
             const date = inc.created_at
                 ? new Date(inc.created_at).toLocaleString('es-MX', {
@@ -171,7 +201,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${date}</td>
                     <td><span class="status-badge status-${statusClass}">${statusName}</span></td>
                 </tr>`;
-        }).join('');
+        }).join('')}`;
     }
 
     // Normaliza texto a clase CSS segura para badges

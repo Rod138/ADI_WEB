@@ -9,7 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { login, forgotPassword } from './controllers/login.js';import { getMainMenu } from './controllers/main.js';import { getIncidents, getIncidentById, updateIncident, createIncident, deleteIncident, updateIncidentImage, deleteIncidentImage } from './controllers/incidents.js';
 import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDepartments, getRoles, createUser } from './controllers/departments.js';
-import { getNotifications, deleteNotification, deleteAllNotifications } from './controllers/notifications.js';
+import { getNotifications, deleteNotification, deleteAllNotifications, markNotificationRead } from './controllers/notifications.js';
 import { createTowerExpense, updateTowerExpense, deleteTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
 import { verifyRefreshToken, generateAccessToken, verifyRefreshTokenInDB, deleteRefreshTokenFromDB } from './utils/validation.js';
@@ -232,6 +232,7 @@ router.patch('/api/departments/:id', requireMinRole(3), updateDepartment);
 
 router.get('/api/notifications', getNotifications);
 router.delete('/api/notifications/:id', deleteNotification);
+router.patch('/api/notifications/:id/read', markNotificationRead);
 router.post('/api/notifications/delete-all', deleteAllNotifications);
 
 export default router;

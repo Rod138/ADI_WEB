@@ -178,3 +178,46 @@ export const deleteAllNotifications = async (req, res) => {
         return res.status(500).json({ success: false, message: error?.message || 'Error interno' });
     }
 };
+
+// Marca una notificación como leída (read = true). Compatibilidad con campos usr_id/user_id.
+export const markNotificationRead = async (req, res) => {
+    const id = parseInt(req.params.id, 10);
+    const usrId = parseInt(req.body.usr_id, 10);
+
+    if (isNaN(id) || isNaN(usrId)) {
+        return res.status(400).json({ success: false, message: 'Parámetros inválidos' });
+    }
+
+    try {
+        let updateRes = await supabase
+            .from('notifications')
+            .update({ read: true })
+            .eq('id', id)
+            .eq('usr_id', usrId)
+            .select('id, read');
+
+        // Compatibilidad si el campo del usuario se llama user_id.
+        if (updateRes.error) {
+            updateRes = await supabase
+                .from('notifications')
+                .update({ read: true })
+                .eq('id', id)
+                .eq('user_id', usrId)
+                .select('id, read');
+        }
+
+        const { data, error } = updateRes;
+
+        if (error) {
+            return res.status(500).json({ success: false, message: error.message || 'Error al marcar como leído' });
+        }
+
+        if (!data || data.length === 0) {
+            return res.status(404).json({ success: false, message: 'Notificación no encontrada' });
+        }
+
+        return res.status(200).json({ success: true });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error?.message || 'Error interno' });
+    }
+};

@@ -718,3 +718,182 @@ footer p {
         width: 95%;
     }
 }
+
+/* --- Mis Cuotas overrides to keep layout aligned and readable --- */
+.left-form-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.left-form-panel .form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.left-form-panel .form-field label {
+    margin-top: 0;
+}
+
+.left-form-panel .form-field + .form-field {
+    margin-top: 0.1rem;
+}
+
+.form-row {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.form-row.two-cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field label {
+    margin-top: 0;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6.5rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.status-validado {
+    background: linear-gradient(180deg, #2f8f3a 0%, #2e7d32 100%);
+    color: #ffffff;
+}
+
+.status-pendiente {
+    background: linear-gradient(180deg, #fff3cd 0%, #ffd966 100%);
+    color: #222222;
+}
+
+.status-rechazado {
+    background: linear-gradient(180deg, #ef5350 0%, #c62828 100%);
+    color: #ffffff;
+}
+
+.proof-link {
+    border: 1px solid var(--adi-accent, #ED7A13);
+    background: #FFFFFF;
+    color: var(--adi-accent, #ED7A13);
+    font: inherit;
+    font-weight: 700;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    cursor: pointer;
+    line-height: 1;
+    box-shadow: 0 0.1rem 0.25rem rgba(0, 0, 0, 0.08);
+}
+
+.proof-link:hover {
+    background: #fff5ea;
+    color: #d96a10;
+    border-color: #d96a10;
+}
+
+@media (max-width: 48rem) {
+    .form-row.two-cols {
+        grid-template-columns: 1fr;
+    }
+
+    .left-form-panel,
+    .right-board-panel {
+        width: 100%;
+        flex: 1 1 100%;
+    }
+}
+
+/* Final layout override: center the whole module within the available area */
+.main-container {
+    width: calc(100% - 16rem);
+    max-width: none;
+    margin-left: 16rem;
+    margin-right: 0;
+    padding: 2rem 1.25rem 1rem;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+body.sidebar-collapsed .main-container {
+    width: calc(100% - 5.5rem);
+    margin-left: 5.5rem;
+}
+
+.left-form-panel {
+    flex: 0 0 22rem;
+    width: 22rem;
+}
+
+.right-board-panel {
+    flex: 1 1 56rem;
+    width: min(100%, 56rem);
+}
+
+.table-container,
+.filters-box,
+.bottom-actions {
+    width: 100%;
+}
+
+@media (max-width: 48rem) {
+    .main-container {
+        width: 100%;
+        margin-left: 0;
+        flex-direction: column;
+        align-items: center;
+        padding: 1rem 0.8rem 0.8rem;
+    }
+
+    .left-form-panel,
+    .right-board-panel {
+        width: 100%;
+        max-width: 30rem;
+        flex: 1 1 100%;
+    }
+}
+
+
+/* Table alignment overrides */
+tbody td:nth-child(1),
+tbody td:nth-child(6) {
+    text-align: center;
+    vertical-align: middle;
+}
+
+td.cell-status,
+td.cell-proof {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.status-badge {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.proof-link {
+    display: block;
+    width: fit-content;
+    margin: 0 auto;
+    min-width: 4.25rem;
+}
+

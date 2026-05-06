@@ -9,13 +9,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const monthSelect = document.getElementById('month-filter');
     const amountSelect = document.getElementById('amount-filter');
     const orderSelect = document.getElementById('order-by');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
     const paginationBox = document.getElementById('expenses-pagination');
     const prevBtn = document.getElementById('exp-prev-btn');
     const nextBtn = document.getElementById('exp-next-btn');
     const pageIndicator = document.getElementById('exp-page-indicator');
 
     // Elementos del formulario integrado
-    const openFormBtn = document.getElementById('open-expense-form-btn');
     const closeFormBtn = document.getElementById('close-expense-form-btn');
     const expenseFormPanel = document.getElementById('expense-form-panel');
     const cancelExpenseBtn = document.getElementById('cancel-expense-btn');
@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     monthSelect.addEventListener('change', applyFilters);
     amountSelect.addEventListener('change', applyFilters);
     orderSelect.addEventListener('change', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
 
     // Event listeners para paginación
     prevBtn.addEventListener('click', () => {
@@ -64,6 +65,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Event listeners para visualizar comprobantes y acciones
     tbody.addEventListener('click', (e) => {
+        const createBtn = e.target.closest('.open-expense-form-btn');
+        if (createBtn) {
+            openCreateForm();
+            return;
+        }
+
         const trigger = e.target.closest('.receipt-thumb-btn');
         if (trigger) {
             const imgUrl = trigger.dataset.image;
@@ -127,11 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             handleDeleteExpense(expenseId);
         }
-    });
-
-    // Event listeners para formulario integrado
-    openFormBtn.addEventListener('click', () => {
-        openCreateForm();
     });
 
     closeFormBtn.addEventListener('click', closeExpenseForm);
@@ -330,6 +332,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         expenseFormPanel.style.display = 'none';
     }
 
+    function clearFilters() {
+        monthSelect.value = 'any';
+        amountSelect.value = 'any';
+        orderSelect.value = 'date-desc';
+        applyFilters();
+    }
+
     // Llena periodos unicos para filtrar por mes y anio del gasto.
     function populateMonthFilter(expenses) {
         monthSelect.innerHTML = '<option value="any">Cualquiera</option>';
@@ -383,8 +392,21 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Renderiza tabla paginada de gastos con acceso opcional al comprobante.
     function renderTable(expenses) {
+        const createRow = canManageExpenses
+            ? `
+                <tr class="create-expense-row">
+                    <td colspan="4">
+                        <button type="button" class="btn-create-expense open-expense-form-btn" aria-label="Levantar gasto">
+                            <span class="material-symbols-outlined">add_circle</span>
+                            <span>LEVANTAR GASTO</span>
+                        </button>
+                    </td>
+                </tr>
+            `
+            : '';
+
         if (!expenses.length) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Sin gastos registrados</td></tr>';
+            tbody.innerHTML = `${createRow}<tr><td colspan="4" style="text-align:center">Sin gastos registrados</td></tr>`;
             paginationBox.style.display = 'none';
             return;
         }
@@ -400,7 +422,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 
-        tbody.innerHTML = pageItems.map(exp => {
+        tbody.innerHTML = `${createRow}${pageItems.map(exp => {
             const description = escapeHtml(exp.description || 'Sin descripcion');
             const date = exp.expense_date
                 ? new Date(exp.expense_date).toLocaleString('es-MX', {
@@ -439,7 +461,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td>${actions}</td>
                 </tr>
             `;
-        }).join('');
+        }).join('')}`;
     }
 
     function openCreateForm() {

@@ -105,8 +105,9 @@
                 <label for="validation">Validacion</label>
                 <select id="validation">
                     <option value="any">Cualquiera</option>
-                    <option value="true">Validado</option>
-                    <option value="false">No validado</option>
+                    <option value="pending">Pendiente</option>
+                    <option value="approved">Validado</option>
+                    <option value="rejected">Rechazado</option>
                 </select>
             </div>
             <div class="filter-group">
@@ -128,6 +129,7 @@
                     <option value="timeup">Fecha ascendente</option>
                 </select>
             </div>
+            <button type="button" class="btn-clear-filters" id="clear-filters-btn">LIMPIAR FILTROS</button>
         </div>
 
         <div class="table-container">

@@ -272,6 +272,23 @@ body {
     cursor: pointer;
 }
 
+#update-report-btn {
+    width: 14.5rem;
+    min-height: 2.6rem;
+    height: auto;
+    padding: 0.35rem 0.75rem;
+    line-height: 1.2;
+    text-align: center;
+    white-space: normal;
+}
+
+#resolve-btn {
+    min-height: 2.6rem;
+    height: auto;
+    padding: 0.35rem 0.75rem;
+    line-height: 1.2;
+}
+
 .button-row {
     display: flex;
     gap: 1rem;
@@ -386,7 +403,7 @@ body {
 }
 
 .bottom-actions {
-    width: 43.75rem;
+    width: min(100%, 43.75rem);
     margin: 1.1rem auto 0;
     display: flex;
     justify-content: flex-end;
@@ -503,6 +520,32 @@ footer p {
 @media (max-width: 48rem) {
     .main-container {
         width: 95%;
+    }
+
+    .incident-card {
+        padding: 1rem;
+    }
+
+    .update-row.two-cols {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+
+    .button-row {
+        flex-wrap: wrap;
+        gap: 0.7rem;
+    }
+
+    .update-btn,
+    .delete-btn,
+    .btn-back {
+        width: 100%;
+        max-width: 22rem;
+    }
+
+    .checkbox-label {
+        align-items: flex-start;
+        line-height: 1.3;
     }
 }
 

@@ -430,7 +430,7 @@ footer p {
         width: 95%;
     }
 }
-
+        padding: 2rem 1.2rem 0.8rem;
 /* Footer anchoring fix */
 body {
     min-height: 100vh;

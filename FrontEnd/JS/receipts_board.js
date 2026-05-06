@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const dateSelect = document.getElementById('date');
     const departmentSelect = document.getElementById('department');
     const orderSelect = document.getElementById('order-by');
+    const clearFiltersBtn = document.getElementById('clear-filters-btn');
     const paginationBox = document.getElementById('receipts-pagination');
     const prevBtn = document.getElementById('rcp-prev-btn');
     const nextBtn = document.getElementById('rcp-next-btn');
@@ -40,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     dateSelect.addEventListener('change', applyFilters);
     departmentSelect.addEventListener('change', applyFilters);
     orderSelect.addEventListener('change', applyFilters);
+    if (clearFiltersBtn) clearFiltersBtn.addEventListener('click', clearFilters);
 
     prevBtn.addEventListener('click', () => {
         if (currentPage <= 1) return;
@@ -90,11 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const validation = validationSelect.value;
         if (validation !== 'any') {
-            if (validation === 'true') {
-                filtered = filtered.filter(r => isReceiptValidated(r.validated));
-            } else {
-                filtered = filtered.filter(r => !isReceiptValidated(r.validated));
-            }
+            filtered = filtered.filter(r => receiptStatus(r.validated) === validation);
         }
 
         const date = dateSelect.value;
@@ -119,6 +117,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderTable(filteredReceipts);
     }
 
+    function clearFilters() {
+        validationSelect.value = 'any';
+        dateSelect.value = 'any';
+        departmentSelect.value = 'any';
+        orderSelect.value = 'timedown';
+        applyFilters();
+    }
+
     // Renderiza la tabla paginada de comprobantes para auditoria operativa.
     function renderTable(receipts) {
         if (!receipts.length) {
@@ -138,7 +144,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextBtn.disabled = currentPage === totalPages;
 
         tbody.innerHTML = pageItems.map(r => {
-            const validatedText = isReceiptValidated(r.validated) ? 'Validado' : 'Pendiente';
+            const status = receiptStatus(r.validated); // 'approved' | 'rejected' | 'pending'
+            let validatedText = 'Pendiente';
+            if (status === 'approved') validatedText = 'Validado';
+            else if (status === 'rejected') validatedText = 'Rechazado';
             const statusClass = normalizeStatusClass(validatedText);
             const statusHtml = `<span class="status-badge status-${statusClass}">${validatedText}</span>`;
             const dateText = r.created_at
@@ -167,19 +176,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Compatibilidad de estado: backend actual usa boolean, pero puede existir legado con 1/2.
-    function isReceiptValidated(value) {
-        if (value === true) return true;
-        if (value === false || value === null || value === undefined) return false;
+    function receiptStatus(value) {
+        // returns 'approved' | 'rejected' | 'pending'
+        if (value === true) return 'approved';
+        if (value === false) return 'rejected';
+        if (value === null || value === undefined) return 'pending';
 
         if (typeof value === 'number') {
-            return value === 2;
+            if (value === 2) return 'approved';
+            if (value === 1) return 'rejected';
+            return 'pending';
         }
 
         const normalized = String(value).trim().toLowerCase();
-        if (normalized === 'true' || normalized === '2') return true;
-        if (normalized === 'false' || normalized === '1' || normalized === '0' || normalized === 'null') return false;
-
-        return false;
+        if (normalized === 'true' || normalized === '2') return 'approved';
+        if (normalized === 'false' || normalized === '1') return 'rejected';
+        if (normalized === 'null' || normalized === '') return 'pending';
+        return 'pending';
     }
 
     // Normaliza fecha a clave mensual para filtros agrupados.

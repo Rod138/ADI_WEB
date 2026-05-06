@@ -153,10 +153,22 @@ body {
     background: linear-gradient(180deg, #2f8f3a 0%, #2e7d32 100%);
     color: #ffffff;
 }
+
 .status-pendiente,
 .status-pending {
-    background: linear-gradient(180deg, #e53935 0%, #d32f2f 100%); /* pending - red */
+    /* Pending: warm yellow that matches site textures and keeps readable contrast */
+    background: linear-gradient(180deg, #FFF3CD 0%, #FFD966 100%);
+    color: #222222;
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 1px 2px rgba(0,0,0,0.06);
+}
+
+.status-rechazado {
+    /* Rejected: deep red with similar texture/shadow as other badges */
+    background: linear-gradient(180deg, #EF5350 0%, #C62828 100%);
     color: #ffffff;
+    border: 1px solid rgba(0,0,0,0.12);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.12);
 }
 .status-abierto,
 .status-open {

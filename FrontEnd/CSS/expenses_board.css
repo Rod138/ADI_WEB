@@ -101,7 +101,7 @@ body {
     width: 100%;
     max-width: 88rem;
     margin: 0 auto;
-    padding: 1.5rem 1.2rem 2rem;
+    padding: 1.9rem 1.2rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -185,6 +185,46 @@ textarea:focus {
     background-color: #E8D5C3;
     border-color: #D5B18E;
     transform: translateY(-0.08rem);
+}
+
+.btn-clear-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 1.15rem;
+    background-color: #F4E7C8;
+    color: #5E4B37;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 0.0625rem solid #DFC6AB;
+    white-space: nowrap;
+}
+
+.btn-clear-filters:hover {
+    background-color: #EEDBB3;
+    border-color: #D5B18E;
+    transform: translateY(-0.08rem);
+}
+
+.create-expense-row td {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+
+.create-expense-row td > .btn-create-expense {
+    width: 100%;
+    margin-left: 0;
+}
+
+.create-expense-row td > .btn-create-expense,
+.create-expense-row td > .btn-create-expense:hover {
+    justify-content: center;
 }
 
 .btn-create-expense .material-symbols-outlined {

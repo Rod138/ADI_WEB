@@ -391,6 +391,46 @@ function initializeSharedSidebarBehavior() {
         applyRoleVisibility(user);
         initializeSharedSidebarBehavior();
 
+        // Fetch unread notifications count and update global indicator
+        (async () => {
+            try {
+                const resp = await fetch(`/api/notifications?usr_id=${encodeURIComponent(user.id)}&order=desc`);
+                if (!resp.ok) return;
+                const data = await resp.json();
+                if (!data || !data.success) return;
+                const unread = (data.notifications || []).filter(n => !n.read).length;
+                // Expose updater for other pages
+                window.updateGlobalUnreadIndicator = (count) => {
+                    const body = document.body;
+                    if (!body) return;
+                    if (Number(count) > 0) {
+                        body.classList.add('has-unread-notifications');
+                    } else {
+                        body.classList.remove('has-unread-notifications');
+                    }
+                };
+
+                // Initial set
+                window.updateGlobalUnreadIndicator(unread);
+
+                // Inject simple style to tint ONLY the notifications icon when unread exist
+                if (!document.getElementById('adi-unread-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'adi-unread-style';
+                    style.textContent = `
+                        /* Target anchors that link to the notifications page or have aria-label */
+                        body.has-unread-notifications a[aria-label="Notificaciones"] .material-symbols-outlined,
+                        body.has-unread-notifications a[href="/notifications"] .material-symbols-outlined {
+                            color: #d9534f !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+            } catch (e) {
+                // no-op
+            }
+        })();
+
         const span = document.getElementById('user-name');
         if (span) span.textContent = user.name;
 

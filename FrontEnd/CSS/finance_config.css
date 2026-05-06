@@ -102,11 +102,11 @@ body {
 /* Main container */
 .main-container {
     width: 100%;
-    max-width: 72rem;
+    max-width: 90%;
     margin: 0 auto;
     padding: 2rem 1rem 2rem;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
     flex: 1;
 }
@@ -121,6 +121,11 @@ body {
     padding: 1.5rem;
     border: 1px solid #E8E8E8;
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.06);
+}
+
+.quota-panel,
+.history-panel {
+    grid-column: 1 / -1;
 }
 
 .balance-card h2,
@@ -425,6 +430,7 @@ tbody tr:hover {
     margin-top: 1rem;
     display: flex;
     justify-content: flex-end;
+    grid-column: 1 / -1;
 }
 
 .btn-back {
@@ -478,6 +484,7 @@ footer p {
 /* Responsive Design */
 @media (max-width: 70rem) {
     .main-container {
+        grid-template-columns: 1fr;
         max-width: 90%;
     }
 
@@ -506,9 +513,18 @@ footer p {
         font-size: 0.8rem;
     }
 }
-
+/* Override main.css aggressive !important rules for better width utilization */
+@media (min-width: 48rem) {
+    .main-container {
+        width: 90% !important;
+        max-width: 90% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
 @media (max-width: 48rem) {
     .main-container {
+        grid-template-columns: 1fr;
         width: 95%;
         margin: 0 auto;
         padding: 1rem 0.5rem 2rem;

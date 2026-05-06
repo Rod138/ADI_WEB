@@ -162,6 +162,29 @@ select:focus {
     box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.16);
 }
 
+.btn-clear-filters {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.05rem;
+    padding: 0 1rem;
+    background-color: #F4E7C8;
+    color: #5E4B37;
+    border-radius: 0.7rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 0.0625rem solid #DFC6AB;
+    white-space: nowrap;
+}
+
+.btn-clear-filters:hover {
+    background-color: #EEDBB3;
+    border-color: #D5B18E;
+}
+
 .table-container {
     width: min(100%, 76rem);
     background-color: #fbfbfb;
@@ -318,7 +341,7 @@ footer p {
         width: 95%;
         padding: 1rem 0.6rem 1.5rem;
     }
-
+        padding: 1.9rem 1.2rem 2rem;
     .table-container {
         padding: 0.65rem;
     }

@@ -78,11 +78,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             const typeName = escapeHtml(typesMap[n.type_id] || `Tipo ${n.type_id || '-'}`);
             const description = escapeHtml(n.description || 'Sin descripción');
             const timeAgo = escapeHtml(formatTimeAgo(n.created_at));
+            const unreadClass = n.read ? '' : ' unread';
 
             return `
-                <article class="notification-item" data-id="${n.id}">
+                <article class="notification-item${unreadClass}" data-id="${n.id}" data-read="${n.read}">
                     <div class="notification-left">
-                        <div class="noti-icon">!</div>
+                        <div class="noti-icon">${n.read ? '•' : '!'}</div>
                         <div class="notification-content">
                             <h3>${typeName.toUpperCase()}</h3>
                             <p>${description}</p>
@@ -303,6 +304,57 @@ document.addEventListener('DOMContentLoaded', async () => {
                 confirmButtonColor: '#d33',
                 confirmButtonText: 'Aceptar'
             });
+        }
+    });
+
+    // Mark notification as read when clicking the item (but not the delete button)
+    list.addEventListener('click', async (event) => {
+        const item = event.target.closest('.notification-item');
+        if (!item) return;
+
+        // If clicked delete button, ignore here (handled above)
+        if (event.target.closest('.delete-btn')) return;
+
+        const notificationId = item.getAttribute('data-id');
+        const alreadyRead = item.getAttribute('data-read') === 'true';
+        // Show detail modal
+        const notif = allNotifications.find(n => String(n.id) === String(notificationId));
+        const title = notif?.title || (typesMap[notif?.type_id] || 'Notificación');
+        const description = notif?.description || '';
+
+        await Swal.fire({
+            title: escapeHtml(title),
+            html: `<p style="text-align:left">${escapeHtml(description)}</p>`,
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#6A8042'
+        });
+
+        if (alreadyRead) return;
+
+        try {
+            const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}/read`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usr_id: sessionUser.id })
+            });
+
+            const result = await response.json();
+            if (!result.success) return;
+
+            // Update local state and UI
+            allNotifications = allNotifications.map(n => (String(n.id) === String(notificationId) ? { ...n, read: true } : n));
+            filteredNotifications = filteredNotifications.map(n => (String(n.id) === String(notificationId) ? { ...n, read: true } : n));
+
+            // Re-render current page
+            render(filteredNotifications);
+
+            // Update global indicator if available
+            if (typeof window.updateGlobalUnreadIndicator === 'function') {
+                const unread = (allNotifications || []).filter(n => !n.read).length;
+                try { window.updateGlobalUnreadIndicator(unread); } catch (e) {}
+            }
+        } catch (e) {
+            // ignore network errors silently
         }
     });
 });
