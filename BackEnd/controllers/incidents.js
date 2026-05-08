@@ -418,25 +418,18 @@ export const deleteIncident = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
         }
 
-        // Verificar permisos: propietario o admin (rol_id >= 3)
-        const { data: user } = await supabase
-            .from('users')
-            .select('rol_id')
-            .eq('id', userId)
-            .single();
-
-        const isAdmin = user && Number(user.rol_id) >= 3;
+        // Verificar permisos: solo propietario puede eliminar
         const isOwner = Number(incident.usr_id) === userId;
 
-        if (!isAdmin && !isOwner) {
+        if (!isOwner) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas) - solo para propietarios no-admin
-        if (isOwner && !isAdmin && !isIncidentEditable(incident.created_at)) {
+        // Verificar ventana de edición (24 horas)
+        if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
-                message: 'Solo puedes editar o borrar la incidencia dentro de 24 horas de su creación. Después solo un administrador puede resolverla.'
+                message: 'Solo puedes eliminar la incidencia dentro de 24 horas de su creación.'
             });
         }
 
@@ -544,22 +537,15 @@ export const deleteIncidentImage = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
         }
 
-        // Verificar permisos
-        const { data: user } = await supabase
-            .from('users')
-            .select('rol_id')
-            .eq('id', userId)
-            .single();
-
-        const isAdmin = user && Number(user.rol_id) >= 3;
+        // Verificar permisos: solo propietario puede eliminar imagen
         const isOwner = Number(incident.usr_id) === userId;
 
-        if (!isAdmin && !isOwner) {
+        if (!isOwner) {
             return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas) para propietarios (incluye admin propietario)
-        if (isOwner && !isIncidentEditable(incident.created_at)) {
+        // Verificar ventana de edición (24 horas)
+        if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'

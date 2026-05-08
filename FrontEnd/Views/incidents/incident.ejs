@@ -162,18 +162,17 @@
                 const inc = data.incident;
                 const isAdmin = user && Number(user.rol_id) >= 3;
                 const isOwner = user && Number(user.id) === Number(inc.usr_id);
-                const canEdit = isAdmin || isOwner;
 
                 // Verificar si la incidencia tiene más de 1 mes
                 const createdAt = new Date(inc.created_at);
                 const now = new Date();
                 const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
                 const isOlderThan1Month = hoursDiff >= 720; // 30 días * 24 horas
-                const canEditReport = isAdmin
-                    ? (!isOwner || !isOlderThan1Month)
-                    : (isOwner && !isOlderThan1Month);
-                const canResolve = isAdmin;
-                const canDelete = isAdmin || (isOwner && !isOlderThan1Month);
+                
+                // Solo el dueño puede editar dentro de 24 horas
+                const canEditReport = isOwner && !isOlderThan1Month;
+                const canResolve = false; // Los admins ya no pueden editar incidencias
+                const canDelete = isOwner && !isOlderThan1Month;
                 const canManageImage = canEditReport;
                 const canShowUpdateSection = canEditReport || canResolve;
 
@@ -352,6 +351,18 @@
                     const updateReportBtn = document.getElementById('update-report-btn');
                     if (updateReportBtn) {
                         updateReportBtn.addEventListener('click', async () => {
+                            // Verificar que el usuario actual es el propietario
+                            if (!isOwner) {
+                                Swal.fire({
+                                    title: 'No permitido',
+                                    text: 'Solo puedes editar tus propias incidencias.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
                             const description = document.getElementById('upd-description')?.value?.trim() || '';
                             const area_id = document.getElementById('upd-area')?.value;
                             const type_id = document.getElementById('upd-type')?.value;
@@ -436,8 +447,20 @@
                     const deleteBtn = document.getElementById('delete-btn');
                     if (deleteBtn) {
                         deleteBtn.addEventListener('click', async () => {
-                            // Validar 1 mes para propietarios, incluyendo admin propietario
-                            if (isOlderThan1Month && isOwner) {
+                            // Verificar que el usuario actual es el propietario
+                            if (!isOwner) {
+                                Swal.fire({
+                                    title: 'No permitido',
+                                    text: 'Solo puedes eliminar tus propias incidencias.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
+                            // Validar 1 mes para propietarios
+                            if (isOlderThan1Month) {
                                 Swal.fire({
                                     title: 'Acción no permitida',
                                     text: 'Solo puedes eliminar la incidencia dentro de 1 mes de su creación.',
@@ -508,6 +531,19 @@
 
                     if (imageInput) {
                         imageInput.addEventListener('change', async (e) => {
+                            // Verificar que el usuario actual es el propietario
+                            if (!isOwner) {
+                                Swal.fire({
+                                    title: 'No permitido',
+                                    text: 'Solo puedes editar tus propias incidencias.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                e.target.value = '';
+                                return;
+                            }
+
                             const file = e.target.files[0];
                             if (!file) return;
 
@@ -591,6 +627,18 @@
                     const deleteImageBtn = document.getElementById('delete-image-btn');
                     if (deleteImageBtn) {
                         deleteImageBtn.addEventListener('click', async () => {
+                            // Verificar que el usuario actual es el propietario
+                            if (!isOwner) {
+                                Swal.fire({
+                                    title: 'No permitido',
+                                    text: 'Solo puedes editar tus propias incidencias.',
+                                    icon: 'error',
+                                    confirmButtonColor: '#d33',
+                                    confirmButtonText: 'Aceptar'
+                                });
+                                return;
+                            }
+
                             const confirm = await Swal.fire({
                                 title: '¿Eliminar imagen?',
                                 text: 'Se eliminará la imagen de la incidencia.',
