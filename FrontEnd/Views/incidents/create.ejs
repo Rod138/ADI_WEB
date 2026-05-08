@@ -82,36 +82,32 @@
     </nav>
 
     <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
-        <a class="sidebar-header-link" href="/main" aria-label="Ir al Menú Principal">
-            <div class="sidebar-header-icon">
-                <span class="material-symbols-outlined">dashboard</span>
-            </div>
-            <div class="sidebar-header-copy">
-                <span class="sidebar-kicker">MENÚ</span>
-                <strong>PRINCIPAL</strong>
-            </div>
-        </a>
-
         <nav class="sidebar-nav" aria-label="Accesos rápidos">
-            <a class="sidebar-link" href="/accounting">
+            <a class="sidebar-link" href="/main" data-label="Menú principal">
+                <span class="material-symbols-outlined">dashboard</span>
+                <div class="sidebar-link-copy">
+                    <strong>Menú principal</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/accounting" data-label="Finanzas">
                 <span class="material-symbols-outlined">payments</span>
                 <div class="sidebar-link-copy">
                     <strong>Finanzas</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/incident-board">
+            <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
                 <span class="material-symbols-outlined">warning</span>
                 <div class="sidebar-link-copy">
                     <strong>Incidencias</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/reports">
+            <a class="sidebar-link" href="/reports" data-label="Reportes">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <div class="sidebar-link-copy">
                     <strong>Reportes</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/departments">
+            <a class="sidebar-link" href="/departments" data-label="Departamentos">
                 <span class="material-symbols-outlined">apartment</span>
                 <div class="sidebar-link-copy">
                     <strong>Departamentos</strong>
@@ -158,7 +154,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" id="cancel-btn" class="btn-back">CANCELAR</button>
+                <button type="button" id="cancel-btn" class="btn-cancel">CANCELAR</button>
                 <button type="submit" class="btn-submit">ENVIAR REPORTE</button>
             </div>
         </form>
@@ -185,8 +181,8 @@
                     link.classList.add('active');
                 }
             });
-            const headerLink = document.querySelector('.sidebar-header-link');
-            if (headerLink && currentPath === '/main') headerLink.classList.add('active');
+            const mainLink = document.querySelector('.sidebar-link[href="/main"]');
+            if (mainLink && currentPath === '/main') mainLink.classList.add('active');
         });
 
         const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
