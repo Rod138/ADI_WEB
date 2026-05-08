@@ -170,7 +170,7 @@
                 const now = new Date();
                 const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
                 const isOlderThan1Month = hoursDiff >= 720; // 30 días * 24 horas
-                
+
                 // Solo el dueño puede editar el reporte; admins pueden resolver
                 const canEditReport = isOwner && !isOlderThan1Month;
                 const canResolve = isResolverAdmin;
@@ -409,12 +409,12 @@
                             const status_id = document.getElementById('upd-status')?.value;
                             const notes = document.getElementById('upd-notes')?.value?.trim() || '';
                             const costVal = document.getElementById('upd-cost')?.value ?? '';
-                            
+
                             // Obtener el nombre del status seleccionado para detectar si es "Completado"
                             const statusSelect = document.getElementById('upd-status');
                             const selectedStatusName = statusSelect?.options[statusSelect?.selectedIndex]?.text?.toLowerCase() || '';
                             const isCompletedStatus = selectedStatusName.includes('completado') || selectedStatusName.includes('validado');
-                            
+
                             if (isCompletedStatus && costVal === '') {
                                 Swal.fire({
                                     title: 'Costo requerido',

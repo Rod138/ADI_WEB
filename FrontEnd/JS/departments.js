@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 </div>
                 <div class="edit-field">
                     <label>Teléfono *</label>
-                    <input type="tel" id="new-phone" placeholder="Ej. 5551234567" minlength="10" maxlength="10" pattern="^\d{10}$">
+                    <input type="tel" id="new-phone" placeholder="Ej. 5551234567" minlength="10" maxlength="10" pattern="^\d{10}$" inputmode="numeric">
                 </div>
                 <div class="edit-field">
                     <label>Contraseña *</label>
@@ -264,6 +264,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             const phoneInput = document.getElementById('new-phone');
             const passwordInput = document.getElementById('new-password');
             const rolInput = document.getElementById('new-rol');
+
+            // Filtrar solo dígitos del teléfono en tiempo real
+            phoneInput.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            });
 
             const body = {
                 name:     nameInput.value.trim(),

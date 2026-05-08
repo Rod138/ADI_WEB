@@ -5,6 +5,7 @@
  */
 
 import supabase from '../dbconfig.js';
+import { hashPassword } from '../utils/validation.js';
 
 const normalizeEmail = (value) => String(value ?? '').trim().toLowerCase();
 
@@ -217,12 +218,14 @@ export const createUser = async (req, res) => {
 
         const newId = (maxRow?.id ?? 0) + 1;
 
+        const hashedPassword = await hashPassword(passwordStr);
+
         const { error } = await supabase.from('users').insert({
             id: newId,
             name: String(name).trim(),
             email: emailTrimmed,
             phone: String(phone).trim(),
-            password,
+            password: hashedPassword,
             rol_id: parseInt(rol_id, 10),
             dep_id: parseInt(dep_id, 10),
             ap: apPaternal
