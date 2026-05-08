@@ -7,7 +7,10 @@
 // Patrones de validación consistentes en toda la aplicación
 const ValidationPatterns = {
     nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
-    emailRegex: /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i,
+    // Local-part: letters, digits and these special chars !#$%&'*+/=?^_`{|}~-
+    // Dots allowed between tokens but not at start/end or consecutively.
+    // Domain: labels with letters/digits/hyphens and a TLD of at least 2 letters.
+    emailRegex: /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i,
     phoneRegex: /^\d{10}$/,
     passwordRegex: /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/
 };
@@ -86,6 +89,28 @@ export const validatePhone = (phone) => {
  * Exporta todos los patrones para uso en cliente
  */
 export { ValidationPatterns };
+
+/**
+ * Hashea una contraseña utilizando bcryptjs
+ * @param {string} password - Contraseña en texto plano
+ * @returns {Promise<string>} Contraseña hasheada
+ */
+export const hashPassword = async (password) => {
+    const bcrypt = await import('bcryptjs');
+    const saltRounds = 10;
+    return bcrypt.default.hash(password, saltRounds);
+};
+
+/**
+ * Compara una contraseña en texto plano con su hash
+ * @param {string} inputPassword - Contraseña ingresada por el usuario
+ * @param {string} hashedPassword - Hash almacenado en la BD
+ * @returns {Promise<boolean>} true si las contraseñas coinciden
+ */
+export const comparePassword = async (inputPassword, hashedPassword) => {
+    const bcrypt = await import('bcryptjs');
+    return bcrypt.default.compare(inputPassword, hashedPassword);
+};
 
 /**
  * Genera un JWT access token con 15 minutos de duración

@@ -30,6 +30,11 @@ router.get('/login', (req, res) => {
     res.sendFile(indexPath);
 });
 
+router.get('/session-invalid', (req, res) => {
+    const reason = req.query?.reason || 'invalid-session';
+    res.render('session-invalid', { reason });
+});
+
 router.post('/api/login', login);
 
 router.post('/api/refresh-token', async (req, res) => {

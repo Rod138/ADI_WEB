@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("passw");
     const log_in_form = document.getElementById("login-form");
 
-    const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+    const email_regex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
     const password_regex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -131,12 +131,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 data_is_fine = false;
             } else if (!password_regex.test(password.value)) {
-                Swal.fire({
-                    title: "Contraseña débil",
-                    text: "Debe contener al menos 1 número o letra",
-                    ...AlertConfig.error,
-                    confirmButtonText: 'Aceptar'
-                });
+                // Validación más específica para el mensaje
+                const hasAlphanumeric = /[a-zA-Z0-9]/.test(password.value);
+                if (!hasAlphanumeric) {
+                    Swal.fire({
+                        title: "Contraseña inválida",
+                        text: "Debe contener al menos 1 número o letra",
+                        ...AlertConfig.error,
+                        confirmButtonText: 'Aceptar'
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Contraseña inválida",
+                        text: "Caracteres permitidos: letras, números, @$!%*?&-",
+                        ...AlertConfig.error,
+                        confirmButtonText: 'Aceptar'
+                    });
+                }
                 data_is_fine = false;
             }
 

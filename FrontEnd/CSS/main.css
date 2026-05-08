@@ -30,13 +30,8 @@ body {
     width: 100%;
     background-color: var(--adi-surface);
     border-bottom: 0.0625rem solid var(--adi-border);
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.08);
-    position: fixed;
-    top: 0;
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) auto minmax(12rem, 1fr);
     left: 0;
     right: 0;
     z-index: 100;
@@ -58,9 +53,7 @@ body.sidebar-collapsed .top-nav {
 .nav-brand {
     display: flex;
     align-items: center;
-    height: 5rem;
-    flex: 1;
-    min-width: 0;
+    justify-self: start;
 }
 
 .nav-brand img {
@@ -75,22 +68,21 @@ body.sidebar-collapsed .top-nav {
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     letter-spacing: 0.02em;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    position: static;
+    transform: none;
     pointer-events: none;
     width: max-content;
     max-width: calc(100% - 16rem);
+    justify-self: center;
 }
 
 .nav-actions {
     display: flex;
     align-items: center;
+    justify-self: end;
     gap: 0.8rem;
     justify-content: flex-end;
-    flex: 1;
     min-width: 0;
-    margin-left: auto;
 }
 
 .nav-icon-btn {
@@ -144,10 +136,19 @@ body.sidebar-collapsed .top-nav {
     transition: margin-left 0.3s ease, max-width 0.3s ease;
 }
 
+body.main-page .main-container {
+    margin-top: 6.75rem;
+    padding-top: 1.25rem;
+}
+
 body.sidebar-collapsed .main-container {
     margin-left: 5.5rem;
     max-width: calc(100% - 5.5rem);
     margin-top: 5rem;
+}
+
+body.main-page.sidebar-collapsed .main-container {
+    margin-top: 6.75rem;
 }
 
 .welcome {
@@ -833,11 +834,29 @@ textarea:focus {
     .nav-title {
         font-size: 1.2rem;
     }
+
+    .role-badge {
+        display: none;
+    }
+
+    .nav-actions {
+        gap: 0.5rem;
+    }
 }
 
 @media (max-width: 48rem) {
     .nav-title {
         max-width: calc(100% - 8rem);
+    }
+}
+
+@media (max-width: 34rem) {
+    .nav-title {
+        display: none;
+    }
+
+    .nav-brand img {
+        max-height: 2.1rem;
     }
 }
 /* Unified Content Width */
@@ -889,6 +908,11 @@ textarea:focus {
         margin-left: 0 !important;
         max-width: 100% !important;
         margin-top: 5rem !important;
+    }
+
+    body.main-page .main-container {
+        margin-top: 5.75rem !important;
+        padding-top: 0.75rem;
     }
 
     body.sidebar-open .main-container {

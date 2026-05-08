@@ -102,8 +102,7 @@ async function endSession(reasonKey = 'session-ended', shouldCallLogoutApi = tru
     }
 
     sessionStorage.removeItem('user');
-    storeLoginNotice(reasonKey);
-    window.location.replace(`/login?reason=${encodeURIComponent(reasonKey)}`);
+    window.location.replace(`/session-invalid?reason=${encodeURIComponent(reasonKey)}`);
 }
 
 function scheduleSessionTimeout(user) {
@@ -193,7 +192,7 @@ function patchApiFetchHeaders() {
         });
 
         if (response.status === 401) {
-            await endSession('session-ended', true);
+            await endSession('invalid-session', true);
         }
 
         return response;

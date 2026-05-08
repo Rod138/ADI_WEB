@@ -5,9 +5,28 @@
  */
 
 import supabase from '../dbconfig.js'
-import { sanitizeEmail, validatePassword, generateAccessToken, generateRefreshToken, saveRefreshTokenToDB } from '../utils/validation.js';
+import { sanitizeEmail, validatePassword, generateAccessToken, generateRefreshToken, saveRefreshTokenToDB, comparePassword, hashPassword } from '../utils/validation.js';
 
-// Interpreta duraciones simples como 15m, 7d, 3600s para calcular expiración en BD.
+// Genera una contraseña temporal aleatoria que cumple con los requisitos de validación
+const generateTemporaryPassword = () => {
+    // Longitud entre 8-16 caracteres
+    const length = 12;
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+
+    // Asegurar al menos 1 mayúscula, 1 minúscula y 1 dígito
+    password += 'A';
+    password += 'a';
+    password += '0';
+
+    // Llenar el resto aleatoriamente
+    for (let i = password.length; i < length; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+
+    // Mezclar la contraseña
+    return password.split('').sort(() => Math.random() - 0.5).join('');
+};
 const parseDurationToMs = (rawValue, fallbackMs) => {
     if (!rawValue || typeof rawValue !== 'string') return fallbackMs;
     const match = rawValue.trim().match(/^(\d+)\s*([smhd])$/i);
@@ -89,10 +108,18 @@ export const login = async (req, res) => {
             .from('users')
             .select('*')
             .eq('email', sanitizedEmail)
-            .eq('password', password)
             .single();
 
         if (userError || !user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Credenciales no válidas'
+            });
+        }
+
+        // Comparar contraseña hasheada
+        const passwordMatch = await comparePassword(password, user.password);
+        if (!passwordMatch) {
             return res.status(401).json({
                 success: false,
                 message: 'Credenciales no válidas'
@@ -201,7 +228,25 @@ export const forgotPassword = async (req, res) => {
         if (!user) {
             return res.status(200).json({
                 success: true,
-                message: 'Si el correo existe, recibirás tu contraseña en el correo'
+                message: 'Si el correo existe, recibirás una contraseña temporal en el correo'
+            });
+        }
+
+        // Generar contraseña temporal
+        const tempPassword = generateTemporaryPassword();
+        const hashedTempPassword = await hashPassword(tempPassword);
+
+        // Actualizar contraseña en la BD
+        const { error: updateError } = await supabase
+            .from('users')
+            .update({ password: hashedTempPassword })
+            .eq('id', user.id);
+
+        if (updateError) {
+            console.error('Error actualizando contraseña en forgotPassword:', updateError);
+            return res.status(500).json({
+                success: false,
+                message: 'No se pudo generar la contraseña temporal'
             });
         }
 
@@ -222,8 +267,8 @@ export const forgotPassword = async (req, res) => {
                 senderEmail,
                 user.email,
                 'ADI - Recuperación de contraseña',
-                `Hola ${user.name || ''},\n\nTu contraseña actual es: ${user.password}\n\nADI`,
-                `<p>Hola ${user.name || ''},</p><p>Tu contraseña actual es: <b>${user.password}</b></p><p>ADI</p>`
+                `Hola ${user.name || ''},\n\nTu contraseña temporal es: ${tempPassword}\n\nPor favor, cámbiala cuando inicies sesión.\n\nADI`,
+                `<p>Hola ${user.name || ''},</p><p>Tu contraseña temporal es: <b>${tempPassword}</b></p><p>Por favor, cámbiala cuando inicies sesión.</p><p>ADI</p>`
             )
 
             const sendResult = await gmail.users.messages.send({
@@ -245,7 +290,7 @@ export const forgotPassword = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: 'Se envió tu contraseña al correo registrado'
+            message: 'Se envió una contraseña temporal al correo registrado'
         });
     } catch (error) {
         console.error('Error no controlado en forgotPassword:', error)

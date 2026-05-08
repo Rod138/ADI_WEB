@@ -7,7 +7,8 @@
 // Patrones de validación consistentes
 const ValidationPatterns = {
     nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
-    emailRegex: /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i,
+    // Local-part: allow RFC common characters, dots not consecutive or at ends
+    emailRegex: /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i,
     phoneRegex: /^\d{10}$/,
     passwordRegex: /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/
 };
@@ -155,11 +156,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            if (!ValidationPatterns.passwordRegex.test(password)) {
+            const hasAlphanumeric = /[a-zA-Z0-9]/.test(password);
+            if (!hasAlphanumeric) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Contraseña débil',
+                    title: 'Contraseña inválida',
                     text: 'Debe contener al menos 1 número o letra'
+                });
+                return;
+            }
+
+            const passwordCharRegex = /^[a-zA-Z0-9@$!%*?&-]+$/;
+            if (!passwordCharRegex.test(password)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Contraseña inválida',
+                    text: 'Caracteres permitidos: letras, números, @$!%*?&-'
                 });
                 return;
             }

@@ -29,6 +29,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const session = JSON.parse(sessionStorage.getItem('user'));
 
+    // ── Sidebar submenu toggle ───────────────────────────────
+    const accountingMenu = document.getElementById('accounting-menu');
+    const accountingSubmenu = document.getElementById('accounting-submenu');
+    if (accountingMenu && accountingSubmenu) {
+        accountingMenu.addEventListener('click', () => {
+            accountingSubmenu.classList.toggle('open');
+            const arrow = accountingMenu.querySelector('.toggle-arrow');
+            if (arrow) arrow.classList.toggle('rotated');
+        });
+    }
+
     // ── Load departments into first select ───────────────────
     let departmentsCache = [];
     try {
@@ -197,6 +208,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function showCreateUserForm(depId) {
         cardsRow.style.display = 'flex';
         userEditSec.style.display = 'none';
+
+        // Load roles for the dropdown
+        let rolesData = [];
+        try {
+            const res = await fetch('/api/roles');
+            const data = await res.json();
+            if (data.success && data.roles) {
+                rolesData = data.roles;
+            }
+        } catch { /* silent */ }
+
+        const rolesOptions = rolesData.map(role =>
+            `<option value="${role.id}">${escapeHtml(role.name)}</option>`
+        ).join('');
+
         userView.innerHTML = `
             <div class="create-user-note">Nuevo usuario para este departamento</div>
             <div class="edit-grid">
@@ -220,6 +246,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <label>Contraseña *</label>
                     <input type="password" id="new-password" minlength="8" maxlength="16">
                 </div>
+                <div class="edit-field">
+                    <label>Rol *</label>
+                    <select id="new-rol">
+                        <option value="">- Selecciona un rol -</option>
+                        ${rolesOptions}
+                    </select>
+                </div>
             </div>
             <button class="save-btn" id="new-user-submit-btn">Crear residente</button>
         `;
@@ -230,6 +263,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const emailInput = document.getElementById('new-email');
             const phoneInput = document.getElementById('new-phone');
             const passwordInput = document.getElementById('new-password');
+            const rolInput = document.getElementById('new-rol');
 
             const body = {
                 name:     nameInput.value.trim(),
@@ -237,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ap:       apInput ? String(apInput.value || '').trim().split(/\s+/)[0] : undefined,
                 phone:    phoneInput.value.trim(),
                 password: passwordInput.value,
-                rol_id:   1,
+                rol_id:   parseInt(rolInput.value, 10),
                 dep_id:   depId
             };
 
@@ -299,6 +333,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 Swal.fire({
                     title: 'Contraseña inválida',
                     text: 'Contraseña: 8-16 caracteres con al menos 1 número o letra',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            if (!body.rol_id || isNaN(body.rol_id)) {
+                Swal.fire({
+                    title: 'Rol requerido',
+                    text: 'Debes seleccionar un rol para el usuario',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -368,11 +413,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderUserCard(user, roles) {
         const canDelete = session && Number(session.rol_id) >= 3;
         const fullName = [user.name, user.ap].filter(Boolean).join(' ').trim() || '—';
+        const roleLabel = roles.find(r => r.id === user.rol_id)?.name || 'Desconocido';
 
         const fields = [
             ['Nombre',     fullName],
             ['Email',      user.email],
             ['Teléfono',   user.phone],
+            ['Rol',        roleLabel],
         ];
 
         userView.innerHTML = fields.map(([label, val]) => `
@@ -388,15 +435,90 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         userEditSec.style.display = 'block';
-        userSaveBtn.style.display = 'none';
+        userSaveBtn.style.display = 'inline-flex';
         userDeleteBtn.style.display = 'inline-flex';
 
+        // Ocultar todos los campos de edición excepto el rol
         const editGrid = userEditSec.querySelector('.edit-grid');
-        const subtitle = userEditSec.querySelector('.section-subtitle');
-        const confirmLabel = userConfirmChk.closest('label');
-        if (editGrid) editGrid.style.display = 'none';
-        if (subtitle) subtitle.textContent = 'Administrar usuario';
-        if (confirmLabel) confirmLabel.style.display = 'none';
+        if (editGrid) {
+            const allFields = editGrid.querySelectorAll('.edit-field');
+            allFields.forEach(field => {
+                field.style.display = 'none';
+            });
+
+            // Mostrar solo el campo de rol
+            const rolField = document.getElementById('edit-rol-field');
+            if (rolField) {
+                rolField.style.display = 'block';
+            }
+        }
+
+        // Llenar select de roles
+        const rolSelect = document.getElementById('edit-rol');
+        if (rolSelect) {
+            rolSelect.innerHTML = roles.map(role =>
+                `<option value="${role.id}" ${role.id === user.rol_id ? 'selected' : ''}>${escapeHtml(role.name)}</option>`
+            ).join('');
+        }
+
+        userSaveBtn.onclick = async () => {
+            const confirmCheckbox = document.getElementById('user-confirm-chk');
+            if (!confirmCheckbox.checked) {
+                Swal.fire({
+                    title: 'Confirmación requerida',
+                    text: 'Marca el checkbox de confirmación antes de guardar.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            const rolSelect = document.getElementById('edit-rol');
+            const newRolId = rolSelect ? parseInt(rolSelect.value, 10) : user.rol_id;
+
+            if (newRolId === user.rol_id) {
+                Swal.fire({
+                    title: 'Sin cambios',
+                    text: 'No hay cambios para guardar.',
+                    icon: 'info',
+                    confirmButtonColor: '#6A8042',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            const updates = { rol_id: newRolId };
+
+            const r = await fetch(`/api/users/${encodeURIComponent(user.id)}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updates)
+            });
+            const result = await r.json();
+
+            if (result.success) {
+                await Swal.fire({
+                    title: 'Usuario actualizado',
+                    text: 'El rol del usuario se actualizó correctamente.',
+                    icon: 'success',
+                    timer: 1600,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    confirmButtonColor: '#6A8042'
+                });
+                userSelect.value = '';
+                depSelect.dispatchEvent(new Event('change'));
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: result.message ?? 'No se pudo actualizar el usuario.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        };
 
         userDeleteBtn.onclick = async () => {
             if (!canDelete) return;

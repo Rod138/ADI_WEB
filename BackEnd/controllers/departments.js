@@ -5,6 +5,7 @@
  */
 
 import supabase from '../dbconfig.js';
+import { hashPassword, comparePassword } from '../utils/validation.js';
 
 // Sincroniza el indicador is_in_use en departamentos con base en la ocupacion real.
 const syncDepartmentStatuses = async () => {
@@ -105,7 +106,7 @@ export const createUser = async (req, res) => {
     }
 
     // Validar email: 6-320 caracteres, formato válido
-    const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+    const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
     const emailTrimmed = String(email).trim();
     if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
         return res.status(400).json({
@@ -124,11 +125,37 @@ export const createUser = async (req, res) => {
     }
 
     // Validar contraseña: 8-16 caracteres, al menos 1 número o letra
-    const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
-    if (!passwordRegex.test(String(password))) {
+    const passwordStr = String(password);
+    if (!passwordStr || passwordStr === '') {
         return res.status(400).json({
             success: false,
-            message: 'Contraseña: 8-16 caracteres con al menos 1 número o letra'
+            message: 'Contraseña requerida'
+        });
+    }
+    if (passwordStr.length < 8) {
+        return res.status(400).json({
+            success: false,
+            message: 'Contraseña muy corta: mínimo 8 caracteres'
+        });
+    }
+    if (passwordStr.length > 16) {
+        return res.status(400).json({
+            success: false,
+            message: 'Contraseña muy larga: máximo 16 caracteres'
+        });
+    }
+    const hasAlphanumeric = /[a-zA-Z0-9]/.test(passwordStr);
+    if (!hasAlphanumeric) {
+        return res.status(400).json({
+            success: false,
+            message: 'Contraseña debe contener al menos 1 número o letra'
+        });
+    }
+    const passwordRegex = /^[a-zA-Z0-9@$!%*?&-]+$/;
+    if (!passwordRegex.test(passwordStr)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números, @$!%*?&-'
         });
     }
 
@@ -142,12 +169,15 @@ export const createUser = async (req, res) => {
 
         const newId = (maxRow?.id ?? 0) + 1;
 
+        // Hashear la contraseña antes de guardarla
+        const hashedPassword = await hashPassword(passwordStr);
+
         const { error } = await supabase.from('users').insert({
             id: newId,
             name: String(name).trim(),
             email: emailTrimmed,
             phone: String(phone).trim(),
-            password,
+            password: hashedPassword,
             rol_id: parseInt(rol_id, 10),
             dep_id: parseInt(dep_id, 10),
             ap: apPaternal
@@ -253,7 +283,7 @@ export const updateUser = async (req, res) => {
     }
 
     if (updates.email) {
-        const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+        const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
         const emailTrimmed = String(updates.email).trim();
         if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
             return res.status(400).json({
@@ -274,13 +304,35 @@ export const updateUser = async (req, res) => {
     }
 
     if (updates.password) {
-        const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
-        if (!passwordRegex.test(String(updates.password))) {
+        const passwordStr = String(updates.password);
+        if (passwordStr.length < 8) {
             return res.status(400).json({
                 success: false,
-                message: 'Contraseña: 8-16 caracteres con al menos 1 número o letra'
+                message: 'Contraseña muy corta: mínimo 8 caracteres'
             });
         }
+        if (passwordStr.length > 16) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña muy larga: máximo 16 caracteres'
+            });
+        }
+        const hasAlphanumeric = /[a-zA-Z0-9]/.test(passwordStr);
+        if (!hasAlphanumeric) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña debe contener al menos 1 número o letra'
+            });
+        }
+        const passwordRegex = /^[a-zA-Z0-9@$!%*?&-]+$/;
+        if (!passwordRegex.test(passwordStr)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números, @$!%*?&-'
+            });
+        }
+        // Hashear la contraseña antes de guardarla
+        updates.password = await hashPassword(passwordStr);
     }
 
     try {
@@ -297,12 +349,14 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
+        // Usar un hash placeholder en vez de guardar '-' en texto plano
+        const placeholderHash = await hashPassword('-');
         const { error } = await supabase.from('users').update({
             name: '-',
             ap: '-',
             email: '-',
             phone: '-',
-            password: '-',
+            password: placeholderHash,
             dep_id: null
         }).eq('id', id);
         if (error) return res.status(500).json({ success: false, message: 'Error al borrar usuario' });
@@ -339,12 +393,13 @@ export const updateDepartment = async (req, res) => {
 
             if (users && users.length > 0) {
                 const userIds = users.map(u => u.id);
+                const placeholderHash = await hashPassword('-');
                 await supabase.from('users').update({
                     name: '-',
                     ap: '-',
                     email: '-',
                     phone: '-',
-                    password: '-',
+                    password: placeholderHash,
                     dep_id: null
                 }).in('id', userIds);
             }

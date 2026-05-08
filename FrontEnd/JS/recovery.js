@@ -7,7 +7,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const email = document.getElementById("email");
     const forgotPasswordForm = document.getElementById("forgot-password-form");
-    const email_regex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
+    const email_regex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
 
     if (forgotPasswordForm) {
         // Valida correo y dispara solicitud de recuperacion con timeout de seguridad.
