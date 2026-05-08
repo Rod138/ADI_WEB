@@ -44,14 +44,6 @@
                 display: flex;
             }
         }
-        .create-actions {
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .create-actions .btn-back,
-        .create-actions .btn-submit {
-            min-width: 10.5rem;
-        }
         .sidebar-toggle {
             border: none;
             background: transparent;
@@ -166,12 +158,11 @@
                 </div>
             </div>
 
+            <div class="button-row create-actions">
+                <a href="/incident-board" id="cancel-btn" class="btn-back">REGRESAR</a>
+                <button type="submit" class="update-btn create-submit">ENVIAR REPORTE</button>
+            </div>
         </form>
-
-        <div class="bottom-actions create-actions">
-            <a href="/incident-board" id="cancel-btn" class="btn-back">REGRESAR</a>
-            <button type="submit" form="create-form" class="btn-submit">ENVIAR REPORTE</button>
-        </div>
     </div>
 
     <script>
