@@ -185,10 +185,9 @@ export const updateIncident = async (req, res) => {
     const userId = parseInt(req.get('x-session-user-id') || req.cookies?.session_user_id, 10);
 
     try {
-        // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, created_at, area_id, image_url, image')
+            .select('usr_id, created_at, area_id, image')
             .eq('id', id)
             .single();
 
@@ -196,30 +195,49 @@ export const updateIncident = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
         }
 
-        const isOwner = Number(incident.usr_id) === userId;
+        const { data: user, error: userError } = await supabase
+            .from('users')
+            .select('rol_id')
+            .eq('id', userId)
+            .single();
 
-        if (!isOwner) {
+        if (userError || !user) {
+            return res.status(403).json({ success: false, message: 'Sesión inválida' });
+        }
+
+        const isOwner = Number(incident.usr_id) === userId;
+        const isResolverAdmin = Number(user.rol_id) >= 3;
+        const hasReportChanges = [description, area_id, type_id, image, image_url]
+            .some(value => value !== undefined && value !== null);
+        const hasResolutionChanges = [status_id, notes, cost, set_completed_at]
+            .some(value => value !== undefined && value !== null);
+
+        if (hasReportChanges && !isOwner) {
             return res.status(403).json({
                 success: false,
-                message: 'No tienes permiso para editar esta incidencia'
+                message: 'Solo el creador puede editar el reporte de esta incidencia'
             });
         }
 
-        const isOwnIncidentPastWindow = !isIncidentEditable(incident.created_at);
+        if (hasResolutionChanges && !isResolverAdmin) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo administradores pueden resolver incidencias'
+            });
+        }
+
+        const isOwnIncidentPastWindow = hasReportChanges && !isIncidentEditable(incident.created_at);
 
         const updates = {};
 
-        // Validar restricción de 24 horas para cambios de reporte
-        if (description !== undefined || area_id !== undefined || type_id !== undefined || image !== undefined || image_url !== undefined || status_id !== undefined || notes !== undefined || cost !== undefined || set_completed_at !== undefined) {
-            if (isOwnIncidentPastWindow) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
-                });
-            }
+        if (isOwnIncidentPastWindow) {
+            return res.status(403).json({
+                success: false,
+                message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+            });
         }
 
-        // Campos que OWNER puede editar - estos son campos de reporte
+        // Campos que el creador puede editar
         if (description !== undefined && description !== null) {
             const descriptionText = String(description).trim();
             if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
@@ -240,8 +258,17 @@ export const updateIncident = async (req, res) => {
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'type_id inválido' });
             updates.type_id = parsed;
         }
-        
-        // Campos opcionales que el owner también puede editar dentro de 24 horas
+
+        const normalizedImage = image !== undefined ? image : image_url;
+        if (normalizedImage !== undefined && normalizedImage !== null) {
+            if (incident.image) {
+                const oldImageUrl = incident.image;
+                await deleteCloudinaryImage(oldImageUrl);
+            }
+            updates.image = normalizedImage;
+        }
+
+        // Campos que solo un admin puede usar para resolver
         if (status_id !== undefined && status_id !== null && status_id !== '') {
             const parsed = parseInt(status_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'status_id inválido' });
@@ -264,16 +291,6 @@ export const updateIncident = async (req, res) => {
                 });
             }
             updates.completed_at = new Date().toISOString();
-        }
-        
-        const normalizedImage = image !== undefined ? image : image_url;
-        if (normalizedImage !== undefined && normalizedImage !== null) {
-            // Si hay una imagen anterior, eliminarla de Cloudinary
-            if (incident.image_url || incident.image) {
-                const oldImageUrl = incident.image_url ?? incident.image;
-                await deleteCloudinaryImage(oldImageUrl);
-            }
-            updates.image = normalizedImage;
         }
 
         if (Object.keys(updates).length === 0) {
@@ -410,7 +427,7 @@ export const deleteIncident = async (req, res) => {
         // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, image_url, image, created_at')
+            .select('usr_id, image, created_at')
             .eq('id', id)
             .single();
 
@@ -434,8 +451,8 @@ export const deleteIncident = async (req, res) => {
         }
 
         // Eliminar imagen de Cloudinary si existe
-        if (incident.image_url || incident.image) {
-            const imageUrl = incident.image_url ?? incident.image;
+        if (incident.image) {
+            const imageUrl = incident.image;
             await deleteCloudinaryImage(imageUrl);
         }
 
@@ -469,7 +486,7 @@ export const updateIncidentImage = async (req, res) => {
         // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, image_url, created_at')
+            .select('usr_id, image, created_at')
             .eq('id', id)
             .single();
 
@@ -477,22 +494,14 @@ export const updateIncidentImage = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
         }
 
-        // Verificar permisos
-        const { data: user } = await supabase
-            .from('users')
-            .select('rol_id')
-            .eq('id', userId)
-            .single();
-
-        const isAdmin = user && Number(user.rol_id) >= 3;
         const isOwner = Number(incident.usr_id) === userId;
 
-        if (!isAdmin && !isOwner) {
-            return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
+        if (!isOwner) {
+            return res.status(403).json({ success: false, message: 'Solo el creador puede editar la imagen de esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas) para propietarios (incluye admin propietario)
-        if (isOwner && !isIncidentEditable(incident.created_at)) {
+        // Verificar ventana de edición
+        if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
                 message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
@@ -500,14 +509,14 @@ export const updateIncidentImage = async (req, res) => {
         }
 
         // Eliminar imagen antigua de Cloudinary si existe
-        if (incident.image_url) {
-            await deleteCloudinaryImage(incident.image_url);
+        if (incident.image) {
+            await deleteCloudinaryImage(incident.image);
         }
 
         // Actualizar imagen
         const { error: updateError } = await supabase
             .from('incidents')
-            .update({ image_url })
+            .update({ image: image_url })
             .eq('id', id);
 
         if (updateError) {
@@ -529,7 +538,7 @@ export const deleteIncidentImage = async (req, res) => {
         // Obtener la incidencia para verificar propiedad
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, image_url, created_at')
+            .select('usr_id, image, created_at')
             .eq('id', id)
             .single();
 
@@ -553,14 +562,14 @@ export const deleteIncidentImage = async (req, res) => {
         }
 
         // Eliminar imagen de Cloudinary
-        if (incident.image_url) {
-            await deleteCloudinaryImage(incident.image_url);
+        if (incident.image) {
+            await deleteCloudinaryImage(incident.image);
         }
 
         // Eliminar imagen (set a null)
         const { error: updateError } = await supabase
             .from('incidents')
-            .update({ image_url: null })
+            .update({ image: null })
             .eq('id', id);
 
         if (updateError) {
