@@ -196,68 +196,31 @@ export const updateIncident = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Incidencia no encontrada' });
         }
 
-        const { data: user } = await supabase
-            .from('users')
-            .select('rol_id')
-            .eq('id', userId)
-            .single();
-
-        const isAdmin = user && Number(user.rol_id) >= 3;
         const isOwner = Number(incident.usr_id) === userId;
 
-        if (!isAdmin && !isOwner) {
+        if (!isOwner) {
             return res.status(403).json({
                 success: false,
                 message: 'No tienes permiso para editar esta incidencia'
             });
         }
 
-        const isOwnIncidentPastWindow = isOwner && !isIncidentEditable(incident.created_at);
+        const isOwnIncidentPastWindow = !isIncidentEditable(incident.created_at);
 
         const updates = {};
 
-        // Campos que solo ADMIN puede editar
-        if (status_id !== undefined || notes !== undefined || cost !== undefined || set_completed_at !== undefined) {
-            if (!isAdmin) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Solo administradores pueden actualizar estado, costo y notas'
-                });
-            }
-
-            if (status_id !== undefined && status_id !== null && status_id !== '') {
-                const parsed = parseInt(status_id, 10);
-                if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'status_id inválido' });
-                updates.status_id = parsed;
-            }
-            if (notes !== undefined && notes !== null) {
-                if (String(notes).length > 150) return res.status(400).json({ success: false, message: 'notes excede 150 caracteres' });
-                updates.notes = String(notes).trim();
-            }
-            if (cost !== undefined && cost !== null && cost !== '') {
-                const parsed = parseFloat(cost);
-                if (isNaN(parsed) || parsed < 0) return res.status(400).json({ success: false, message: 'cost inválido' });
-                updates.cost = parsed;
-            }
-            if (set_completed_at) {
-                if (cost === undefined || cost === null || cost === '') {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Debes capturar el costo para resolver la incidencia'
-                    });
-                }
-                updates.completed_at = new Date().toISOString();
-            }
-        }
-
-        // Campos que OWNER (o ADMIN) pueden editar - estos son campos de reporte
-        if (description !== undefined && description !== null) {
+        // Validar restricción de 24 horas para cambios de reporte
+        if (description !== undefined || area_id !== undefined || type_id !== undefined || image !== undefined || image_url !== undefined || status_id !== undefined || notes !== undefined || cost !== undefined || set_completed_at !== undefined) {
             if (isOwnIncidentPastWindow) {
                 return res.status(403).json({
                     success: false,
                     message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
                 });
             }
+        }
+
+        // Campos que OWNER puede editar - estos son campos de reporte
+        if (description !== undefined && description !== null) {
             const descriptionText = String(description).trim();
             if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
                 return res.status(400).json({
@@ -268,35 +231,43 @@ export const updateIncident = async (req, res) => {
             updates.description = descriptionText;
         }
         if (area_id !== undefined && area_id !== null && area_id !== '') {
-            if (isOwnIncidentPastWindow) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
-                });
-            }
             const parsed = parseInt(area_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'area_id inválido' });
             updates.area_id = parsed;
         }
         if (type_id !== undefined && type_id !== null && type_id !== '') {
-            if (isOwnIncidentPastWindow) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
-                });
-            }
             const parsed = parseInt(type_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'type_id inválido' });
             updates.type_id = parsed;
         }
-        const normalizedImage = image !== undefined ? image : image_url;
-        if (normalizedImage !== undefined && normalizedImage !== null) {
-            if (isOwnIncidentPastWindow) {
-                return res.status(403).json({
+        
+        // Campos opcionales que el owner también puede editar dentro de 24 horas
+        if (status_id !== undefined && status_id !== null && status_id !== '') {
+            const parsed = parseInt(status_id, 10);
+            if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'status_id inválido' });
+            updates.status_id = parsed;
+        }
+        if (notes !== undefined && notes !== null) {
+            if (String(notes).length > 150) return res.status(400).json({ success: false, message: 'notes excede 150 caracteres' });
+            updates.notes = String(notes).trim();
+        }
+        if (cost !== undefined && cost !== null && cost !== '') {
+            const parsed = parseFloat(cost);
+            if (isNaN(parsed) || parsed < 0) return res.status(400).json({ success: false, message: 'cost inválido' });
+            updates.cost = parsed;
+        }
+        if (set_completed_at) {
+            if (cost === undefined || cost === null || cost === '') {
+                return res.status(400).json({
                     success: false,
-                    message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                    message: 'Debes capturar el costo para resolver la incidencia'
                 });
             }
+            updates.completed_at = new Date().toISOString();
+        }
+        
+        const normalizedImage = image !== undefined ? image : image_url;
+        if (normalizedImage !== undefined && normalizedImage !== null) {
             // Si hay una imagen anterior, eliminarla de Cloudinary
             if (incident.image_url || incident.image) {
                 const oldImageUrl = incident.image_url ?? incident.image;

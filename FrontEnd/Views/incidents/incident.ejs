@@ -38,6 +38,11 @@
         .role-badge #user-role {
             white-space: normal;
         }
+        @media (max-width: 52rem) {
+            .role-badge {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="sidebar-expanded" data-min-role="1"
@@ -66,36 +71,32 @@
     </nav>
 
     <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
-        <a class="sidebar-header-link" href="/main" aria-label="Ir al Menú Principal">
-            <div class="sidebar-header-icon">
-                <span class="material-symbols-outlined">dashboard</span>
-            </div>
-            <div class="sidebar-header-copy">
-                <span class="sidebar-kicker">MENÚ</span>
-                <strong>PRINCIPAL</strong>
-            </div>
-        </a>
-
         <nav class="sidebar-nav" aria-label="Accesos rápidos">
-            <a class="sidebar-link" href="/accounting">
+            <a class="sidebar-link" href="/main" data-label="Menú principal">
+                <span class="material-symbols-outlined">dashboard</span>
+                <div class="sidebar-link-copy">
+                    <strong>Menú principal</strong>
+                </div>
+            </a>
+            <a class="sidebar-link" href="/accounting" data-label="Finanzas">
                 <span class="material-symbols-outlined">payments</span>
                 <div class="sidebar-link-copy">
                     <strong>Finanzas</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/incident-board">
+            <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
                 <span class="material-symbols-outlined">warning</span>
                 <div class="sidebar-link-copy">
                     <strong>Incidencias</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/reports">
+            <a class="sidebar-link" href="/reports" data-label="Reportes">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <div class="sidebar-link-copy">
                     <strong>Reportes</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/departments">
+            <a class="sidebar-link" href="/departments" data-label="Departamentos">
                 <span class="material-symbols-outlined">apartment</span>
                 <div class="sidebar-link-copy">
                     <strong>Departamentos</strong>
@@ -111,7 +112,7 @@
             <p style="text-align:center">Cargando...</p>
         </div>
         <div class="bottom-actions">
-            <a href="/incident-board" class="btn-back">Regresar</a>
+            <a href="/incident-board" class="btn-back">REGRESAR</a>
         </div>
     </div>
 
@@ -131,13 +132,12 @@
                     (href === '/accounting' && currentPath.startsWith('/accounting')) ||
                     (href === '/incident-board' && currentPath.startsWith('/incident')) ||
                     (href === '/reports' && currentPath === '/reports') ||
-                    (href === '/departments' && currentPath === '/departments')
+                    (href === '/departments' && currentPath === '/departments') ||
+                    (href === '/main' && currentPath === '/main')
                 ) {
                     link.classList.add('active');
                 }
             });
-            const headerLink = document.querySelector('.sidebar-header-link');
-            if (headerLink && currentPath === '/main') headerLink.classList.add('active');
         });
         (async () => {
             const params = new URLSearchParams(window.location.search);
@@ -164,16 +164,16 @@
                 const isOwner = user && Number(user.id) === Number(inc.usr_id);
                 const canEdit = isAdmin || isOwner;
 
-                // Verificar si la incidencia tiene más de 24 horas
+                // Verificar si la incidencia tiene más de 1 mes
                 const createdAt = new Date(inc.created_at);
                 const now = new Date();
                 const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
-                const isOlderThan24Hours = hoursDiff >= 24;
+                const isOlderThan1Month = hoursDiff >= 720; // 30 días * 24 horas
                 const canEditReport = isAdmin
-                    ? (!isOwner || !isOlderThan24Hours)
-                    : (isOwner && !isOlderThan24Hours);
+                    ? (!isOwner || !isOlderThan1Month)
+                    : (isOwner && !isOlderThan1Month);
                 const canResolve = isAdmin;
-                const canDelete = isAdmin || (isOwner && !isOlderThan24Hours);
+                const canDelete = isAdmin || (isOwner && !isOlderThan1Month);
                 const canManageImage = canEditReport;
                 const canShowUpdateSection = canEditReport || canResolve;
 
@@ -280,12 +280,8 @@
                             </div>
                             <div class="update-row">
                                 <label for="upd-notes">NOTAS <span id="char-counter">${notesText.length} / 150</span></label>
-                                <input type="text" id="upd-notes" maxlength="150" value="${notesText}">
+                                <input type="text" id="upd-notes" maxlength="150" value="${notesText}" placeholder="Observaciones adicionales (opcional)">
                             </div>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="upd-completed">
-                                MARCAR FECHA DE COMPLETADO COMO AHORA
-                            </label>
                             <div class="button-row">
                                 <button class="update-btn" id="resolve-btn">GUARDAR RESOLUCIÓN</button>
                             </div>
@@ -400,12 +396,16 @@
                             const status_id = document.getElementById('upd-status')?.value;
                             const notes = document.getElementById('upd-notes')?.value?.trim() || '';
                             const costVal = document.getElementById('upd-cost')?.value ?? '';
-                            const set_completed_at = document.getElementById('upd-completed')?.checked;
-
-                            if (set_completed_at && costVal === '') {
+                            
+                            // Obtener el nombre del status seleccionado para detectar si es "Completado"
+                            const statusSelect = document.getElementById('upd-status');
+                            const selectedStatusName = statusSelect?.options[statusSelect?.selectedIndex]?.text?.toLowerCase() || '';
+                            const isCompletedStatus = selectedStatusName.includes('completado') || selectedStatusName.includes('validado');
+                            
+                            if (isCompletedStatus && costVal === '') {
                                 Swal.fire({
                                     title: 'Costo requerido',
-                                    text: 'Debes capturar el costo antes de resolver la incidencia.',
+                                    text: 'Debes capturar el costo antes de marcar como completado.',
                                     icon: 'error',
                                     confirmButtonColor: '#d33',
                                     confirmButtonText: 'Aceptar'
@@ -427,7 +427,7 @@
                             const body = { status_id };
                             if (notes) body.notes = notes;
                             if (costVal !== '') body.cost = costVal;
-                            if (set_completed_at) body.set_completed_at = true;
+                            if (isCompletedStatus) body.set_completed_at = true;
 
                             await patchIncident(body, 'Resolución actualizada correctamente.');
                         });
@@ -436,11 +436,11 @@
                     const deleteBtn = document.getElementById('delete-btn');
                     if (deleteBtn) {
                         deleteBtn.addEventListener('click', async () => {
-                            // Validar 24 horas para propietarios, incluyendo admin propietario
-                            if (isOlderThan24Hours && isOwner) {
+                            // Validar 1 mes para propietarios, incluyendo admin propietario
+                            if (isOlderThan1Month && isOwner) {
                                 Swal.fire({
                                     title: 'Acción no permitida',
-                                    text: 'Solo puedes eliminar la incidencia dentro de 24 horas de su creación.',
+                                    text: 'Solo puedes eliminar la incidencia dentro de 1 mes de su creación.',
                                     icon: 'warning',
                                     confirmButtonColor: '#d33',
                                     confirmButtonText: 'Aceptar'
