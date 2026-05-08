@@ -163,6 +163,7 @@
                 const inc = data.incident;
                 const isAdmin = user && Number(user.rol_id) >= 3;
                 const isOwner = user && Number(user.id) === Number(inc.usr_id);
+                const isResolverAdmin = user && Number(user.rol_id) >= 3;
 
                 // Verificar si la incidencia tiene más de 1 mes
                 const createdAt = new Date(inc.created_at);
@@ -170,9 +171,9 @@
                 const hoursDiff = (now - createdAt) / (1000 * 60 * 60);
                 const isOlderThan1Month = hoursDiff >= 720; // 30 días * 24 horas
                 
-                // Solo el dueño puede editar dentro de 24 horas
+                // Solo el dueño puede editar el reporte; admins pueden resolver
                 const canEditReport = isOwner && !isOlderThan1Month;
-                const canResolve = false; // Los admins ya no pueden editar incidencias
+                const canResolve = isResolverAdmin;
                 const canDelete = isOwner && !isOlderThan1Month;
                 const canManageImage = canEditReport;
                 const canShowUpdateSection = canEditReport || canResolve;
@@ -309,7 +310,7 @@
                     });
                 }
 
-                if (canEdit) {
+                if (canEditReport || canResolve) {
                     const patchIncident = async (body, successMessage = 'Reporte actualizado correctamente.') => {
                         try {
                             const r = await fetch(`/api/incidents/${encodeURIComponent(id)}`, {
