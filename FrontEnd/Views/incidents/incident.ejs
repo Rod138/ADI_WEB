@@ -143,7 +143,8 @@
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             const card = document.getElementById('incident-card');
-            const user = JSON.parse(sessionStorage.getItem('user'));
+                const userStr = sessionStorage.getItem('user');
+                const user = userStr ? JSON.parse(userStr) : null;
 
             if (!id) {
                 card.innerHTML = '<p class="error">No se especificó una incidencia.</p>';
