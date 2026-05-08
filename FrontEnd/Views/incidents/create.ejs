@@ -39,6 +39,11 @@
         .role-badge #user-role {
             white-space: normal;
         }
+        @media (max-width: 52rem) {
+            .role-badge {
+                display: flex;
+            }
+        }
         .sidebar-toggle {
             border: none;
             background: transparent;
@@ -154,7 +159,7 @@
             </div>
 
             <div class="form-actions">
-                <button type="button" id="cancel-btn" class="btn-cancel">CANCELAR</button>
+                <a href="/incident-board" id="cancel-btn" class="btn-back">REGRESAR</a>
                 <button type="submit" class="btn-submit">ENVIAR REPORTE</button>
             </div>
         </form>
@@ -202,7 +207,6 @@
             const imagePreview = document.getElementById('image-preview');
             const descTextarea = document.getElementById('description');
             const descCounter = document.getElementById('desc-counter');
-            const cancelBtn = document.getElementById('cancel-btn');
 
             // Load catalogs
             try {
@@ -254,9 +258,6 @@
             descTextarea.addEventListener('input', () => {
                 descCounter.textContent = `${descTextarea.value.length}/100`;
             });
-
-            // Cancel
-            cancelBtn.addEventListener('click', () => window.history.back());
 
             // Submit
             form.addEventListener('submit', async (e) => {
