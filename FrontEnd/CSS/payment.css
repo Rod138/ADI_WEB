@@ -156,7 +156,8 @@ body {
 }
 
 .right-board-panel {
-    width: 43rem;
+    width: min(100%, 43rem);
+    min-width: 0;
 }
 
 .filters-box {

@@ -35,6 +35,11 @@
             border-radius: 50%;
             background: #6A8042;
         }
+        @media (max-width: 60rem) {
+            .role-badge {
+                display: none;
+            }
+        }
         .sidebar-toggle {
             border: none;
             background: transparent;
@@ -212,14 +217,13 @@
 
             // Toggle button click
             toggle?.addEventListener('click', () => {
-                const currentExpanded = body.classList.contains('sidebar-expanded');
-
                 if (isDesktop) {
                     // Desktop: toggle between expanded and collapsed
+                    const currentExpanded = body.classList.contains('sidebar-expanded');
                     setSidebarExpanded(!currentExpanded);
                 } else {
                     // Mobile: toggle sidebar visibility with backdrop
-                    setSidebarOpen(!currentExpanded);
+                    setSidebarOpen(!body.classList.contains('sidebar-open'));
                 }
             });
 

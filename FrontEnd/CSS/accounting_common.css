@@ -92,6 +92,19 @@ textarea:focus {
     border-radius: 0.9rem;
 }
 
+.table-container,
+.expense-card,
+.receipt-card,
+.fund-card,
+.quota-panel,
+.history-panel,
+.filters-panel,
+.result-panel,
+.left-form-panel,
+.right-board-panel {
+    min-width: 0;
+}
+
 @media (max-width: 48rem) {
     .top-nav,
     nav {

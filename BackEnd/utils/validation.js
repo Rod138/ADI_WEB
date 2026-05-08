@@ -4,13 +4,15 @@
  * Uso: importar en controladores para validar entrada de datos de usuarios.
  */
 
+import bcrypt from 'bcryptjs';
+
 // Patrones de validación consistentes en toda la aplicación
 const ValidationPatterns = {
     nameRegex: /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/,
     // Local-part: letters, digits and these special chars !#$%&'*+/=?^_`{|}~-
     // Dots allowed between tokens but not at start/end or consecutively.
-    // Domain: labels with letters/digits/hyphens and a TLD of at least 2 letters.
-    emailRegex: /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i,
+    // Domain: labels must start/end with alphanumeric characters and may contain hyphens in the middle.
+    emailRegex: /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,}$/i,
     phoneRegex: /^\d{10}$/,
     passwordRegex: /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/
 };
@@ -86,31 +88,32 @@ export const validatePhone = (phone) => {
 };
 
 /**
+ * Genera un hash bcrypt para una contraseña.
+ * @param {string} password - Contraseña en texto plano
+ * @returns {Promise<string>} Hash generado
+ */
+export const hashPassword = async (password) => {
+    return bcrypt.hash(String(password), 10);
+};
+
+/**
+ * Compara una contraseña en texto plano contra un hash bcrypt.
+ * @param {string} inputPassword - Contraseña ingresada por el usuario
+ * @param {string} hashedPassword - Hash almacenado en la BD
+ * @returns {Promise<boolean>} true si coinciden
+ */
+export const comparePassword = async (inputPassword, hashedPassword) => {
+    if (!inputPassword || !hashedPassword) {
+        return false;
+    }
+
+    return bcrypt.compare(String(inputPassword), String(hashedPassword));
+};
+
+/**
  * Exporta todos los patrones para uso en cliente
  */
 export { ValidationPatterns };
-
-/**
- * Hashea una contraseña utilizando bcryptjs
- * @param {string} password - Contraseña en texto plano
- * @returns {Promise<string>} Contraseña hasheada
- */
-export const hashPassword = async (password) => {
-    const bcrypt = await import('bcryptjs');
-    const saltRounds = 10;
-    return bcrypt.default.hash(password, saltRounds);
-};
-
-/**
- * Compara una contraseña en texto plano con su hash
- * @param {string} inputPassword - Contraseña ingresada por el usuario
- * @param {string} hashedPassword - Hash almacenado en la BD
- * @returns {Promise<boolean>} true si las contraseñas coinciden
- */
-export const comparePassword = async (inputPassword, hashedPassword) => {
-    const bcrypt = await import('bcryptjs');
-    return bcrypt.default.compare(inputPassword, hashedPassword);
-};
 
 /**
  * Genera un JWT access token con 15 minutos de duración

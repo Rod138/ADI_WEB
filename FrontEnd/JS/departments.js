@@ -7,7 +7,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const depSelect        = document.getElementById('dep-select');
     const userFilterGroup  = document.getElementById('user-filter-group');
-    const userSelect       = document.getElementById('user-select');
     const cardsRow         = document.getElementById('cards-row');
 
     // Dept card elements
@@ -20,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const depSaveBtn       = document.getElementById('dep-save-btn');
 
     // User card elements
+    const userSelect      = document.getElementById('user-select');
     const userView         = document.getElementById('user-view');
     const userEditSec      = document.getElementById('user-edit-section');
     const userSaveBtn      = document.getElementById('user-save-btn');
@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             departmentsCache = data.departments;
             const dep = data.departments.find(d => String(d.id) === String(depId));
             if (!dep) return;
-            cardsRow.style.display = 'flex';
+            cardsRow.style.display = 'grid';
             renderDeptCard(dep);
         } catch { /* silent */ }
     }
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Create user form (shown after activating dept) ──────
     // Presenta formulario de alta y envía usuario asociado al departamento activo.
     async function showCreateUserForm(depId) {
-        cardsRow.style.display = 'flex';
+        cardsRow.style.display = 'grid';
         userEditSec.style.display = 'none';
 
         // Load roles for the dropdown
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const body = {
                 name:     nameInput.value.trim(),
-                email:    emailInput.value.trim(),
+                email:    emailInput.value.trim().toLowerCase(),
                 ap:       apInput ? String(apInput.value || '').trim().split(/\s+/)[0] : undefined,
                 phone:    phoneInput.value.trim(),
                 password: passwordInput.value,
@@ -277,10 +277,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Validación frontend
             const nameRegex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]{3,30}$/;
+            if (!body.name) {
+                Swal.fire({
+                    title: 'Nombre requerido',
+                    text: 'Debes ingresar el nombre del residente',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
             if (!nameRegex.test(body.name)) {
                 Swal.fire({
                     title: 'Nombre inválido',
-                    text: 'Nombre: 3-30 caracteres, solo letras y espacios',
+                    text: 'Nombre: solo letras y espacios, entre 3 y 30 caracteres',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -294,7 +304,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!apRegex.test(apPaternal)) {
                     Swal.fire({
                         title: 'Apellido paterno inválido',
-                        text: 'Solo letras, sin espacios, máximo 30 caracteres',
+                        text: 'Apellido paterno: solo letras, sin espacios, máximo 30 caracteres',
                         icon: 'warning',
                         confirmButtonColor: '#ED7A13',
                         confirmButtonText: 'Aceptar'
@@ -304,11 +314,31 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body.ap = apPaternal;
             }
 
-            const emailRegex = /^[^\s@]{1,64}@[^\s@]{1,255}\.[a-z]{2,}$/i;
-            if (body.email.length < 6 || body.email.length > 320 || !emailRegex.test(body.email)) {
+            const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
+            if (!body.email) {
+                Swal.fire({
+                    title: 'Email requerido',
+                    text: 'Debes ingresar un correo electrónico',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            if (body.email.length < 6 || body.email.length > 320) {
                 Swal.fire({
                     title: 'Email inválido',
-                    text: 'Email: 6-320 caracteres, formato válido requerido',
+                    text: 'Email: debe tener entre 6 y 320 caracteres',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            if (!emailRegex.test(body.email)) {
+                Swal.fire({
+                    title: 'Email inválido',
+                    text: 'Email: formato válido requerido',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -317,10 +347,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             const phoneRegex = /^\d{10}$/;
+            if (!body.phone) {
+                Swal.fire({
+                    title: 'Teléfono requerido',
+                    text: 'Debes ingresar el teléfono del residente',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
             if (!phoneRegex.test(body.phone)) {
                 Swal.fire({
                     title: 'Teléfono inválido',
-                    text: 'Teléfono: debe ser exactamente 10 dígitos',
+                    text: 'Teléfono: debe contener exactamente 10 dígitos numéricos',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -328,11 +368,53 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            const passwordRegex = /^(?=.*[a-zA-Z\d])[a-zA-Z\d@$!%*?&]{8,16}$/;
+            // Validación detallada de contraseña
+            if (!body.password || body.password === '') {
+                Swal.fire({
+                    title: 'Contraseña requerida',
+                    text: 'Debes ingresar una contraseña',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            if (body.password.length < 8) {
+                Swal.fire({
+                    title: 'Contraseña muy corta',
+                    text: 'La contraseña debe tener mínimo 8 caracteres',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            if (body.password.length > 16) {
+                Swal.fire({
+                    title: 'Contraseña muy larga',
+                    text: 'La contraseña debe tener máximo 16 caracteres',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            const hasAlphanumeric = /[a-zA-Z0-9]/.test(body.password);
+            if (!hasAlphanumeric) {
+                Swal.fire({
+                    title: 'Contraseña inválida',
+                    text: 'Debe contener al menos una letra o un número',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+            const passwordRegex = /^[a-zA-Z0-9@$!%+*?&"-]+$/;
             if (!passwordRegex.test(body.password)) {
                 Swal.fire({
                     title: 'Contraseña inválida',
-                    text: 'Contraseña: 8-16 caracteres con al menos 1 número o letra',
+                    text: 'Caracteres permitidos: letras, números y @$!%+*?&-"',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -370,8 +452,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 depSelect.dispatchEvent(new Event('change'));
                 await loadDeptCard(depId);
             } else {
+                if (r.status === 409) {
+                    Swal.fire({
+                        title: 'Email ya registrado',
+                        text: result.message ?? 'Ese correo ya existe en la base de datos.',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
                 Swal.fire({
-                    title: 'Error',
+                    title: 'No se pudo crear el residente',
                     text: result.message,
                     icon: 'error',
                     confirmButtonColor: '#d33',

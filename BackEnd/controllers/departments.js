@@ -5,7 +5,23 @@
  */
 
 import supabase from '../dbconfig.js';
-import { hashPassword, comparePassword } from '../utils/validation.js';
+
+const normalizeEmail = (value) => String(value ?? '').trim().toLowerCase();
+
+const isDuplicateEmail = async (email, excludeId = null) => {
+    let query = supabase
+        .from('users')
+        .select('id')
+        .eq('email', email);
+
+    if (excludeId !== null && excludeId !== undefined) {
+        query = query.neq('id', excludeId);
+    }
+
+    const { data, error } = await query.limit(1);
+    if (error) throw error;
+    return (data ?? []).length > 0;
+};
 
 // Sincroniza el indicador is_in_use en departamentos con base en la ocupacion real.
 const syncDepartmentStatuses = async () => {
@@ -79,8 +95,23 @@ export const createUser = async (req, res) => {
     const { name, email, phone, password, rol_id, dep_id, ap } = req.body;
 
     // Validar campos requeridos
-    if (!name || !email || !phone || !password || !rol_id || !dep_id) {
-        return res.status(400).json({ success: false, message: 'Faltan campos obligatorios' });
+    if (!name) {
+        return res.status(400).json({ success: false, message: 'Nombre requerido' });
+    }
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email requerido' });
+    }
+    if (!phone) {
+        return res.status(400).json({ success: false, message: 'Teléfono requerido' });
+    }
+    if (!password) {
+        return res.status(400).json({ success: false, message: 'Contraseña requerida' });
+    }
+    if (!rol_id) {
+        return res.status(400).json({ success: false, message: 'Rol requerido' });
+    }
+    if (!dep_id) {
+        return res.status(400).json({ success: false, message: 'Departamento requerido' });
     }
 
     // Validar nombre: 3-30 caracteres, solo letras y espacios
@@ -88,7 +119,7 @@ export const createUser = async (req, res) => {
     if (!nameRegex.test(String(name).trim())) {
         return res.status(400).json({
             success: false,
-            message: 'Nombre: 3-30 caracteres, solo letras y espacios'
+            message: 'Nombre: solo letras y espacios, entre 3 y 30 caracteres'
         });
     }
 
@@ -107,12 +138,29 @@ export const createUser = async (req, res) => {
 
     // Validar email: 6-320 caracteres, formato válido
     const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
-    const emailTrimmed = String(email).trim();
-    if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
+    const emailTrimmed = normalizeEmail(email);
+    if (emailTrimmed.length < 6 || emailTrimmed.length > 320) {
         return res.status(400).json({
             success: false,
-            message: 'Email: 6-320 caracteres, formato válido requerido'
+            message: 'Email: debe tener entre 6 y 320 caracteres'
         });
+    }
+    if (!emailRegex.test(emailTrimmed)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Email: formato válido requerido'
+        });
+    }
+
+    try {
+        if (await isDuplicateEmail(emailTrimmed)) {
+            return res.status(409).json({
+                success: false,
+                message: 'Ese email ya está registrado en la base de datos'
+            });
+        }
+    } catch {
+        return res.status(500).json({ success: false, message: 'Error al validar email' });
     }
 
     // Validar teléfono: exactamente 10 dígitos
@@ -120,7 +168,7 @@ export const createUser = async (req, res) => {
     if (!phoneRegex.test(String(phone).trim())) {
         return res.status(400).json({
             success: false,
-            message: 'Teléfono: debe ser exactamente 10 dígitos'
+            message: 'Teléfono: debe contener exactamente 10 dígitos numéricos'
         });
     }
 
@@ -148,14 +196,14 @@ export const createUser = async (req, res) => {
     if (!hasAlphanumeric) {
         return res.status(400).json({
             success: false,
-            message: 'Contraseña debe contener al menos 1 número o letra'
+            message: 'Contraseña debe contener al menos una letra o un número'
         });
     }
-    const passwordRegex = /^[a-zA-Z0-9@$!%*?&-]+$/;
+    const passwordRegex = /^[a-zA-Z0-9@$!%+*?&"-]+$/;
     if (!passwordRegex.test(passwordStr)) {
         return res.status(400).json({
             success: false,
-            message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números, @$!%*?&-'
+            message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números y @$!%+*?&-"'
         });
     }
 
@@ -169,15 +217,12 @@ export const createUser = async (req, res) => {
 
         const newId = (maxRow?.id ?? 0) + 1;
 
-        // Hashear la contraseña antes de guardarla
-        const hashedPassword = await hashPassword(passwordStr);
-
         const { error } = await supabase.from('users').insert({
             id: newId,
             name: String(name).trim(),
             email: emailTrimmed,
             phone: String(phone).trim(),
-            password: hashedPassword,
+            password,
             rol_id: parseInt(rol_id, 10),
             dep_id: parseInt(dep_id, 10),
             ap: apPaternal
@@ -263,7 +308,7 @@ export const updateUser = async (req, res) => {
         if (!nameRegex.test(String(updates.name).trim())) {
             return res.status(400).json({
                 success: false,
-                message: 'Nombre: 3-30 caracteres, solo letras y espacios'
+                message: 'Nombre: solo letras y espacios, entre 3 y 30 caracteres'
             });
         }
     }
@@ -284,13 +329,32 @@ export const updateUser = async (req, res) => {
 
     if (updates.email) {
         const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
-        const emailTrimmed = String(updates.email).trim();
-        if (emailTrimmed.length < 6 || emailTrimmed.length > 320 || !emailRegex.test(emailTrimmed)) {
+        const emailTrimmed = normalizeEmail(updates.email);
+        if (emailTrimmed.length < 6 || emailTrimmed.length > 320) {
             return res.status(400).json({
                 success: false,
-                message: 'Email: 6-320 caracteres, formato válido requerido'
+                message: 'Email: debe tener entre 6 y 320 caracteres'
             });
         }
+        if (!emailRegex.test(emailTrimmed)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Email: formato válido requerido'
+            });
+        }
+
+        try {
+            if (await isDuplicateEmail(emailTrimmed, id)) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Ese email ya está registrado en la base de datos'
+                });
+            }
+        } catch {
+            return res.status(500).json({ success: false, message: 'Error al validar email' });
+        }
+
+        updates.email = emailTrimmed;
     }
 
     if (updates.phone) {
@@ -298,7 +362,7 @@ export const updateUser = async (req, res) => {
         if (!phoneRegex.test(String(updates.phone).trim())) {
             return res.status(400).json({
                 success: false,
-                message: 'Teléfono: debe ser exactamente 10 dígitos'
+                message: 'Teléfono: debe contener exactamente 10 dígitos numéricos'
             });
         }
     }
@@ -321,18 +385,16 @@ export const updateUser = async (req, res) => {
         if (!hasAlphanumeric) {
             return res.status(400).json({
                 success: false,
-                message: 'Contraseña debe contener al menos 1 número o letra'
+                message: 'Contraseña debe contener al menos una letra o un número'
             });
         }
-        const passwordRegex = /^[a-zA-Z0-9@$!%*?&-]+$/;
+        const passwordRegex = /^[a-zA-Z0-9@$!%+*?&"-]+$/;
         if (!passwordRegex.test(passwordStr)) {
             return res.status(400).json({
                 success: false,
-                message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números, @$!%*?&-'
+                message: 'Contraseña contiene caracteres no permitidos. Permitidos: letras, números y @$!%+*?&-"'
             });
         }
-        // Hashear la contraseña antes de guardarla
-        updates.password = await hashPassword(passwordStr);
     }
 
     try {
@@ -349,14 +411,12 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
     const { id } = req.params;
     try {
-        // Usar un hash placeholder en vez de guardar '-' en texto plano
-        const placeholderHash = await hashPassword('-');
         const { error } = await supabase.from('users').update({
             name: '-',
             ap: '-',
             email: '-',
             phone: '-',
-            password: placeholderHash,
+            password: '-',
             dep_id: null
         }).eq('id', id);
         if (error) return res.status(500).json({ success: false, message: 'Error al borrar usuario' });
@@ -393,13 +453,12 @@ export const updateDepartment = async (req, res) => {
 
             if (users && users.length > 0) {
                 const userIds = users.map(u => u.id);
-                const placeholderHash = await hashPassword('-');
                 await supabase.from('users').update({
                     name: '-',
                     ap: '-',
                     email: '-',
                     phone: '-',
-                    password: placeholderHash,
+                    password: '-',
                     dep_id: null
                 }).in('id', userIds);
             }
