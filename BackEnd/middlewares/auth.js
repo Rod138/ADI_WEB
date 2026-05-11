@@ -18,6 +18,28 @@ const parseSessionUserId = (rawValue) => {
     return parsed;
 };
 
+const respondUnauthorized = (req, res) => {
+    const isApi = String(req.originalUrl || '').startsWith('/api');
+    if (isApi) {
+        return res.status(401).json({
+            success: false,
+            message: 'Sesion invalida. Inicia sesion nuevamente.'
+        });
+    }
+    return res.redirect('/session-invalid');
+};
+
+const respondForbidden = (req, res) => {
+    const isApi = String(req.originalUrl || '').startsWith('/api');
+    if (isApi) {
+        return res.status(403).json({
+            success: false,
+            message: 'No tienes permisos para realizar esta accion.'
+        });
+    }
+    return res.status(403).render('unauthorized');
+};
+
 // Carga y cachea en request el usuario de sesion para evitar consultas duplicadas.
 const loadSessionUser = async (req) => {
     if (req.sessionUser !== undefined) {
@@ -73,6 +95,18 @@ const loadSessionUser = async (req) => {
     return req.sessionUser;
 };
 
+// Inyecta el usuario autenticado en res.locals para que todas las vistas lo reciban.
+export const injectSessionUser = async (req, res, next) => {
+    try {
+        const sessionUser = await loadSessionUser(req);
+        res.locals.user = sessionUser;
+        return next();
+    } catch (error) {
+        res.locals.user = null;
+        return next();
+    }
+};
+
 // Fabrica middleware que exige un rol minimo para ejecutar una ruta.
 export const requireMinRole = (minRole) => {
     return async (req, res, next) => {
@@ -80,17 +114,11 @@ export const requireMinRole = (minRole) => {
             const sessionUser = await loadSessionUser(req);
 
             if (!sessionUser) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Sesion invalida. Inicia sesion nuevamente.'
-                });
+                return respondUnauthorized(req, res);
             }
 
             if (sessionUser.rol_id < minRole) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'No tienes permisos para realizar esta accion.'
-                });
+                return respondForbidden(req, res);
             }
 
             return next();
@@ -110,10 +138,7 @@ export const requireSelfOrMinRole = (minRole, paramName = 'id') => {
             const sessionUser = await loadSessionUser(req);
 
             if (!sessionUser) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Sesion invalida. Inicia sesion nuevamente.'
-                });
+                return respondUnauthorized(req, res);
             }
 
             const targetId = parseSessionUserId(req.params?.[paramName]);
@@ -122,10 +147,7 @@ export const requireSelfOrMinRole = (minRole, paramName = 'id') => {
             }
 
             if (sessionUser.rol_id < minRole) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'No tienes permisos para realizar esta accion.'
-                });
+                return respondForbidden(req, res);
             }
 
             return next();

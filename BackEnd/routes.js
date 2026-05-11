@@ -35,6 +35,11 @@ router.get('/session-invalid', (req, res) => {
     res.render('session-invalid', { reason });
 });
 
+router.get('/unauthorized', (req, res) => {
+    const reason = req.query?.reason || 'forbidden';
+    res.render('unauthorized', { reason });
+});
+
 router.post('/api/login', login);
 
 router.post('/api/refresh-token', async (req, res) => {
@@ -198,6 +203,15 @@ router.get('/accounting/cash-payment', requireMinRole(2), (req, res) => {
 
 router.get('/reports', (req, res) => {
     res.render('accounting/reports');
+});
+
+// Soporte (ADI-SOPORTE) - frontend page that fetches from external service
+router.get('/support', requireMinRole(1), (req, res) => {
+    res.render('support', { user: req.sessionUser });
+});
+
+router.get('/support/faqs', requireMinRole(1), (req, res) => {
+    res.render('support-faqs', { user: req.sessionUser });
 });
 
 router.get('/accounting/receipts-board', (req, res) => {

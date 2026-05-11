@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res  = await fetch('/api/departments');
         const data = await res.json();
         if (data.success) {
-            departmentsCache = data.departments;
-            data.departments.forEach(d => {
+            departmentsCache = (data.departments || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+            departmentsCache.forEach(d => {
                 const opt = document.createElement('option');
                 opt.value = d.id;
                 opt.textContent = d.name;
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res  = await fetch(`/api/users?dep_id=${encodeURIComponent(depId)}`);
             const data = await res.json();
             if (data.success) {
-                data.users.forEach(u => {
+                (data.users || []).slice().sort((a, b) => Number(a.id) - Number(b.id)).forEach(u => {
                     const opt = document.createElement('option');
                     opt.value = u.id;
                     const fullName = u.name || '-';
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const res = await fetch('/api/roles');
             const data = await res.json();
             if (data.success && data.roles) {
-                rolesData = data.roles;
+                rolesData = (data.roles || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
             }
         } catch { /* silent */ }
 
@@ -510,7 +510,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderUserCard(user, roles) {
         const canDelete = session && Number(session.rol_id) >= 3;
         const fullName = [user.name, user.ap].filter(Boolean).join(' ').trim() || '—';
-        const roleLabel = roles.find(r => r.id === user.rol_id)?.name || 'Desconocido';
+        const sortedRoles = (roles || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+        const roleLabel = sortedRoles.find(r => r.id === user.rol_id)?.name || 'Desconocido';
 
         const fields = [
             ['Nombre',     fullName],
@@ -553,7 +554,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Llenar select de roles
         const rolSelect = document.getElementById('edit-rol');
         if (rolSelect) {
-            rolSelect.innerHTML = roles.map(role =>
+            rolSelect.innerHTML = sortedRoles.map(role =>
                 `<option value="${role.id}" ${role.id === user.rol_id ? 'selected' : ''}>${escapeHtml(role.name)}</option>`
             ).join('');
         }

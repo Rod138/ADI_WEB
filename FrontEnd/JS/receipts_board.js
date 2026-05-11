@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             dateSelect.appendChild(option);
         });
 
-        (departments || []).forEach(dep => {
+        (departments || []).slice().sort((a, b) => Number(a.id) - Number(b.id)).forEach(dep => {
             const option = document.createElement('option');
             option.value = String(dep.id);
             option.textContent = dep.name;

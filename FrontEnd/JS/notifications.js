@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const populateTypeFilter = () => {
         typeFilter.innerHTML = '<option value="all">TIPO</option>';
 
-        const typeIds = [...new Set(allNotifications.map(n => n.type_id).filter(v => v !== null && v !== undefined))];
+        const typeIds = [...new Set(allNotifications.map(n => n.type_id).filter(v => v !== null && v !== undefined))].sort((a, b) => Number(a) - Number(b));
         typeIds.forEach(typeId => {
             const option = document.createElement('option');
             option.value = String(typeId);
@@ -83,9 +83,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             return `
                 <article class="notification-item${unreadClass}" data-id="${n.id}" data-read="${n.read}">
                     <div class="notification-left">
-                        <div class="noti-icon">${n.read ? '•' : '!'}</div>
+                        <div class="noti-icon">${n.read ? '✓' : '•'}</div>
                         <div class="notification-content">
-                            <h3>${typeName.toUpperCase()}</h3>
+                            <h3>${typeName}</h3>
                             <p>${description}</p>
                         </div>
                     </div>

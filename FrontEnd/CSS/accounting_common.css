@@ -60,6 +60,30 @@ button {
     background-color: var(--adi-olive-dark);
 }
 
+body :is(.btn-back, a.btn-back, button.btn-back) {
+    background-color: #6E7881 !important;
+    border-color: #6E7881 !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.btn-back, a.btn-back, button.btn-back):hover {
+    background-color: #5E6871 !important;
+    border-color: #5E6871 !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.save-btn, .update-btn, .btn-submit) {
+    background-color: var(--adi-olive) !important;
+    border-color: var(--adi-olive) !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.save-btn, .update-btn, .btn-submit):hover {
+    background-color: var(--adi-olive-dark) !important;
+    border-color: var(--adi-olive-dark) !important;
+    color: var(--adi-cream) !important;
+}
+
 .btn-save,
 .btn-upload,
 .btn-download,

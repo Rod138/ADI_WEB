@@ -48,6 +48,11 @@ nav {
     z-index: 100;
 }
 
+.top-nav {
+    background-color: var(--adi-surface);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.08);
+}
+
 .nav-content {
     display: flex;
     align-items: center;
@@ -69,6 +74,15 @@ nav a {
 
 nav a:hover {
     color: var(--adi-accent);
+}
+
+.nav-brand,
+.nav-actions {
+    gap: 0.75rem;
+}
+
+.nav-actions {
+    justify-content: flex-end;
 }
 
 .login-page {

@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Nunito:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-    <title>ADI - Sesión inválida</title>
+    <title>ADI - No autorizado</title>
     <link rel="stylesheet" href="/FrontEnd/CSS/session_status.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
 </head>
@@ -23,21 +23,15 @@
     </nav>
 
     <main class="status-shell">
-        <% const isTimeout = reason === 'session-ended'; %>
-        <% const title = isTimeout ? 'Tu sesión terminó' : 'Sesión inválida'; %>
-        <% const message = isTimeout
-            ? 'Tu sesión expiró por seguridad. Vuelve a iniciar sesión para continuar.'
-            : 'Sesion invalida. Inicia sesion nuevamente.'; %>
-
         <section class="status-card" aria-labelledby="status-title">
-            <div class="status-icon" aria-hidden="true">!</div>
-            <span class="status-badge"><%= isTimeout ? 'Sesión expirada' : 'Acceso bloqueado' %></span>
-            <h1 id="status-title"><%= title %></h1>
-            <p><%= message %></p>
+            <div class="status-icon" aria-hidden="true">🔒</div>
+            <span class="status-badge">Acceso denegado</span>
+            <h1 id="status-title">No estás autorizado</h1>
+            <p>No tienes permisos suficientes para ver esta página. Si crees que es un error, contacta al administrador.</p>
 
             <div class="status-actions">
-                <a class="primary-btn" href="/login">Ir a iniciar sesión</a>
-                <a class="secondary-btn" href="/">Volver al inicio</a>
+                <a class="primary-btn" href="/">Volver al inicio</a>
+                <a class="secondary-btn" href="/profile">Ir a mi perfil</a>
             </div>
         </section>
     </main>

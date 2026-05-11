@@ -193,63 +193,15 @@ footer p {
     box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.25);
 }
 
-/* === ADI Light Refresh === */
-:root {
-    --adi-olive: #6A8042;
-    --adi-olive-dark: #5D723B;
-    --adi-accent: #ED7A13;
-    --adi-cream: #FFFADD;
-    --adi-surface: #F7F7F7;
-    --adi-text: #111111;
-}
-
-body {
-    color: var(--adi-text);
-}
-
-.top-nav,
 nav {
     background-color: var(--adi-surface);
 }
 
-.nav-title {
-    font-family: 'Outfit', sans-serif;
-}
-
-.nav-icon-btn:hover,
 nav a:hover {
     color: var(--adi-accent);
 }
 
-.btn-back,
-.btn-upload,
-.btn-download,
-.btn-save,
-.save-btn,
-.update-btn,
-.page-btn,
-button {
-}
-
-.btn-back {
-    background-color: var(--adi-olive);
-    color: var(--adi-cream);
-}
-
-.btn-back:hover {
-    background-color: var(--adi-olive-dark);
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: var(--adi-accent);
-    box-shadow: 0 0 0 0.125rem rgba(237, 122, 19, 0.15);
-}
-
 @media (max-width: 48rem) {
-    .top-nav,
     nav {
         padding-left: 1rem;
         padding-right: 1rem;

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
+    <link rel="stylesheet" href="/FrontEnd/CSS/support.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>ADI - Soporte</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+</head>
+<body class="sidebar-expanded main-page" data-min-role="1">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="true">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">SOPORTE</div>
+        <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <%= user.roleLabel %>
+            </div>
+            <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
+                <span class="material-symbols-outlined">person</span>
+            </a>
+            <a id="logout-btn" class="nav-icon-btn logout-link" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
+        <nav class="sidebar-nav" aria-label="Accesos rápidos">
+            <a class="sidebar-link" href="/main" data-label="Menú principal">
+                <span class="material-symbols-outlined">dashboard</span>
+                <div class="sidebar-link-copy"><strong>Menú principal</strong></div>
+            </a>
+            <div class="sidebar-link has-submenu" id="accounting-menu" data-label="Finanzas">
+                <span class="material-symbols-outlined">payments</span>
+                <div class="sidebar-link-copy"><strong>Finanzas</strong></div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+            </div>
+            <nav class="sidebar-submenu" id="accounting-submenu">
+                <a class="sidebar-sublink" href="/accounting" data-label="Tablero"><span class="material-symbols-outlined">dashboard</span><div class="sidebar-link-copy"><strong>Finanzas</strong></div></a>
+                <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración"><span class="material-symbols-outlined">settings</span><div class="sidebar-link-copy"><strong>Configuración</strong></div></a>
+                <a class="sidebar-sublink" href="/accounting/expenses-board" data-label="Gastos"><span class="material-symbols-outlined">receipt_long</span><div class="sidebar-link-copy"><strong>Gastos del condominio</strong></div></a>
+                <a class="sidebar-sublink" href="/accounting/payment" data-label="Pagos"><span class="material-symbols-outlined">payment</span><div class="sidebar-link-copy"><strong>Mis cuotas</strong></div></a>
+                <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos"><span class="material-symbols-outlined">inventory_2</span><div class="sidebar-link-copy"><strong>Cuotas de residentes</strong></div></a>
+            </nav>
+            <a class="sidebar-link" href="/incident-board" data-label="Incidencias"><span class="material-symbols-outlined">warning</span><div class="sidebar-link-copy"><strong>Incidencias</strong></div></a>
+            <a class="sidebar-link" href="/reports" data-label="Reportes"><span class="material-symbols-outlined">bar_chart</span><div class="sidebar-link-copy"><strong>Reportes</strong></div></a>
+            <a class="sidebar-link" href="/departments" data-label="Departamentos"><span class="material-symbols-outlined">apartment</span><div class="sidebar-link-copy"><strong>Departamentos</strong></div></a>
+            <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte"><span class="material-symbols-outlined">support_agent</span><div class="sidebar-link-copy"><strong>Soporte</strong></div><span class="material-symbols-outlined toggle-arrow">expand_more</span></div>
+            <nav class="sidebar-submenu" id="support-submenu">
+                <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda"><span class="material-symbols-outlined">space_dashboard</span><div class="sidebar-link-copy"><strong>Centro de ayuda</strong></div></a>
+                <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes"><span class="material-symbols-outlined">quiz</span><div class="sidebar-link-copy"><strong>Preguntas frecuentes</strong></div></a>
+                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
+            </nav>
+        </nav>
+    </aside>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <main class="main-container">
+        <div class="welcome">
+            <h1>CENTRO DE AYUDA</h1>
+        </div>
+
+        <section class="cards-grid cards-count-2" aria-label="Accesos del sistema">
+            <a class="menu-card button-3" href="/support/faqs">
+                <div class="card-content">
+                    <h3 class="card-title">Preguntas frecuentes</h3>
+                    <p class="card-subtitle">Consulta respuestas y soluciones comunes</p>
+                </div>
+            </a>
+
+            <a class="menu-card button-4 soon" href="#" data-feature="Tickets propios">
+                <div class="card-content">
+                    <h3 class="card-title">Tickets propios</h3>
+                    <p class="card-subtitle">Ver y crear tickets, próximamente</p>
+                </div>
+            </a>
+        </section>
+    </main>
+
+    <footer>
+        <p>X-CORP</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('adi-sidebar');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            const toggle = document.getElementById('sidebar-toggle');
+            const body = document.body;
+            const isDesktop = window.innerWidth > 768;
+
+            const setSidebarExpanded = (expanded) => {
+                body.classList.toggle('sidebar-expanded', expanded);
+                body.classList.toggle('sidebar-collapsed', !expanded);
+                toggle?.setAttribute('aria-expanded', String(expanded));
+                if (isDesktop) {
+                    localStorage.setItem('sidebarExpanded', String(expanded));
+                }
+            };
+
+            const setSidebarOpen = (open) => {
+                body.classList.toggle('sidebar-open', open);
+                body.classList.toggle('sidebar-backdrop-active', open);
+            };
+
+            const sidebarState = localStorage.getItem('sidebarExpanded');
+            const isExpanded = sidebarState === null ? true : sidebarState === 'true';
+
+            if (isDesktop) {
+                setSidebarExpanded(isExpanded);
+                setSidebarOpen(false);
+            } else {
+                body.classList.add('sidebar-expanded');
+                body.classList.remove('sidebar-collapsed');
+                setSidebarOpen(false);
+            }
+
+            toggle?.addEventListener('click', () => {
+                if (isDesktop) {
+                    setSidebarExpanded(!body.classList.contains('sidebar-expanded'));
+                } else {
+                    setSidebarOpen(!body.classList.contains('sidebar-open'));
+                }
+            });
+
+            backdrop?.addEventListener('click', () => {
+                if (!isDesktop) {
+                    setSidebarOpen(false);
+                }
+            });
+
+            sidebar?.addEventListener('click', (e) => {
+                if (!isDesktop && e.target.closest('a.sidebar-link, a.sidebar-sublink')) {
+                    setSidebarOpen(false);
+                }
+            });
+
+            const accountingMenu = document.getElementById('accounting-menu');
+            const accountingSubmenu = document.getElementById('accounting-submenu');
+            const supportMenu = document.getElementById('support-menu');
+            const supportSubmenu = document.getElementById('support-submenu');
+
+            if (accountingMenu && accountingSubmenu) {
+                accountingMenu.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    accountingMenu.classList.toggle('open');
+                    accountingSubmenu.classList.toggle('open');
+                });
+            }
+
+            if (supportMenu && supportSubmenu) {
+                supportMenu.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    supportMenu.classList.toggle('open');
+                    supportSubmenu.classList.toggle('open');
+                });
+            }
+
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-link').forEach((link) => {
+                const href = link.getAttribute('href');
+                if (href === '/main' && currentPath === '/main') {
+                    link.classList.add('active');
+                }
+                if (href === '/support' && currentPath.startsWith('/support')) {
+                    link.classList.add('active');
+                }
+                if (href === '/departments' && currentPath === '/departments') {
+                    link.classList.add('active');
+                }
+                if (href === '/reports' && currentPath.startsWith('/reports')) {
+                    link.classList.add('active');
+                }
+                if (href === '/incident-board' && currentPath.includes('/incident')) {
+                    link.classList.add('active');
+                }
+                if (href === '/accounting' && currentPath.startsWith('/accounting')) {
+                    link.classList.add('active');
+                }
+                if (href === '/support' && currentPath === '/support') {
+                    link.classList.add('active');
+                }
+                if (href === '/support/faqs' && currentPath === '/support/faqs') {
+                    link.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.sidebar-sublink').forEach((link) => {
+                const href = link.getAttribute('href');
+                if (href === currentPath || (href === '/accounting' && currentPath.startsWith('/accounting'))) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (currentPath.startsWith('/accounting')) {
+                accountingMenu?.classList.add('open');
+                accountingSubmenu?.classList.add('open');
+            }
+
+            if (currentPath.startsWith('/support')) {
+                supportMenu?.classList.add('open');
+                supportSubmenu?.classList.add('open');
+            }
+
+            document.querySelectorAll('.sidebar-sublink.soon').forEach((link) => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined' && Swal.fire) {
+                        Swal.fire({ icon: 'info', title: 'Tickets propios próximamente', text: 'Esta funcionalidad estará disponible más adelante.' });
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script src="/FrontEnd/JS/support.js"></script>
+</body>
+</html>

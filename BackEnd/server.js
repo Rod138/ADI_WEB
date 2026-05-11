@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import { fileURLToPath } from 'url';
 import routes from './routes.js'
+import { injectSessionUser } from './middlewares/auth.js';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use((error, req, res, next) => {
 const publicDir = path.join(rootDir, 'FrontEnd');
 app.use(express.static(publicDir));
 app.use('/FrontEnd', express.static(publicDir));
+app.use(injectSessionUser);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(rootDir, 'FrontEnd', 'Views'));

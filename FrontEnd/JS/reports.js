@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     let chart = null;
     let lastRenderedRows = [];
     let lastRenderedHeaders = [];
+    let resizeTimer = null;
+    let chartResizeObserver = null;
 
     let reportsData = {
         payments: [],
@@ -215,6 +217,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const wideOutputMode = mode === 'chart' || isMonthlyPdfType();
 
         document.body.classList.toggle('reports-wide-output', wideOutputMode);
+        document.body.classList.toggle('reports-table-output', mode === 'table');
 
         if (isMonthlyPdfType()) {
             chartContainer.style.display = 'none';
@@ -369,6 +372,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             datasets.forEach(d => row.push(d.data[idx]));
             return row;
         });
+
+        scheduleChartResize();
+        bindChartResizeObserver();
     }
 
     // Genera tabla detallada para analisis textual de resultados filtrados.
@@ -753,6 +759,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Redondea a dos decimales para consistencia contable.
     function round2(value) {
         return Math.round(Number(value || 0) * 100) / 100;
+    }
+
+    function scheduleChartResize() {
+        if (!chart) return;
+        if (resizeTimer) window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(() => {
+            if (!chart) return;
+            chart.resize();
+        }, 150);
+    }
+
+    window.addEventListener('resize', scheduleChartResize);
+
+    function bindChartResizeObserver() {
+        if (!chart) return;
+
+        if (!chartResizeObserver && typeof ResizeObserver !== 'undefined') {
+            chartResizeObserver = new ResizeObserver(() => {
+                if (resizeTimer) window.clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(() => {
+                    if (chart) {
+                        chart.resize();
+                    }
+                }, 200);
+            });
+        }
+
+        if (!chartResizeObserver) return;
+
+        const chartWrap = document.querySelector('.reports-page .chart-wrap');
+        if (!chartWrap) return;
+
+        chartResizeObserver.disconnect();
+        chartResizeObserver.observe(chartWrap);
     }
 
     // Orquesta validaciones y descarga del reporte mensual en PDF.

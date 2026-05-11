@@ -1,0 +1,105 @@
+html { scroll-behavior: smooth }
+
+.main-container {
+    padding-top: 1.25rem;
+}
+
+.welcome {
+    margin-bottom: 1.5rem;
+}
+
+.welcome h1 {
+    margin: 0;
+}
+
+.cards-grid.cards-count-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 48rem) {
+    .cards-grid.cards-count-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.support-card{
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+.support-card h2{ font-size:1rem; margin:0 0 0.5rem 0 }
+
+.faq-search-wrap {
+    margin: 0 0 0.9rem 0;
+}
+
+.faq-search-wrap input {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    background: #fff;
+}
+
+.faq-search-wrap input:focus {
+    outline: none;
+    border-color: #6A8042;
+    box-shadow: 0 0 0 3px rgba(106, 128, 66, 0.12);
+}
+
+.faq-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.faq-item:last-child {
+    border-bottom: none;
+}
+
+.faq-item strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #1f2937;
+}
+
+.faq-item div {
+    color: #6b7280;
+    line-height: 1.45;
+}
+
+#areas-list, #faqs-list { margin:0; padding-left:1rem; color:#6b7280; max-height:320px; overflow:auto; }
+
+#tickets-list { color:#6b7280; font-size:0.95rem; max-height:420px; overflow:auto }
+
+.support-card .list-item{ padding:0.5rem 0; border-bottom:1px solid rgba(0,0,0,0.04); }
+.support-card .list-item:last-child{ border-bottom: none }
+
+.support-card .card-footer{ margin-top:auto; display:flex; justify-content:flex-end; gap:0.5rem }
+
+.support-card form input[type="number"],
+.support-card form input[type="url"],
+.support-card form textarea,
+.support-card form select{
+    border:1px solid rgba(0,0,0,0.08);
+    padding:0.45rem 0.6rem;
+    border-radius:6px;
+    width:100%;
+    box-sizing:border-box;
+}
+
+.support-card .btn{ background:#6A8042; color:white; border:none; padding:0.5rem 0.75rem; border-radius:6px; cursor:pointer }
+.support-card .btn:disabled{ opacity:0.6; cursor:not-allowed }
+
+.support-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.support-actions .btn-back {
+    text-decoration: none;
+}

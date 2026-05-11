@@ -13,6 +13,9 @@
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
     <title>ADI - Configuracion Financiera</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        window.__ADI_SERVER_USER__ = <%- JSON.stringify(user || null) %>;
+    </script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/tower_fund.js" defer></script>
     <script src="/FrontEnd/JS/monthly_quota.js" defer></script>
@@ -143,6 +146,18 @@
                     <strong>Departamentos</strong>
                 </div>
             </a>
+            <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte">
+                <span class="material-symbols-outlined">support_agent</span>
+                <div class="sidebar-link-copy">
+                    <strong>Soporte</strong>
+                </div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+            </div>
+            <nav class="sidebar-submenu" id="support-submenu">
+                <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda"><span class="material-symbols-outlined">space_dashboard</span><div class="sidebar-link-copy"><strong>Centro de ayuda</strong></div></a>
+                <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes"><span class="material-symbols-outlined">quiz</span><div class="sidebar-link-copy"><strong>Preguntas frecuentes</strong></div></a>
+                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
+            </nav>
         </nav>
     </aside>
 

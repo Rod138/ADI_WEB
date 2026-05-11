@@ -18,12 +18,23 @@ let sessionTimeoutHandle = null;
 function safeParseUserSession() {
     try {
         const raw = sessionStorage.getItem('user');
-        if (!raw) return null;
+        const serverUser = window.__ADI_SERVER_USER__;
+
+        if (!raw) {
+            return (serverUser && typeof serverUser === 'object') ? serverUser : null;
+        }
+
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== 'object') return null;
+
+        if (serverUser && typeof serverUser === 'object') {
+            return { ...serverUser, ...parsed };
+        }
+
         return parsed;
     } catch {
-        return null;
+        const serverUser = window.__ADI_SERVER_USER__;
+        return (serverUser && typeof serverUser === 'object') ? serverUser : null;
     }
 }
 
@@ -233,7 +244,7 @@ function initializeSharedSidebarBehavior() {
     const currentPath = window.location.pathname;
 
     // Estas vistas ya incluyen la version completa de la logica en su propio script.
-    if (currentPath === '/main' || currentPath === '/profile' || currentPath === '/notifications') {
+    if (currentPath === '/main' || currentPath === '/profile' || currentPath === '/notifications' || currentPath.startsWith('/support')) {
         return;
     }
 
@@ -309,11 +320,21 @@ function initializeSharedSidebarBehavior() {
             accountingMenu.classList.toggle('open');
             accountingSubmenu.classList.toggle('open');
         });
+    }
 
-        if (currentPath.includes('/accounting')) {
-            accountingMenu.classList.add('open');
-            accountingSubmenu.classList.add('open');
-        }
+    const supportMenu = document.getElementById('support-menu');
+    const supportSubmenu = document.getElementById('support-submenu');
+    if (supportMenu && supportSubmenu) {
+        supportMenu.addEventListener('click', (e) => {
+            e.preventDefault();
+            supportMenu.classList.toggle('open');
+            supportSubmenu.classList.toggle('open');
+        });
+    }
+
+    if (currentPath.includes('/accounting')) {
+        accountingMenu?.classList.add('open');
+        accountingSubmenu?.classList.add('open');
     }
 
     document.querySelectorAll('.sidebar-link:not(.has-submenu)').forEach((link) => {
@@ -322,7 +343,8 @@ function initializeSharedSidebarBehavior() {
         if (href === currentPath
             || (href === '/incident-board' && currentPath.includes('/incident'))
             || (href === '/departments' && currentPath.includes('/departments'))
-            || (href === '/reports' && currentPath.includes('/reports'))) {
+            || (href === '/reports' && currentPath.includes('/reports'))
+            || (href === '/support' && currentPath.startsWith('/support'))) {
             link.classList.add('active');
         }
     });
@@ -334,6 +356,11 @@ function initializeSharedSidebarBehavior() {
             link.classList.add('active');
         }
     });
+
+    if (supportMenu && supportSubmenu && currentPath.startsWith('/support')) {
+        supportMenu.classList.add('open');
+        supportSubmenu.classList.add('open');
+    }
 
     document.querySelectorAll('.sidebar-link-copy strong').forEach((label) => {
         if ((label.textContent || '').trim().length > 18) {

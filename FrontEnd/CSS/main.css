@@ -764,6 +764,13 @@ nav a:hover {
     color: var(--adi-accent);
 }
 
+:root {
+    --adi-back-strong: #6E7881;
+    --adi-back-strong-hover: #5E6871;
+    --adi-action-strong: var(--adi-olive);
+    --adi-action-strong-hover: var(--adi-olive-dark);
+}
+
 .btn-back,
 .btn-upload,
 .btn-download,
@@ -811,6 +818,30 @@ a.page-btn {
     background-color: var(--adi-olive-dark);
 }
 
+body :is(.btn-back, a.btn-back, button.btn-back) {
+    background-color: var(--adi-back-strong) !important;
+    border-color: var(--adi-back-strong) !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.btn-back, a.btn-back, button.btn-back):hover {
+    background-color: var(--adi-back-strong-hover) !important;
+    border-color: var(--adi-back-strong-hover) !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.btn-save, .btn-upload, .btn-download, .save-btn, .update-btn, .btn-submit) {
+    background-color: var(--adi-action-strong) !important;
+    border-color: var(--adi-action-strong) !important;
+    color: var(--adi-cream) !important;
+}
+
+body :is(.btn-save, .btn-upload, .btn-download, .save-btn, .update-btn, .btn-submit):hover {
+    background-color: var(--adi-action-strong-hover) !important;
+    border-color: var(--adi-action-strong-hover) !important;
+    color: var(--adi-cream) !important;
+}
+
 input:focus,
 select:focus,
 textarea:focus {
@@ -829,16 +860,16 @@ textarea:focus {
         font-size: 1.2rem;
     }
 
-    .role-badge {
-        display: none;
-    }
-
     .nav-actions {
         gap: 0.5rem;
     }
 }
 
 @media (max-width: 60rem) {
+    .role-badge {
+        display: none !important;
+    }
+
     body.main-page .nav-title {
         font-size: 1.45rem;
         max-width: calc(100% - 10rem);

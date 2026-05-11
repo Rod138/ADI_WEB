@@ -111,6 +111,14 @@ export const getMainMenu = async (req, res) => {
                 href: '/departments',
                 visible: userRole === ROLES.ADMINISTRADOR || userRole === ROLES.TESORERO_ADMIN,
                 button_class: 'button-1'
+            },
+            {
+                id: 'support',
+                title: 'SOPORTE',
+                subtitle: 'Preguntas frecuentes y tickets',
+                href: '/support',
+                visible: true,
+                button_class: 'button-1'
             }
         ];
 

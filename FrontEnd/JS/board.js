@@ -36,9 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // Build lookup maps { id -> name }
-        typesMap   = Object.fromEntries((data.types   ?? []).map(t => [t.id, t.name ?? t.type ?? t.id]));
-        areasMap   = Object.fromEntries((data.areas   ?? []).map(a => [a.id, a.name ?? a.area ?? a.id]));
-        statusesMap = Object.fromEntries((data.statuses ?? []).map(s => [s.id, s.name ?? s.status ?? s.id]));
+        typesMap   = Object.fromEntries((data.types   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(t => [t.id, t.name ?? t.type ?? t.id]));
+        areasMap   = Object.fromEntries((data.areas   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(a => [a.id, a.name ?? a.area ?? a.id]));
+        statusesMap = Object.fromEntries((data.statuses ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(s => [s.id, s.name ?? s.status ?? s.id]));
 
         allIncidents = data.incidents;
         populateFilters(data.types, data.areas, data.statuses);
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             typeSelect.appendChild(opt);
         });
 
-        (areas ?? []).forEach(area => {
+        (areas ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).forEach(area => {
             const opt = document.createElement('option');
             opt.value = area.id;
             opt.textContent = area.name ?? area.area ?? area.id;

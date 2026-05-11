@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             quotas = result.quotas || [];
             receipts = result.receipts || [];
 
-            const departments = result.departments || [];
+            const departments = (result.departments || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
             depSelect.innerHTML = departments
                 .map(d => `<option value="${d.id}">${escapeHtml(d.name)}</option>`)
                 .join('');

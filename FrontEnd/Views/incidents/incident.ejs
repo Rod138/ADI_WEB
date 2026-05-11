@@ -102,6 +102,18 @@
                     <strong>Departamentos</strong>
                 </div>
             </a>
+            <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte">
+                <span class="material-symbols-outlined">support_agent</span>
+                <div class="sidebar-link-copy">
+                    <strong>Soporte</strong>
+                </div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+            </div>
+            <nav class="sidebar-submenu" id="support-submenu">
+                <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda"><span class="material-symbols-outlined">space_dashboard</span><div class="sidebar-link-copy"><strong>Centro de ayuda</strong></div></a>
+                <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes"><span class="material-symbols-outlined">quiz</span><div class="sidebar-link-copy"><strong>Preguntas frecuentes</strong></div></a>
+                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
+            </nav>
         </nav>
     </aside>
 
@@ -191,7 +203,9 @@
                 const currentCostValue = (inc.cost !== null && inc.cost !== undefined && inc.cost !== '') ? String(inc.cost) : '';
                 const descriptionText = escapeHtml(inc.content ?? inc.description ?? '-');
                 const notesText = escapeHtml(inc.notes ?? '');
-                const sortedStatuses = (data.statuses ?? []).slice().sort((a, b) => a.id - b.id);
+                const sortedStatuses = (data.statuses ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+                const sortedAreas = (data.areas ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+                const sortedTypes = (data.types ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id));
                 const statusOptions = sortedStatuses.map(s => {
                     const name = escapeHtml(s.name ?? s.status ?? s.id);
                     const sel = String(s.id) === String(inc.status_id) ? 'selected' : '';
@@ -245,7 +259,7 @@
                                 <div>
                                     <label for="upd-area">ÁREA</label>
                                     <select id="upd-area">
-                                        ${(data.areas ?? []).map(a => {
+                                        ${sortedAreas.map(a => {
                                             const sel = String(a.id) === String(inc.area_id) ? 'selected' : '';
                                             return `<option value="${a.id}" ${sel}>${escapeHtml(a.name)}</option>`;
                                         }).join('')}
@@ -254,7 +268,7 @@
                                 <div>
                                     <label for="upd-type">TIPO</label>
                                     <select id="upd-type">
-                                        ${(data.types ?? []).map(t => {
+                                        ${sortedTypes.map(t => {
                                             const sel = String(t.id) === String(inc.type_id) ? 'selected' : '';
                                             return `<option value="${t.id}" ${sel}>${escapeHtml(t.name)}</option>`;
                                         }).join('')}

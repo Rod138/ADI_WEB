@@ -52,6 +52,132 @@
         .sidebar-toggle .material-symbols-outlined {
             font-size: 1.9rem;
         }
+        /* Notificaciones: dropdown compacto usado en el menú principal */
+        .notifications-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .notifications-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            background: #d33;
+            color: white;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            padding: 0 4px;
+        }
+        .notifications-dropdown {
+            position: absolute;
+            right: 0;
+            top: 2.5rem;
+            width: 320px;
+            max-height: 420px;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+        }
+        .notifications-dropdown.hidden {
+            display: none !important;
+        }
+        .notifications-dropdown .nd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8e8e8;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        .notifications-dropdown .nd-list {
+            overflow-y: auto;
+            padding: 8px;
+            max-height: 350px;
+        }
+        .nd-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .nd-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .nd-item.unread {
+            background: rgba(106, 128, 66, 0.08);
+        }
+        .nd-item.unread:hover {
+            background: rgba(106, 128, 66, 0.12);
+        }
+        .nd-item .nd-left {
+            display: flex;
+            gap: 0;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+        }
+        .nd-item .nd-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #222;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+        .nd-item .nd-desc {
+            font-size: 0.8rem;
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-top: 4px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .nd-item .nd-time {
+            font-size: 0.75rem;
+            color: #888;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nd-item .nd-delete {
+            font-size: 1.5rem;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+        .nd-item .nd-delete:hover {
+            opacity: 1;
+        }
+        .nd-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 
@@ -69,9 +195,21 @@
                 <span></span>
                 <%= user.roleLabel %>
             </div>
-            <a href="/notifications" class="nav-icon-btn" aria-label="Notificaciones">
-                <span class="material-symbols-outlined">notifications</span>
-            </a>
+            <div class="notifications-wrapper">
+                <button id="nav-notifications-btn" class="nav-icon-btn" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <div id="notifications-dropdown" class="notifications-dropdown hidden">
+                    <div class="nd-header">
+                        <span>Notificaciones</span>
+                        <div>
+                            <button id="delete-all-btn-mini" class="nav-icon-btn" title="Borrar todas">Borrar</button>
+                        </div>
+                    </div>
+                    <div id="nav-noti-list" class="nd-list"></div>
+                    <a href="/notifications" style="padding:8px 12px; border-top:1px solid #f7f7f7; text-align:center; font-weight:600; text-decoration:none; color:inherit">Ver todas</a>
+                </div>
+            </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
@@ -146,6 +284,33 @@
                     <strong>Departamentos</strong>
                 </div>
             </a>
+            <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte">
+                <span class="material-symbols-outlined">support_agent</span>
+                <div class="sidebar-link-copy">
+                    <strong>Soporte</strong>
+                </div>
+                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+            </div>
+            <nav class="sidebar-submenu" id="support-submenu">
+                <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda">
+                    <span class="material-symbols-outlined">space_dashboard</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Centro de ayuda</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes">
+                    <span class="material-symbols-outlined">quiz</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Preguntas frecuentes</strong>
+                    </div>
+                </a>
+                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios">
+                    <span class="material-symbols-outlined">confirmation_number</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Tickets propios</strong>
+                    </div>
+                </a>
+            </nav>
         </nav>
     </aside>
 
@@ -253,12 +418,22 @@
             // Handle submenu toggle
             const accountingMenu = document.getElementById('accounting-menu');
             const accountingSubmenu = document.getElementById('accounting-submenu');
+            const supportMenu = document.getElementById('support-menu');
+            const supportSubmenu = document.getElementById('support-submenu');
 
             if (accountingMenu && accountingSubmenu) {
                 accountingMenu.addEventListener('click', (e) => {
                     e.preventDefault();
                     accountingMenu.classList.toggle('open');
                     accountingSubmenu.classList.toggle('open');
+                });
+            }
+
+            if (supportMenu && supportSubmenu) {
+                supportMenu.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    supportMenu.classList.toggle('open');
+                    supportSubmenu.classList.toggle('open');
                 });
             }
 
@@ -286,12 +461,18 @@
                 accountingSubmenu.classList.add('open');
             }
 
+            if (supportMenu && supportSubmenu && currentPath.startsWith('/support')) {
+                supportMenu.classList.add('open');
+                supportSubmenu.classList.add('open');
+            }
+
             // Highlight active main links
             document.querySelectorAll('.sidebar-link:not(.has-submenu)').forEach(link => {
                 const href = link.getAttribute('href');
                 if (href === currentPath ||
                     (href === '/incident-board' && currentPath.includes('/incident-board')) ||
-                    (href === '/departments' && currentPath.includes('/departments'))) {
+                    (href === '/departments' && currentPath.includes('/departments')) ||
+                    (href === '/support' && currentPath.startsWith('/support'))) {
                     link.classList.add('active');
                 }
             });
@@ -304,9 +485,25 @@
                     (href === '/accounting/finance-config' && currentPath === '/accounting/finance-config') ||
                     (href === '/accounting/expenses-board' && currentPath === '/accounting/expenses-board') ||
                     (href === '/accounting/payment' && currentPath === '/accounting/payment') ||
-                    (href === '/accounting/receipts-board' && currentPath === '/accounting/receipts-board')) {
+                    (href === '/accounting/receipts-board' && currentPath === '/accounting/receipts-board') ||
+                    (href === '/support/faqs' && currentPath === '/support/faqs')) {
                     link.classList.add('active');
                 }
+            });
+
+            document.querySelectorAll('.sidebar-sublink.soon').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (typeof Swal !== 'undefined' && Swal.fire) {
+                        Swal.fire({
+                            title: 'Tickets propios próximamente',
+                            text: 'Esta sección aún no está disponible.',
+                            icon: 'info',
+                            confirmButtonText: 'Aceptar',
+                            confirmButtonColor: '#6A8042'
+                        });
+                    }
+                });
             });
 
             // Reduce label size when button names are long.
@@ -317,6 +514,7 @@
             });
         });
     </script>
+    <script src="/FrontEnd/JS/notifications_menu.js"></script>
 </body>
 
 </html>
