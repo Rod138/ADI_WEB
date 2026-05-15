@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     yearInput.value = now.getFullYear();
     monthInput.innerHTML = MONTHS.map((m, idx) => `<option value="${m}" ${idx === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
 
-    await loadQuotas();
+    await withLock('monthly-quotas-load', async () => await loadQuotas());
 
-    saveBtn.addEventListener('click', async () => {
+    saveBtn.addEventListener('click', async () => await withButtonLock(saveBtn, async () => {
         const month = String(monthInput.value || '').trim();
         const year = parseInt(yearInput.value, 10);
         const amount = parseFloat(amountInput.value);
@@ -69,8 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        saveBtn.disabled = true;
-
         try {
             const response = await fetch('/api/accounting/monthly-quota', {
                 method: 'POST',
@@ -111,9 +109,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 confirmButtonText: 'Aceptar'
             });
         } finally {
-            saveBtn.disabled = false;
+            // button state restored by withButtonLock
         }
-    });
+    }, { loadingText: 'GUARDANDO...' }));
 
     // Consulta configuraciones guardadas y renderiza el historico en tabla.
     async function loadQuotas() {

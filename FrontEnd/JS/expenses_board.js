@@ -1,6 +1,6 @@
 /**
  * TESINA: Tablon de gastos de condominio.
- * Responsabilidad: listar gastos, aplicar filtros, paginar y gestionar CRUD con ventana de 24h.
+ * Responsabilidad: listar gastos, aplicar filtros, paginar y gestionar CRUD con ventana de 30 días.
  * Flujo: obtener gastos -> filtrar/ordenar -> renderizar tabla -> crear/editar/eliminar.
  */
 
@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const sessionUser = window.ADIAuth?.getCurrentUser?.();
     const canManageExpenses = Number(sessionUser?.rol_id || 0) >= 2;
-    const EDIT_WINDOW_HOURS = 24;
+    // Ventana para editar/borrar gastos: 30 días (en horas)
+    const EDIT_WINDOW_HOURS = 24 * 30; // 720 horas
 
     let allExpenses = [];
     let filteredExpenses = [];
@@ -64,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Event listeners para visualizar comprobantes y acciones
-    tbody.addEventListener('click', (e) => {
+    tbody.addEventListener('click', async (e) => {
         const createBtn = e.target.closest('.open-expense-form-btn');
         if (createBtn) {
             openCreateForm();
@@ -101,10 +102,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const exp = allExpenses.find(x => Number(x.id) === expenseId);
             if (!exp) return;
 
-            if (!canEditExpense(exp)) {
+                if (!canEditExpense(exp)) {
                 Swal.fire({
                     title: 'Fuera de rango',
-                    text: 'Solo puedes editar gastos dentro de 24 horas.',
+                    text: 'Solo puedes editar gastos dentro de 30 días.',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -121,10 +122,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             const expenseId = Number(deleteBtn.dataset.id);
             const exp = allExpenses.find(x => Number(x.id) === expenseId);
             if (!exp) return;
-            if (!canEditExpense(exp)) {
+                if (!canEditExpense(exp)) {
                 Swal.fire({
                     title: 'Fuera de rango',
-                    text: 'Solo puedes borrar gastos dentro de 24 horas.',
+                    text: 'Solo puedes borrar gastos dentro de 30 días.',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -132,7 +133,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            handleDeleteExpense(expenseId);
+            await withButtonLock(deleteBtn, async () => await handleDeleteExpense(expenseId, deleteBtn), { loadingText: 'ELIMINANDO...' });
         }
     });
 
@@ -191,124 +192,124 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     saveBtn.addEventListener('click', async () => {
-        const amount = amountInput.value;
-        const description = notesInput.value.trim();
-        const parsedAmount = Number.parseFloat(amount);
+        await withButtonLock(saveBtn, async () => {
+            const amount = amountInput.value;
+            const description = notesInput.value.trim();
+            const parsedAmount = Number.parseFloat(amount);
 
-        if (!amount || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
-            Swal.fire({
-                title: 'Costo inválido',
-                text: 'Ingresa un costo mayor a 0.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (!description) {
-            Swal.fire({
-                title: 'Falta descripción',
-                text: 'Escribe una descripción del gasto.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (description.length < 3 || description.length > 150) {
-            Swal.fire({
-                title: 'Descripción inválida',
-                text: 'La descripción debe tener entre 3 y 150 caracteres.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (!imageData) {
-            Swal.fire({
-                title: 'Falta comprobante',
-                text: 'Selecciona la imagen del comprobante.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        if (!confirmInput.checked) {
-            Swal.fire({
-                title: 'Confirma el envío',
-                text: 'Marca la casilla de confirmación.',
-                icon: 'warning',
-                confirmButtonColor: '#ED7A13',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
-
-        saveBtn.disabled = true;
-
-        try {
-            const endpoint = editingExpenseId
-                ? `/api/accounting/expenses/${encodeURIComponent(editingExpenseId)}`
-                : '/api/accounting/expenses';
-            const method = editingExpenseId ? 'PATCH' : 'POST';
-
-            const payload = {
-                amount: parsedAmount,
-                description,
-                image_data: imageData
-            };
-            if (!editingExpenseId) {
-                payload.expense_date = new Date().toISOString();
-            }
-
-            const response = await fetch(endpoint, {
-                method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
+            if (!amount || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
                 Swal.fire({
-                    title: 'Error al guardar',
-                    text: result.message || 'No se pudo registrar el gasto.',
-                    icon: 'error',
-                    confirmButtonColor: '#d33',
+                    title: 'Costo inválido',
+                    text: 'Ingresa un costo mayor a 0.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
                 });
                 return;
             }
 
-            await Swal.fire({
-                title: editingExpenseId ? 'Gasto actualizado' : 'Gasto registrado',
-                text: editingExpenseId ? 'El gasto se actualizó correctamente.' : 'El gasto se guardó correctamente.',
-                icon: 'success',
-                timer: 1700,
-                timerProgressBar: true,
-                showConfirmButton: false,
-                confirmButtonColor: '#6A8042'
-            });
+            if (!description) {
+                Swal.fire({
+                    title: 'Falta descripción',
+                    text: 'Escribe una descripción del gasto.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
 
-            closeExpenseForm();
-            await reloadExpenses();
-        } catch {
-            Swal.fire({
-                title: 'Error de conexión',
-                text: 'No se pudo guardar el gasto.',
-                icon: 'error',
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Aceptar'
-            });
-        } finally {
-            saveBtn.disabled = false;
-        }
+            if (description.length < 3 || description.length > 150) {
+                Swal.fire({
+                    title: 'Descripción inválida',
+                    text: 'La descripción debe tener entre 3 y 150 caracteres.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            if (!imageData) {
+                Swal.fire({
+                    title: 'Falta comprobante',
+                    text: 'Selecciona la imagen del comprobante.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            if (!confirmInput.checked) {
+                Swal.fire({
+                    title: 'Confirma el envío',
+                    text: 'Marca la casilla de confirmación.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            try {
+                const endpoint = editingExpenseId
+                    ? `/api/accounting/expenses/${encodeURIComponent(editingExpenseId)}`
+                    : '/api/accounting/expenses';
+                const method = editingExpenseId ? 'PATCH' : 'POST';
+
+                const payload = {
+                    amount: parsedAmount,
+                    description,
+                    image_data: imageData
+                };
+                if (!editingExpenseId) {
+                    payload.expense_date = new Date().toISOString();
+                }
+
+                const response = await fetch(endpoint, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    Swal.fire({
+                        title: 'Error al guardar',
+                        text: result.message || 'No se pudo registrar el gasto.',
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                await Swal.fire({
+                    title: editingExpenseId ? 'Gasto actualizado' : 'Gasto registrado',
+                    text: editingExpenseId ? 'El gasto se actualizó correctamente.' : 'El gasto se guardó correctamente.',
+                    icon: 'success',
+                    timer: 1700,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    confirmButtonColor: '#6A8042'
+                });
+
+                closeExpenseForm();
+                await reloadExpenses();
+            } catch {
+                Swal.fire({
+                    title: 'Error de conexión',
+                    text: 'No se pudo guardar el gasto.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+            } finally {
+                // button state restored by withButtonLock
+            }
+        }, { loadingText: 'GUARDANDO...' });
     });
 
     function resetExpenseForm() {
@@ -493,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         expenseFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    async function handleDeleteExpense(expenseId) {
+    async function handleDeleteExpense(expenseId, btn) {
         const confirmation = await Swal.fire({
             title: '¿Borrar gasto?',
             text: 'Esta acción no se puede deshacer.',
@@ -505,6 +506,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!confirmation.isConfirmed) return;
+
+        const originalText = btn?.textContent || '';
 
         try {
             const response = await fetch(`/api/accounting/expenses/${encodeURIComponent(expenseId)}`, {
@@ -554,21 +557,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function reloadExpenses() {
-        try {
-            const response = await fetch('/api/accounting/expenses-board');
-            const data = await response.json();
+        return await withLock('expenses-reload', async () => {
+            try {
+                const response = await fetch('/api/accounting/expenses-board');
+                const data = await response.json();
 
-            if (!data.success) {
+                if (!data.success) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Error al cargar gastos</td></tr>';
+                    return;
+                }
+
+                allExpenses = data.expenses || [];
+                populateMonthFilter(allExpenses);
+                applyFilters();
+            } catch (error) {
                 tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Error al cargar gastos</td></tr>';
-                return;
             }
-
-            allExpenses = data.expenses || [];
-            populateMonthFilter(allExpenses);
-            applyFilters();
-        } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Error al cargar gastos</td></tr>';
-        }
+        });
     }
 
     // Genera etiqueta mensual para el filtro de periodo.

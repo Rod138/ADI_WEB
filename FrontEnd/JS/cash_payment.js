@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let receipts = [];
 
     initializeForm();
-    await loadData();
+    await withLock('cash_payment-load', async () => await loadData());
 
     depSelect.addEventListener('change', autofillExpected);
     monthSelect.addEventListener('change', autofillExpected);
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     monthSelect.addEventListener('change', renderHistory);
     yearInput.addEventListener('input', renderHistory);
 
-    saveBtn.addEventListener('click', saveCashPayment);
+    saveBtn.addEventListener('click', async () => await withButtonLock(saveBtn, saveCashPayment, { loadingText: 'GUARDANDO...' }));
     cancelBtn.addEventListener('click', resetForm);
 
     function initializeForm() {
@@ -104,8 +104,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return notify('Confirmación requerida', 'Marca la confirmación de pago en efectivo.', 'warning');
         }
 
-        saveBtn.disabled = true;
-
         try {
             const res = await fetch('/api/accounting/payment', {
                 method: 'POST',
@@ -140,7 +138,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             notify('Error de conexión', 'No se pudo registrar el pago en efectivo.', 'error');
         } finally {
-            saveBtn.disabled = false;
+            // button state restored by withButtonLock
         }
     }
 

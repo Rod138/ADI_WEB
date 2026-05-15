@@ -350,6 +350,27 @@ tbody td:nth-child(3) {
     font-weight: 500;
 }
 
+/* Centrar la columna de información (descripción + comprobante) */
+tbody td:nth-child(1) {
+    text-align: center;
+}
+
+tbody td:nth-child(1) .expense-description {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+tbody td:nth-child(1) small {
+    display: block;
+    margin-top: 0.35rem;
+}
+
+.receipt-thumb-btn {
+    display: inline-block;
+    margin: 0.25rem auto 0;
+}
+
 .pagination-controls {
     width: min(100%, 76rem);
     display: flex;

@@ -27,22 +27,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentPage = 1;
 
     try {
-        const response = await fetch('/api/incidents');
-        const data = await response.json();
+        await withLock('incidents-load', async () => {
+            const response = await fetch('/api/incidents');
+            const data = await response.json();
 
-        if (!data.success) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar incidencias</td></tr>';
-            return;
-        }
+            if (!data.success) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar incidencias</td></tr>';
+                return;
+            }
 
-        // Build lookup maps { id -> name }
-        typesMap   = Object.fromEntries((data.types   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(t => [t.id, t.name ?? t.type ?? t.id]));
-        areasMap   = Object.fromEntries((data.areas   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(a => [a.id, a.name ?? a.area ?? a.id]));
-        statusesMap = Object.fromEntries((data.statuses ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(s => [s.id, s.name ?? s.status ?? s.id]));
+            // Build lookup maps { id -> name }
+            typesMap   = Object.fromEntries((data.types   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(t => [t.id, t.name ?? t.type ?? t.id]));
+            areasMap   = Object.fromEntries((data.areas   ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(a => [a.id, a.name ?? a.area ?? a.id]));
+            statusesMap = Object.fromEntries((data.statuses ?? []).slice().sort((a, b) => Number(a.id) - Number(b.id)).map(s => [s.id, s.name ?? s.status ?? s.id]));
 
-        allIncidents = data.incidents;
-        populateFilters(data.types, data.areas, data.statuses);
-        applyFilters();
+            allIncidents = data.incidents;
+            populateFilters(data.types, data.areas, data.statuses);
+            applyFilters();
+        });
     } catch (e) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar incidencias</td></tr>';
         return;
@@ -57,10 +59,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Llena combos de filtro con catalogos recibidos del backend.
     function populateFilters(types, areas, statuses) {
+        const seenTypes = new Set();
         (types ?? []).slice().sort((a, b) => a.id - b.id).forEach(type => {
+            const name = String(type.name ?? type.type ?? type.id).trim();
+            const key = name.toLowerCase();
+            if (seenTypes.has(key)) return;
+            seenTypes.add(key);
             const opt = document.createElement('option');
             opt.value = type.id;
-            opt.textContent = type.name ?? type.type ?? type.id;
+            opt.textContent = name;
             typeSelect.appendChild(opt);
         });
 

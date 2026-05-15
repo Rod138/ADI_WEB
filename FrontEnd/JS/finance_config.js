@@ -28,11 +28,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // ============ Initialization ============
     initializeQuotaForm();
-    await loadFinanceConfig();
+    await withLock('finance-config-load', async () => await loadFinanceConfig());
 
     // ============ Event Listeners ============
-    saveFundBtn.addEventListener('click', handleSaveFund);
-    saveQuotaBtn.addEventListener('click', handleSaveQuota);
+    saveFundBtn.addEventListener('click', async () => await withButtonLock(saveFundBtn, handleSaveFund, { loadingText: 'GUARDANDO...' }));
+    saveQuotaBtn.addEventListener('click', async () => await withButtonLock(saveQuotaBtn, handleSaveQuota, { loadingText: 'GUARDANDO...' }));
     cancelFundBtn.addEventListener('click', resetFundForm);
     cancelQuotaBtn.addEventListener('click', resetQuotaForm);
 
@@ -49,8 +49,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             showAlert('warning', 'Falta confirmación', 'Marca la casilla para confirmar.');
             return;
         }
-
-        saveFundBtn.disabled = true;
 
         try {
             const response = await fetch('/api/accounting/finance-config', {
@@ -74,7 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showAlert('error', 'Error de conexión', 'No se pudo guardar el fondo.');
             console.error('Fund save error:', error);
         } finally {
-            saveFundBtn.disabled = false;
+            // button state restored by withButtonLock
         }
     }
 
@@ -112,8 +110,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        saveQuotaBtn.disabled = true;
-
         try {
             const response = await fetch('/api/accounting/finance-config', {
                 method: 'POST',
@@ -136,7 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             showAlert('error', 'Error de conexión', 'No se pudo guardar la cuota.');
             console.error('Quota save error:', error);
         } finally {
-            saveQuotaBtn.disabled = false;
+            // button state restored by withButtonLock
         }
     }
 

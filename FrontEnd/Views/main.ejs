@@ -304,7 +304,7 @@
                         <strong>Preguntas frecuentes</strong>
                     </div>
                 </a>
-                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios">
+                <a class="sidebar-sublink" href="/support/tickets" data-label="Tickets propios">
                     <span class="material-symbols-outlined">confirmation_number</span>
                     <div class="sidebar-link-copy">
                         <strong>Tickets propios</strong>
@@ -321,8 +321,8 @@
             <h1>BIENVENIDO <span id="user-name"><%= user.name %></span></h1>
         </div>
         <section class="cards-grid cards-count-<%= menuItems.length %>" aria-label="Accesos del sistema">
-            <% menuItems.forEach(item => { %>
-                <a class="menu-card <%= item.button_class %>" href="<%= item.href %>">
+            <% menuItems.forEach((item, index) => { %>
+                <a class="menu-card <%= item.button_class %> <%= menuItems.length === 5 && index === menuItems.length - 1 ? 'center-last' : '' %>" href="<%= item.href %>">
                     <div class="card-content">
                         <h3 class="card-title"><%= item.title %></h3>
                         <% if (item.subtitle) { %>

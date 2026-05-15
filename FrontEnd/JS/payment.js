@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    saveBtn.addEventListener('click', async () => {
+    saveBtn.addEventListener('click', async () => await withButtonLock(saveBtn, async () => {
         const month = monthInput.value;
         const year = parseInt(yearInput.value, 10);
         const amountPaid = parseFloat(amountPaidInput.value);
@@ -120,8 +120,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
             return notify('Cloudinary no configurado', 'Falta configuracion de Cloudinary en el servidor.', 'error');
         }
-
-        saveBtn.disabled = true;
 
         try {
             const proofUrl = await uploadProofToCloudinary(proofFile);
@@ -155,35 +153,37 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             notify('Error de conexion', error.message || 'No se pudo registrar el pago.', 'error');
         } finally {
-            saveBtn.disabled = false;
+            // button state restored by withButtonLock
         }
-    });
+    }, { loadingText: 'ENVIANDO...' }));
 
     async function refreshData() {
-        try {
-            const res = await fetch('/api/accounting/payment-data');
-            const data = await res.json();
+        return await withLock('payment-refreshData', async () => {
+            try {
+                const res = await fetch('/api/accounting/payment-data');
+                const data = await res.json();
 
-            if (!data.success) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error al cargar datos</td></tr>';
-                return;
+                if (!data.success) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error al cargar datos</td></tr>';
+                    return;
+                }
+
+                quotas = data.quotas || [];
+
+                const baseRows = data.receipts || [];
+                allRows = Number(user?.dep_id)
+                    ? baseRows.filter(r => Number(r.dep_id) === Number(user.dep_id))
+                    : baseRows;
+
+                const uniqueYears = [...new Set(allRows.map(r => r.year).filter(Boolean))].sort((a, b) => b - a);
+                fltYear.innerHTML = '<option value="any">Cualquiera</option>' + uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
+
+                autoFillExpectedAmount();
+                applyFilters();
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error de red</td></tr>';
             }
-
-            quotas = data.quotas || [];
-
-            const baseRows = data.receipts || [];
-            allRows = Number(user?.dep_id)
-                ? baseRows.filter(r => Number(r.dep_id) === Number(user.dep_id))
-                : baseRows;
-
-            const uniqueYears = [...new Set(allRows.map(r => r.year).filter(Boolean))].sort((a, b) => b - a);
-            fltYear.innerHTML = '<option value="any">Cualquiera</option>' + uniqueYears.map(y => `<option value="${y}">${y}</option>`).join('');
-
-            autoFillExpectedAmount();
-            applyFilters();
-        } catch (error) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center">Error de red</td></tr>';
-        }
+        });
     }
 
     function autoFillExpectedAmount() {

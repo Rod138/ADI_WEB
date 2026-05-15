@@ -26,7 +26,7 @@
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
-                <%= user.roleLabel %>
+                <span id="user-role" data-role-id="<%= user && user.rol_id ? user.rol_id : '' %>">Rol</span>
             </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
@@ -55,7 +55,7 @@
             <nav class="sidebar-submenu" id="support-submenu">
                 <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda"><span class="material-symbols-outlined">space_dashboard</span><div class="sidebar-link-copy"><strong>Centro de ayuda</strong></div></a>
                 <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes"><span class="material-symbols-outlined">quiz</span><div class="sidebar-link-copy"><strong>Preguntas frecuentes</strong></div></a>
-                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
+                <a class="sidebar-sublink" href="/support/tickets" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
             </nav>
         </nav>
     </aside>
@@ -63,23 +63,23 @@
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
     <main class="main-container">
-        <section class="support-listing">
-            <section id="areas" class="support-card">
-                <h2>Áreas</h2>
-                <ul id="areas-list">Cargando...</ul>
-            </section>
-
-            <section id="faqs" class="support-card">
-                <h2>Preguntas frecuentes</h2>
+        <section class="support-listing support-listing--faq">
+            <section id="faq-search-card" class="support-card">
+                <h2>Buscar preguntas</h2>
                 <div class="faq-search-wrap">
                     <input id="faq-search" type="search" placeholder="Buscar en preguntas frecuentes">
                 </div>
+                <p class="support-help-text">Escribe una palabra clave para filtrar todas las preguntas por área.</p>
+            </section>
+
+            <section id="faqs" class="support-card">
+                <h2>Preguntas frecuentes por área</h2>
                 <div id="faqs-list">Cargando...</div>
             </section>
         </section>
 
         <div class="support-actions">
-            <a href="/support" class="btn-back">Volver a soporte</a>
+            <a href="/support" class="btn-back">REGRESAR</a>
         </div>
     </main>
 
@@ -89,6 +89,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const currentUser = window.ADIAuth?.getCurrentUser?.();
+            const roleSpan = document.getElementById('user-role');
+            const serverRoleId = Number(roleSpan?.dataset.roleId || 0);
+            const resolvedRoleId = Number(currentUser?.rol_id || serverRoleId || 0);
+            if (roleSpan && window.ADIAuth?.getRoleLabel) {
+                roleSpan.textContent = window.ADIAuth.getRoleLabel(resolvedRoleId);
+            } else if (roleSpan && resolvedRoleId) {
+                roleSpan.textContent = `Rol ${resolvedRoleId}`;
+            }
+
             const sidebar = document.getElementById('adi-sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
             const toggle = document.getElementById('sidebar-toggle');
@@ -103,6 +113,7 @@
                     localStorage.setItem('sidebarExpanded', String(expanded));
                 }
             };
+
 
             const setSidebarOpen = (open) => {
                 body.classList.toggle('sidebar-open', open);

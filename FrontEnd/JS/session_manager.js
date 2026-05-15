@@ -78,6 +78,44 @@ function getSessionDeadline(user) {
     return rawValue;
 }
 
+// Global lock utilities to avoid re-entrancy on UI actions.
+// Usage: await withLock('unique-key', async () => { ... })
+// or: await withButtonLock(buttonElement, async () => { ... }, { loadingText: 'ENVIANDO...' })
+function withLock(key, asyncFn) {
+    if (!window.__ADI_LOCKS__) window.__ADI_LOCKS__ = {};
+    if (window.__ADI_LOCKS__[key]) return;
+    window.__ADI_LOCKS__[key] = true;
+    try {
+        return asyncFn && typeof asyncFn === 'function' ? asyncFn() : undefined;
+    } finally {
+        window.__ADI_LOCKS__[key] = false;
+    }
+}
+
+async function withButtonLock(button, asyncFn, opts = {}) {
+    if (!button) return asyncFn && typeof asyncFn === 'function' ? asyncFn() : undefined;
+
+    const key = opts.key || button.dataset.lockKey || (`btn-lock-${button.id || Math.random().toString(36).slice(2)}`);
+    if (!window.__ADI_LOCKS__) window.__ADI_LOCKS__ = {};
+    if (window.__ADI_LOCKS__[key]) return;
+    const originalText = button.textContent;
+    try {
+        window.__ADI_LOCKS__[key] = true;
+        button.disabled = true;
+        if (opts.loadingText) button.textContent = opts.loadingText;
+        const res = await asyncFn();
+        return res;
+    } finally {
+        button.disabled = false;
+        try { button.textContent = originalText; } catch (e) {}
+        window.__ADI_LOCKS__[key] = false;
+    }
+}
+
+// Expose globally
+window.withLock = withLock;
+window.withButtonLock = withButtonLock;
+
 function isSessionExpired(user) {
     const deadline = getSessionDeadline(user);
     if (!deadline) return true;
@@ -235,7 +273,7 @@ async function enforcePageRole(user) {
     }
 
     await showUserMessage('Acceso restringido', `Tu rol (${getRoleLabel(user?.rol_id)}) no tiene permiso para entrar a esta seccion.`);
-    window.location.replace('/main');
+    window.location.replace('/unauthorized');
     return false;
 }
 
@@ -399,7 +437,13 @@ function initializeSharedSidebarBehavior() {
 
     window.addEventListener('pageshow', async function () {
         const user = safeParseUserSession();
+        const pathname = window.location.pathname || '';
+        const publicPaths = ['/login', '/login.html', '/forgot-password', '/forgot-password.html', '/', '/index.html'];
         if (!user) {
+            if (publicPaths.includes(pathname)) {
+                // On public pages (login/forgot/index) do not redirect.
+                return;
+            }
             window.location.replace('/login');
             return;
         }
@@ -464,20 +508,22 @@ function initializeSharedSidebarBehavior() {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async function (e) {
                 e.preventDefault();
-                try {
-                    const currentUser = safeParseUserSession();
-                    await fetch('/api/logout', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ refreshToken: currentUser?.refreshToken || '' })
-                    });
-                } catch {
-                    // Continuar cierre local aunque falle el servidor.
-                }
+                await withButtonLock(logoutBtn, async () => {
+                    try {
+                        const currentUser = safeParseUserSession();
+                        await fetch('/api/logout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ refreshToken: currentUser?.refreshToken || '' })
+                        });
+                    } catch {
+                        // Continuar cierre local aunque falle el servidor.
+                    }
 
-                sessionStorage.removeItem('user');
-                await showUserMessage('Sesion cerrada', 'Hasta pronto.', 'success');
-                window.location.replace('/');
+                    sessionStorage.removeItem('user');
+                    await showUserMessage('Sesion cerrada', 'Hasta pronto.', 'success');
+                    window.location.replace('/');
+                }, { loadingText: 'CERRANDO...' });
             });
         }
     });

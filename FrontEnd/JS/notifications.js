@@ -102,27 +102,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Consulta backend con filtros activos y refresca la vista de notificaciones.
     const fetchAndRender = async () => {
-        const params = new URLSearchParams({
-            usr_id: String(sessionUser.id),
-            order: orderFilter.value || 'desc'
+        return await withLock('notifications-fetchAndRender', async () => {
+            const params = new URLSearchParams({
+                usr_id: String(sessionUser.id),
+                order: orderFilter.value || 'desc'
+            });
+
+            if (typeFilter.value !== 'all') {
+                params.set('type_id', typeFilter.value);
+            }
+
+            const response = await fetch(`/api/notifications?${params.toString()}`);
+            const result = await response.json();
+
+            if (!result.success) {
+                list.innerHTML = '<p class="empty-text">No se pudieron cargar las notificaciones</p>';
+                return;
+            }
+
+            allNotifications = result.notifications || [];
+            typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.name]));
+            currentPage = 1;
+            applyFilters();
         });
-
-        if (typeFilter.value !== 'all') {
-            params.set('type_id', typeFilter.value);
-        }
-
-        const response = await fetch(`/api/notifications?${params.toString()}`);
-        const result = await response.json();
-
-        if (!result.success) {
-            list.innerHTML = '<p class="empty-text">No se pudieron cargar las notificaciones</p>';
-            return;
-        }
-
-        allNotifications = result.notifications || [];
-        typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.name]));
-        currentPage = 1;
-        applyFilters();
     };
 
     const applyFilters = () => {
@@ -169,7 +171,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const deleteAllBtn = document.getElementById('delete-all-btn');
     if (deleteAllBtn) {
-        deleteAllBtn.addEventListener('click', async () => {
+        deleteAllBtn.addEventListener('click', async () => await withButtonLock(deleteAllBtn, async () => {
             if (filteredNotifications.length === 0) {
                 Swal.fire({
                     title: 'Sin notificaciones',
@@ -193,50 +195,40 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!confirmation.isConfirmed) return;
 
-            try {
-                const response = await fetch('/api/notifications/delete-all', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usr_id: sessionUser.id })
-                });
+            const response = await fetch('/api/notifications/delete-all', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usr_id: sessionUser.id })
+            });
 
-                const result = await response.json();
+            const result = await response.json();
 
-                if (!result.success) {
-                    Swal.fire({
-                        title: 'Error al borrar',
-                        text: result.message || 'No se pudieron borrar las notificaciones.',
-                        icon: 'error',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'Aceptar'
-                    });
-                    return;
-                }
-
-                allNotifications = [];
-                filteredNotifications = [];
-                currentPage = 1;
-                render(filteredNotifications);
-
+            if (!result.success) {
                 Swal.fire({
-                    title: '¡Listo!',
-                    text: result.message || 'Todas las notificaciones fueron eliminadas.',
-                    icon: 'success',
-                    timer: 1500,
-                    timerProgressBar: true,
-                    showConfirmButton: false,
-                    confirmButtonColor: '#6A8042'
-                });
-            } catch {
-                Swal.fire({
-                    title: 'Error de conexión',
-                    text: 'No se pudieron borrar las notificaciones.',
+                    title: 'Error al borrar',
+                    text: result.message || 'No se pudieron borrar las notificaciones.',
                     icon: 'error',
                     confirmButtonColor: '#d33',
                     confirmButtonText: 'Aceptar'
                 });
+                return;
             }
-        });
+
+            allNotifications = [];
+            filteredNotifications = [];
+            currentPage = 1;
+            render(filteredNotifications);
+
+            Swal.fire({
+                title: '¡Listo!',
+                text: result.message || 'Todas las notificaciones fueron eliminadas.',
+                icon: 'success',
+                timer: 1500,
+                timerProgressBar: true,
+                showConfirmButton: false,
+                confirmButtonColor: '#6A8042'
+            });
+        }, { loadingText: 'ELIMINANDO...' }));
     }
 
     list.addEventListener('click', async (event) => {
@@ -255,8 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
         if (!confirmation.isConfirmed) return;
-
-        try {
+        await withButtonLock(btn, async () => {
             const response = await fetch(`/api/notifications/${encodeURIComponent(notificationId)}`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
@@ -296,15 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 showConfirmButton: false,
                 confirmButtonColor: '#6A8042'
             });
-        } catch {
-            Swal.fire({
-                title: 'Error de conexión',
-                text: 'No se pudo borrar la notificación.',
-                icon: 'error',
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Aceptar'
-            });
-        }
+        }, { loadingText: 'ELIMINANDO...' });
     });
 
     // Mark notification as read when clicking the item (but not the delete button)

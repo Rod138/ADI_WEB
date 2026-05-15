@@ -5,68 +5,84 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.addEventListener('DOMContentLoaded', () => {
-        const amountInput = document.getElementById('expense-amount');
-        const notesInput = document.getElementById('expense-notes');
-        const imageInput = document.getElementById('expense-image');
-        const confirmInput = document.getElementById('expense-confirm');
-        const saveBtn = document.getElementById('save-expense-btn');
-        const charCounter = document.getElementById('char-counter');
-        const uploadIcon = document.getElementById('upload-icon');
-        const uploadName = document.getElementById('upload-name');
-        const previewImage = document.getElementById('preview-image');
+    const amountInput = document.getElementById('expense-amount');
+    const notesInput = document.getElementById('expense-notes');
+    const imageInput = document.getElementById('expense-image');
+    const confirmInput = document.getElementById('expense-confirm');
+    const saveBtn = document.getElementById('save-expense-btn');
+    const charCounter = document.getElementById('char-counter');
+    const uploadIcon = document.getElementById('upload-icon');
+    const uploadName = document.getElementById('upload-name');
+    const previewImage = document.getElementById('preview-image');
 
-        let imageData = '';
+    if (!amountInput || !notesInput || !imageInput || !confirmInput || !saveBtn) return;
 
-        notesInput.addEventListener('input', () => {
-            charCounter.textContent = `${notesInput.value.length} / 150`;
-        });
+    let imageData = '';
 
-        // Estandariza la fecha para conservar trazabilidad en el registro.
-        const getCurrentIsoDate = () => new Date().toISOString();
+    notesInput.addEventListener('input', () => {
+        charCounter.textContent = `${notesInput.value.length} / 150`;
+    });
 
-        imageInput.addEventListener('change', () => {
-            const file = imageInput.files && imageInput.files[0];
-            if (!file) {
-                imageData = '';
-                previewImage.style.display = 'none';
-                uploadIcon.style.display = 'block';
-                uploadName.textContent = 'Selecciona un comprobante';
-                return;
-            }
+    // Estandariza la fecha para conservar trazabilidad en el registro.
+    const getCurrentIsoDate = () => new Date().toISOString();
 
-            if (!file.type.startsWith('image/')) {
-                Swal.fire({
-                    title: 'Archivo inválido',
-                    text: 'Solo se permiten imágenes (JPG, PNG, GIF, WebP).',
-                    icon: 'error',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
-                });
-                imageInput.value = '';
-                imageData = '';
-                return;
-            }
+    imageInput.addEventListener('change', () => {
+        const file = imageInput.files && imageInput.files[0];
+        if (!file) {
+            imageData = '';
+            previewImage.style.display = 'none';
+            uploadIcon.style.display = 'block';
+            uploadName.textContent = 'Selecciona un comprobante';
+            return;
+        }
 
-            const reader = new FileReader();
-            reader.onload = () => {
-                imageData = String(reader.result || '');
-                previewImage.src = imageData;
-                previewImage.style.display = 'block';
-                uploadIcon.style.display = 'none';
-                uploadName.textContent = file.name;
-            };
-            reader.readAsDataURL(file);
-        });
+        if (!file.type || !file.type.startsWith('image/')) {
+            Swal.fire({
+                title: 'Archivo inválido',
+                text: 'Solo se permiten imágenes (JPG, PNG, GIF, WebP).',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+            imageInput.value = '';
+            imageData = '';
+            return;
+        }
 
-        saveBtn.addEventListener('click', async () => {
+        if (file.size > 5 * 1024 * 1024) {
+            Swal.fire({
+                title: 'Archivo muy grande',
+                text: 'El comprobante no debe superar 5MB.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+            imageInput.value = '';
+            imageData = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            imageData = String(reader.result || '');
+            previewImage.src = imageData;
+            previewImage.style.display = 'block';
+            uploadIcon.style.display = 'none';
+            uploadName.textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    saveBtn.addEventListener('click', async () => {
+        await withButtonLock(saveBtn, async () => {
             const amount = amountInput.value;
             const description = notesInput.value.trim();
+            const parsedAmount = Number.parseFloat(amount);
 
-            if (!amount || parseFloat(amount) <= 0) {
+            if (!amount || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
                 Swal.fire({
                     title: 'Costo inválido',
-                    text: 'Ingresa un costo mayor a 0.',
+                    text: 'Ingresa un costo numérico mayor a 0.',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -78,6 +94,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 Swal.fire({
                     title: 'Falta descripción',
                     text: 'Escribe una descripción del gasto.',
+                    icon: 'warning',
+                    confirmButtonColor: '#ED7A13',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
+
+            if (description.length < 3 || description.length > 150) {
+                Swal.fire({
+                    title: 'Descripción inválida',
+                    text: 'La descripción debe tener entre 3 y 150 caracteres.',
                     icon: 'warning',
                     confirmButtonColor: '#ED7A13',
                     confirmButtonText: 'Aceptar'
@@ -107,14 +134,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            saveBtn.disabled = true;
-
             try {
                 const response = await fetch('/api/accounting/expenses', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        amount,
+                        amount: parsedAmount,
                         description,
                         image_data: imageData,
                         expense_date: getCurrentIsoDate()
@@ -153,8 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     confirmButtonColor: '#d33',
                     confirmButtonText: 'Aceptar'
                 });
-            } finally {
-                saveBtn.disabled = false;
             }
-        });
+        }, { loadingText: 'ENVIANDO...' });
     });
+});

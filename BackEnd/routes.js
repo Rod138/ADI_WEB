@@ -12,6 +12,7 @@ import { getUsers, getUserById, updateUser, deleteUser, updateDepartment, getDep
 import { getNotifications, deleteNotification, deleteAllNotifications, markNotificationRead } from './controllers/notifications.js';
 import { createTowerExpense, updateTowerExpense, deleteTowerExpense, getTowerExpensesBoard, getFinanceConfig, upsertFinanceConfig, getTowerFundConfig, upsertTowerFundConfig, getMonthlyQuotaConfig, upsertMonthlyQuotaConfig, getPaymentReceipts, getPaymentReceiptById, updatePaymentReceipt, getQuotaPaymentData, createQuotaPayment, getAccountingReportsData } from './controllers/accounting.js';
 import { requireMinRole, requireSelfOrMinRole } from './middlewares/auth.js';
+import { getMyTickets, postMyTicket, getAreas as getSupportAreas, getErrorTypesByArea as getSupportErrorTypesByArea } from './controllers/support.js';
 import { verifyRefreshToken, generateAccessToken, verifyRefreshTokenInDB, deleteRefreshTokenFromDB } from './utils/validation.js';
 import supabase from './dbconfig.js';
 
@@ -213,6 +214,18 @@ router.get('/support', requireMinRole(1), (req, res) => {
 router.get('/support/faqs', requireMinRole(1), (req, res) => {
     res.render('support-faqs', { user: req.sessionUser });
 });
+
+router.get('/support/tickets', requireMinRole(1), (req, res) => {
+    res.render('support-tickets', {
+        user: req.sessionUser
+    });
+});
+
+// Proxy endpoints to ADI-SOPORTE for tickets (only operate on authenticated user's tickets)
+router.get('/api/support/tickets', requireMinRole(1), getMyTickets);
+router.post('/api/support/tickets', requireMinRole(1), postMyTicket);
+router.get('/api/support/areas', requireMinRole(1), getSupportAreas);
+router.get('/api/support/error-types/:area_id', requireMinRole(1), getSupportErrorTypesByArea);
 
 router.get('/accounting/receipts-board', (req, res) => {
     res.render('accounting/receipts-board');

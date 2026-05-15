@@ -22,17 +22,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentPage = 1;
 
     try {
-        const response = await fetch('/api/accounting/receipts');
-        const data = await response.json();
+        await withLock('receipts-load', async () => {
+            const response = await fetch('/api/accounting/receipts');
+            const data = await response.json();
 
-        if (!data.success) {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar comprobantes</td></tr>';
-            return;
-        }
+            if (!data.success) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar comprobantes</td></tr>';
+                return;
+            }
 
-        allReceipts = data.receipts || [];
-        populateFilters(allReceipts, data.departments || []);
-        applyFilters();
+            allReceipts = data.receipts || [];
+            populateFilters(allReceipts, data.departments || []);
+            applyFilters();
+        });
     } catch (error) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center">Error al cargar comprobantes</td></tr>';
     }

@@ -197,6 +197,12 @@
                         hour: '2-digit', minute: '2-digit'
                     })
                     : '-';
+                const closedDate = inc.completed_at
+                    ? new Date(inc.completed_at).toLocaleString('es-MX', {
+                        year: 'numeric', month: 'long', day: 'numeric',
+                        hour: '2-digit', minute: '2-digit'
+                    })
+                    : '';
 
                 const imageUrl = inc.image_url ?? inc.img_url ?? inc.cloudinary_url ?? inc.image ?? null;
                 const costText = (inc.cost !== null && inc.cost !== undefined) ? `$${parseFloat(inc.cost).toFixed(2)}` : '-';
@@ -235,6 +241,11 @@
 
                         <label>FECHA</label>
                         <input type="text" value="${date}" readonly>
+
+                        ${closedDate ? `
+                        <label>FECHA DE CIERRE</label>
+                        <input type="text" value="${closedDate}" readonly>
+                        ` : ''}
 
                         <label>ÁREA</label>
                         <input type="text" value="${escapeHtml(data.areaName)}" readonly id="view-area">

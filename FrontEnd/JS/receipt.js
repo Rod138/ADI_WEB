@@ -141,8 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rejectBtn = document.getElementById('reject-btn');
 
             approveBtn.addEventListener('click', async () => {
-                approveBtn.disabled = true;
-                try {
+                await withButtonLock(approveBtn, async () => {
                     const patchRes = await fetch(`/api/accounting/receipts/${encodeURIComponent(receiptId)}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
@@ -154,11 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     await Swal.fire({ title: 'Comprobante validado', icon: 'success', timer: 1200, showConfirmButton: false });
                     window.location.reload();
-                } catch (err) {
-                    Swal.fire('Error de conexión', 'Fallo de red.', 'error');
-                } finally {
-                    approveBtn.disabled = false;
-                }
+                }, { loadingText: 'APROBANDO...' });
             });
 
             rejectBtn.addEventListener('click', async () => {
@@ -173,8 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
                 if (!confirm.isConfirmed) return;
 
-                rejectBtn.disabled = true;
-                try {
+                await withButtonLock(rejectBtn, async () => {
                     const patchRes = await fetch(`/api/accounting/receipts/${encodeURIComponent(receiptId)}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
@@ -186,11 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     }
                     await Swal.fire({ title: 'Comprobante rechazado', icon: 'success', timer: 1200, showConfirmButton: false });
                     window.location.reload();
-                } catch (err) {
-                    Swal.fire('Error de conexión', 'Fallo de red.', 'error');
-                } finally {
-                    rejectBtn.disabled = false;
-                }
+                }, { loadingText: 'RECHAZANDO...' });
             });
         }
     } catch (error) {

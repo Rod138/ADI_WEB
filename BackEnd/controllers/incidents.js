@@ -8,7 +8,8 @@ import supabase from "../dbconfig.js";
 import { notifyNewIncident, notifyIncidentStatusChange } from "../utils/notificationSender.js";
 import crypto from 'crypto';
 const INCIDENT_DESCRIPTION_MAX_LENGTH = 100;
-const INCIDENT_EDIT_WINDOW_HOURS = 24;
+// Ventana para editar/eliminar incidencias: 30 días (en horas)
+const INCIDENT_EDIT_WINDOW_HOURS = 24 * 30; // 720 horas
 
 // Elimina una imagen de Cloudinary por su URL
 const deleteCloudinaryImage = async (imageUrl) => {
@@ -66,7 +67,7 @@ const deleteCloudinaryImage = async (imageUrl) => {
     }
 };
 
-// Verifica si una incidencia puede ser editada (menos de 24 horas)
+// Verifica si una incidencia puede ser editada (menos de 30 días)
 const isIncidentEditable = (createdAt) => {
     const created = new Date(createdAt);
     const now = new Date();
@@ -177,7 +178,7 @@ export const getIncidentById = async (req, res) => {
 }
 
 // Actualiza campos operativos de una incidencia (estado, notas, costo y cierre).
-// Owners pueden editar solo dentro de 24 horas: description, area_id, type_id, image_url
+// Owners pueden editar solo dentro de 30 días: description, area_id, type_id, image_url
 // Solo Admin puede editar: status_id, cost, notes, set_completed_at
 export const updateIncident = async (req, res) => {
     const { id } = req.params;
@@ -233,7 +234,7 @@ export const updateIncident = async (req, res) => {
         if (isOwnIncidentPastWindow) {
             return res.status(403).json({
                 success: false,
-                message: 'Solo puedes editar el reporte dentro de 24 horas de su creación.'
+                message: 'Solo puedes editar el reporte dentro de 30 días de su creación.'
             });
         }
 
@@ -350,6 +351,13 @@ export const createIncident = async (req, res) => {
         });
     }
 
+    if (descriptionText.length < 5) {
+        return res.status(400).json({
+            success: false,
+            message: 'La descripción debe tener al menos 5 caracteres'
+        });
+    }
+
     if (descriptionText.length > INCIDENT_DESCRIPTION_MAX_LENGTH) {
         return res.status(400).json({
             success: false,
@@ -442,11 +450,11 @@ export const deleteIncident = async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes permiso para eliminar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas)
+        // Verificar ventana de edición (30 días)
         if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
-                message: 'Solo puedes eliminar la incidencia dentro de 24 horas de su creación.'
+                message: 'Solo puedes eliminar la incidencia dentro de 30 días de su creación.'
             });
         }
 
@@ -504,7 +512,7 @@ export const updateIncidentImage = async (req, res) => {
         if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
-                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
+                message: 'Solo puedes editar la incidencia dentro de 30 días de su creación'
             });
         }
 
@@ -553,11 +561,11 @@ export const deleteIncidentImage = async (req, res) => {
             return res.status(403).json({ success: false, message: 'No tienes permiso para editar esta incidencia' });
         }
 
-        // Verificar ventana de edición (24 horas)
+        // Verificar ventana de edición (30 días)
         if (!isIncidentEditable(incident.created_at)) {
             return res.status(403).json({
                 success: false,
-                message: 'Solo puedes editar la incidencia dentro de 24 horas de su creación'
+                message: 'Solo puedes editar la incidencia dentro de 30 días de su creación'
             });
         }
 

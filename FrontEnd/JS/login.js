@@ -76,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (log_in_form) {
         log_in_form.addEventListener("submit", async function (e) {
             e.preventDefault();
+            const submitButton = log_in_form.querySelector('button[type="submit"]');
             let data_is_fine = true;
 
             // Correo
@@ -152,7 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (data_is_fine) {
-                await login(email.value, password.value);
+                await withButtonLock(submitButton, async () => {
+                    await login(email.value, password.value);
+                }, { loadingText: 'ACCEDIENDO...' });
             }
         });
     }

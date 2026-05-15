@@ -86,8 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const openDropdown = async () => {
         btn.setAttribute('aria-expanded', 'true');
         dropdown.classList.remove('hidden');
-        const items = await fetchNotis();
-        renderList(items);
+        await withLock('notifications-menu-open', async () => {
+            const items = await fetchNotis();
+            renderList(items);
+        });
     };
 
     const closeDropdown = () => {
@@ -105,9 +107,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const del = e.target.closest('.nd-delete');
         const itemEl = e.target.closest('.nd-item');
         if (del) {
-            const id = del.getAttribute('data-id');
-            if (!id) return;
-            try {
+            await withButtonLock(del, async () => {
+                const id = del.getAttribute('data-id');
+                if (!id) return;
                 const sessionUser = JSON.parse(sessionStorage.getItem('user') || 'null');
                 const res = await fetch('/api/notifications/' + encodeURIComponent(id), {
                     method: 'DELETE', headers: { 'Content-Type': 'application/json' },
@@ -120,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const remaining = Array.from(list.querySelectorAll('.nd-item')).filter(i => !i.classList.contains('read')).length;
                     updateBadge(remaining);
                 }
-            } catch (err) {}
+            }, { loadingText: 'ELIMINANDO...' });
             return;
         }
 
@@ -128,6 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = itemEl.getAttribute('data-id');
             const alreadyRead = itemEl.getAttribute('data-read') === 'true';
             if (alreadyRead) return;
+            if (itemEl.dataset.busy === 'true') return;
+            itemEl.dataset.busy = 'true';
             try {
                 const sessionUser = JSON.parse(sessionStorage.getItem('user') || 'null');
                 const res = await fetch('/api/notifications/' + encodeURIComponent(id) + '/read', {
@@ -142,27 +146,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     const remaining = Array.from(list.querySelectorAll('.nd-item')).filter(i => i.getAttribute('data-read') !== 'true').length;
                     updateBadge(remaining);
                 }
-            } catch (err) {}
+            } catch (err) {
+                // ignore
+            } finally {
+                itemEl.dataset.busy = 'false';
+            }
         }
     });
 
-    if (deleteAllBtn) {
+        if (deleteAllBtn) {
         deleteAllBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const sessionUser = JSON.parse(sessionStorage.getItem('user') || 'null');
-            if (!sessionUser || !sessionUser.id) return;
-            if (!confirm('¿Borrar todas las notificaciones?')) return;
-            try {
-                const res = await fetch('/api/notifications/delete-all', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usr_id: sessionUser.id })
-                });
-                const rj = await res.json();
-                if (rj.success) {
-                    list.innerHTML = '<div class="nd-empty">Sin notificaciones</div>';
-                    updateBadge(0);
-                }
-            } catch (err) {}
+            await withButtonLock(deleteAllBtn, async () => {
+                const sessionUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+                if (!sessionUser || !sessionUser.id) return;
+                if (!confirm('¿Borrar todas las notificaciones?')) return;
+                try {
+                    const res = await fetch('/api/notifications/delete-all', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ usr_id: sessionUser.id })
+                    });
+                    const rj = await res.json();
+                    if (rj.success) {
+                        list.innerHTML = '<div class="nd-empty">Sin notificaciones</div>';
+                        updateBadge(0);
+                    }
+                } catch (err) {}
+            }, { loadingText: 'ELIMINANDO...' });
         });
     }
 

@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadCurrentFund();
 
-    saveBtn.addEventListener('click', async () => {
+    saveBtn.addEventListener('click', async () => await withButtonLock(saveBtn, async () => {
         const amount = parseFloat(amountInput.value);
 
         if (isNaN(amount) || amount < 0) {
@@ -37,8 +37,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
             return;
         }
-
-        saveBtn.disabled = true;
 
         try {
             const response = await fetch('/api/accounting/tower-fund', {
@@ -80,9 +78,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 confirmButtonText: 'Aceptar'
             });
         } finally {
-            saveBtn.disabled = false;
+            // button state restored by withButtonLock
         }
-    });
+    }, { loadingText: 'GUARDANDO...' }));
 
     // Recupera el saldo vigente del fondo inicial y actualiza indicadores visuales.
     async function loadCurrentFund() {

@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     try {
-        await loadProfile();
+        await withLock('profile-load', async () => await loadProfile());
     } catch {
         Swal.fire({
             icon: 'error',
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     setEditable(false);
 
-    editSaveBtn.addEventListener('click', async () => {
+    editSaveBtn.addEventListener('click', async () => await withButtonLock(editSaveBtn, async () => {
         if (!isEditing) {
             isEditing = true;
             passwordInput.value = '';
@@ -191,6 +191,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             body.password = password;
         }
 
+        // Button state and text managed by withButtonLock wrapper
+
         try {
             const response = await fetch(`/api/users/${encodeURIComponent(currentUserId)}`, {
                 method: 'PATCH',
@@ -228,6 +230,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: 'Error',
                 text: 'No se pudo actualizar el perfil.'
             });
+        } finally {
+            // button state restored by withButtonLock
         }
-    });
+    }, { loadingText: 'GUARDANDO...' }));
 });

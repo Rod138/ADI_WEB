@@ -294,6 +294,17 @@
                     return;
                 }
 
+                if (description.length < 5) {
+                    Swal.fire({
+                        title: 'Descripción muy corta',
+                        text: 'La descripción debe tener al menos 5 caracteres.',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
                 if (description.length > 100) {
                     Swal.fire({
                         title: 'Descripción demasiado larga',

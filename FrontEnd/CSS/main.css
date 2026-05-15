@@ -173,6 +173,21 @@ body.main-page.sidebar-collapsed .main-container {
     margin-top: 1.2rem;
 }
 
+/* Ensure menu buttons are always centered regardless of count */
+.cards-grid {
+    justify-content: center;
+}
+
+.cards-grid .menu-card {
+    justify-self: center;
+}
+
+/* Make grid cells center their contents */
+.cards-grid {
+    justify-items: center;
+    align-items: start;
+}
+
 .cards-grid.cards-count-1 {
     width: min(100%, 24rem);
     grid-template-columns: 1fr;
@@ -186,6 +201,21 @@ body.main-page.sidebar-collapsed .main-container {
 .cards-grid.cards-count-3 {
     width: min(100%, 62rem);
     grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cards-grid.cards-count-4 {
+    width: min(100%, 78rem);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.cards-grid.cards-count-5 {
+    width: min(100%, 78rem);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.cards-grid.cards-count-5 .menu-card.center-last {
+    grid-column: 2 / span 2;
+    justify-self: center;
 }
 
 .menu-card {
@@ -205,6 +235,9 @@ body.main-page.sidebar-collapsed .main-container {
     flex-direction: column;
     gap: 0.5rem;
 }
+
+/* Ensure each menu card is centered within its grid cell */
+.menu-card { margin: 0 auto; }
 
 .card-content {
     display: flex;

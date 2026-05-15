@@ -4,6 +4,35 @@ html { scroll-behavior: smooth }
     padding-top: 1.25rem;
 }
 
+.role-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.875rem;
+    background: rgba(106, 128, 66, 0.12);
+    border: 0.0625rem solid rgba(106, 128, 66, 0.32);
+    border-radius: 1.25rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: #5D723B;
+    text-transform: uppercase;
+    letter-spacing: 0.03125rem;
+}
+
+.role-badge > span:first-child {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: #6A8042;
+}
+
+@media (max-width: 60rem) {
+    .role-badge {
+        display: none !important;
+    }
+}
+
 .welcome {
     margin-bottom: 1.5rem;
 }
@@ -31,6 +60,13 @@ html { scroll-behavior: smooth }
 
 .support-card h2{ font-size:1rem; margin:0 0 0.5rem 0 }
 
+.support-listing--faq {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    width: 100%;
+}
+
 .faq-search-wrap {
     margin: 0 0 0.9rem 0;
 }
@@ -49,6 +85,13 @@ html { scroll-behavior: smooth }
     outline: none;
     border-color: #6A8042;
     box-shadow: 0 0 0 3px rgba(106, 128, 66, 0.12);
+}
+
+.support-help-text {
+    margin-top: 0.7rem;
+    color: #6b7280;
+    font-size: 0.9rem;
+    line-height: 1.45;
 }
 
 .faq-item {
@@ -71,7 +114,82 @@ html { scroll-behavior: smooth }
     line-height: 1.45;
 }
 
-#areas-list, #faqs-list { margin:0; padding-left:1rem; color:#6b7280; max-height:320px; overflow:auto; }
+#areas-list, #faqs-list { margin:0; padding-left:1rem; color:#6b7280; }
+
+.faq-area-group {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.faq-area-card {
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+    padding: 0.8rem 0.9rem;
+    background: #fff;
+}
+
+.faq-area-card + .faq-area-card {
+    margin-top: 0.8rem;
+}
+
+.faq-area-title {
+    margin: 0 0 0.65rem;
+    color: #374151;
+    font-size: 0.95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.2s;
+}
+
+.faq-area-title:hover {
+    color: #6A8042;
+}
+
+.faq-area-title .toggle-icon {
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.faq-area-card.collapsed .faq-area-title .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+.faq-area-card.collapsed .faq-area-list {
+    display: none;
+}
+
+.faq-area-list {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.faq-item {
+    padding: 0.65rem 0.75rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+.faq-item strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #1f2937;
+}
+
+.faq-item div {
+    color: #6b7280;
+    line-height: 1.45;
+}
+
+.faq-empty {
+    color: #6b7280;
+    text-align: center;
+    padding: 0.9rem;
+}
 
 #tickets-list { color:#6b7280; font-size:0.95rem; max-height:420px; overflow:auto }
 

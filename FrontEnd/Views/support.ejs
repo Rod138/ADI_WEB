@@ -26,7 +26,7 @@
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
-                <%= user.roleLabel %>
+                <span id="user-role">Rol</span>
             </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
@@ -62,7 +62,7 @@
             <nav class="sidebar-submenu" id="support-submenu">
                 <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda"><span class="material-symbols-outlined">space_dashboard</span><div class="sidebar-link-copy"><strong>Centro de ayuda</strong></div></a>
                 <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes"><span class="material-symbols-outlined">quiz</span><div class="sidebar-link-copy"><strong>Preguntas frecuentes</strong></div></a>
-                <a class="sidebar-sublink soon" href="#" data-feature="Tickets propios" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
+                <a class="sidebar-sublink" href="/support/tickets" data-label="Tickets propios"><span class="material-symbols-outlined">confirmation_number</span><div class="sidebar-link-copy"><strong>Tickets propios</strong></div></a>
             </nav>
         </nav>
     </aside>
@@ -82,13 +82,17 @@
                 </div>
             </a>
 
-            <a class="menu-card button-4 soon" href="#" data-feature="Tickets propios">
+            <a class="menu-card button-4" href="/support/tickets">
                 <div class="card-content">
                     <h3 class="card-title">Tickets propios</h3>
-                    <p class="card-subtitle">Ver y crear tickets, próximamente</p>
+                    <p class="card-subtitle">Crear y consultar tus tickets de soporte</p>
                 </div>
             </a>
         </section>
+
+        <div class="support-actions">
+            <a href="/main" class="btn-back">REGRESAR</a>
+        </div>
     </main>
 
     <footer>
@@ -97,6 +101,12 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const currentUser = window.ADIAuth?.getCurrentUser?.();
+            const roleSpan = document.getElementById('user-role');
+            if (roleSpan && window.ADIAuth?.getRoleLabel) {
+                roleSpan.textContent = window.ADIAuth.getRoleLabel(currentUser?.rol_id);
+            }
+
             const sidebar = document.getElementById('adi-sidebar');
             const backdrop = document.getElementById('sidebar-backdrop');
             const toggle = document.getElementById('sidebar-toggle');

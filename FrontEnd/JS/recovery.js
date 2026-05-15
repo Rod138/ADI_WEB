@@ -10,6 +10,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const email_regex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
 
     if (forgotPasswordForm) {
+        // Fallback lock wrapper: use global withButtonLock when available,
+        // otherwise use a minimal per-button local lock to prevent double submits.
+        async function runWithButtonLock(button, asyncFn, opts = {}) {
+            if (typeof window.withButtonLock === 'function') {
+                return await window.withButtonLock(button, asyncFn, opts);
+            }
+
+            if (!button) return await asyncFn();
+            if (button.dataset.__locked === 'true') return;
+            const originalText = button.textContent;
+            try {
+                button.dataset.__locked = 'true';
+                button.disabled = true;
+                if (opts.loadingText) button.textContent = opts.loadingText;
+                return await asyncFn();
+            } finally {
+                button.disabled = false;
+                try { button.textContent = originalText; } catch (e) {}
+                delete button.dataset.__locked;
+            }
+        }
         // Valida correo y dispara solicitud de recuperacion con timeout de seguridad.
         forgotPasswordForm.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -56,56 +77,53 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                if (submitButton) {
-                    submitButton.disabled = true;
-                    submitButton.textContent = 'ENVIANDO...';
-                }
+                await runWithButtonLock(submitButton, async () => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 20000);
 
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 20000);
-
-                const response = await fetch('/api/forgot-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: emailTrimmed }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                const contentType = response.headers.get('content-type') || '';
-                let data = null;
-
-                if (contentType.includes('application/json')) {
-                    data = await response.json();
-                } else {
-                    const raw = await response.text();
-                    data = {
-                        success: false,
-                        message: raw && raw.length < 200 ? raw : `Error del servidor (${response.status})`
-                    };
-                }
-
-                if (response.ok && data.success) {
-                    await Swal.fire({
-                        titleText: 'Solicitud enviada',
-                        text: data.message,
-                        icon: 'success',
-                        timer: 3000,
-                        timerProgressBar: true,
-                        theme: 'auto'
+                    const response = await fetch('/api/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: emailTrimmed }),
+                        signal: controller.signal
                     });
-                    window.location.href = '/login';
-                } else {
-                    Swal.fire({
-                        titleText: `Error ${response.status}`,
-                        text: data.message || 'No se pudo procesar la solicitud',
-                        icon: 'error',
-                        timer: 5000,
-                        timerProgressBar: true,
-                        draggable: true,
-                        theme: 'auto'
-                    });
-                }
+                    clearTimeout(timeoutId);
+
+                    const contentType = response.headers.get('content-type') || '';
+                    let data = null;
+
+                    if (contentType.includes('application/json')) {
+                        data = await response.json();
+                    } else {
+                        const raw = await response.text();
+                        data = {
+                            success: false,
+                            message: raw && raw.length < 200 ? raw : `Error del servidor (${response.status})`
+                        };
+                    }
+
+                    if (response.ok && data.success) {
+                        await Swal.fire({
+                            titleText: 'Solicitud enviada',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 3000,
+                            timerProgressBar: true,
+                            theme: 'auto'
+                        });
+                        window.location.href = '/login';
+                    } else {
+                        Swal.fire({
+                            titleText: `Error ${response.status}`,
+                            text: data.message || 'No se pudo procesar la solicitud',
+                            icon: 'error',
+                            timer: 5000,
+                            timerProgressBar: true,
+                            draggable: true,
+                            theme: 'auto'
+                        });
+                    }
+                }, { loadingText: 'ENVIANDO...' });
             } catch (error) {
                 console.error('Error en recuperación de contraseña:', error);
                 Swal.fire({
@@ -119,11 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     draggable: true,
                     theme: 'auto'
                 });
-            } finally {
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'ENVIAR CONTRASEÑA';
-                }
             }
         });
     }

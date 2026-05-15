@@ -22,7 +22,8 @@ const parseSessionUserId = (req) => {
     return parsed;
 };
 
-const EXPENSE_EDIT_WINDOW_HOURS = 24;
+// Ventana de edición/eliminación de gastos: 30 días (en horas)
+const EXPENSE_EDIT_WINDOW_HOURS = 24 * 30; // 720 horas
 
 const isExpenseWithinWindow = (expenseDate) => {
     const created = new Date(expenseDate);
@@ -140,7 +141,7 @@ export const updateTowerExpense = async (req, res) => {
         }
 
         if (!isExpenseWithinWindow(expense.expense_date)) {
-            return res.status(403).json({ success: false, message: 'El gasto ya no puede editarse porque excedio las 24 horas.' });
+            return res.status(403).json({ success: false, message: 'El gasto ya no puede editarse porque excedió los 30 días.' });
         }
 
         const validationError = validateExpensePayload({
@@ -191,7 +192,7 @@ export const deleteTowerExpense = async (req, res) => {
         }
 
         if (!isExpenseWithinWindow(expense.expense_date)) {
-            return res.status(403).json({ success: false, message: 'El gasto ya no puede borrarse porque excedio las 24 horas.' });
+            return res.status(403).json({ success: false, message: 'El gasto ya no puede borrarse porque excedió los 30 días.' });
         }
 
         const { error } = await supabase

@@ -35,34 +35,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     monthSelect.innerHTML += MONTHS.map((m, idx) => `<option value="${idx + 1}">${m}</option>`).join('');
 
     try {
-        const response = await fetch('/api/accounting/reports-data');
-        const data = await response.json();
+        await withLock('reports-data', async () => {
+            const response = await fetch('/api/accounting/reports-data');
+            const data = await response.json();
 
-        if (!data.success) {
-            Swal.fire({
-                title: 'Error al cargar',
-                text: data.message || 'No se pudieron cargar los reportes.',
-                icon: 'error',
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Aceptar'
-            });
-            return;
-        }
+            if (!data.success) {
+                Swal.fire({
+                    title: 'Error al cargar',
+                    text: data.message || 'No se pudieron cargar los reportes.',
+                    icon: 'error',
+                    confirmButtonColor: '#d33',
+                    confirmButtonText: 'Aceptar'
+                });
+                return;
+            }
 
-        reportsData = {
-            payments: data.payments || [],
-            expenses: data.expenses || [],
-            quotas: data.quotas || [],
-            departments: data.departments || [],
-            incidents: data.incidents || [],
-            incidentTypes: data.incidentTypes || []
-        };
+            reportsData = {
+                payments: data.payments || [],
+                expenses: data.expenses || [],
+                quotas: data.quotas || [],
+                departments: data.departments || [],
+                incidents: data.incidents || [],
+                incidentTypes: data.incidentTypes || []
+            };
 
-        populateYears();
-        applyDefaultFilters();
-        syncControlsForType();
-        syncMonthFilterRules();
-        render();
+            populateYears();
+            applyDefaultFilters();
+            syncControlsForType();
+            syncMonthFilterRules();
+            render();
+        });
     } catch (error) {
         Swal.fire({
             title: 'Error de conexión',
