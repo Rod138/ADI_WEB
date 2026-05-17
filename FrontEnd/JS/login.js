@@ -1,7 +1,7 @@
 /**
- * TESINA: Logica de autenticacion en la vista de login.
- * Responsabilidad: validar campos, enviar credenciales y guardar sesion local.
- * Seguridad: limpia sesion previa antes de iniciar un nuevo acceso.
+ * TESINA: Lógica de autenticación en la vista de login.
+ * Responsabilidad: validar campos, enviar credenciales y guardar sesión local.
+ * Seguridad: limpia sesión previa antes de iniciar un nuevo acceso.
  */
 
 // Estilos consistentes de alerta para toda la aplicación
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.value = this.value.slice(0, 320);
                 Swal.fire({
                     title: 'Límite de caracteres',
-                    text: "Máximo 320 carácteres en el correo",
+                    text: "Máximo 320 caracteres en el correo",
                     ...AlertConfig.warning,
                     timer: 3000,
                     timerProgressBar: true,
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.value = this.value.slice(0, 16);
                 Swal.fire({
                     title: 'Límite de caracteres',
-                    text: "Máximo 16 carácteres en la contraseña",
+                    text: "Máximo 16 caracteres en la contraseña",
                     ...AlertConfig.warning,
                     timer: 3000,
                     timerProgressBar: true,
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (email.value.length > 320) {
                 Swal.fire({
                     title: "Correo muy largo",
-                    text: "Máximo 320 carácteres",
+                    text: "Máximo 320 caracteres",
                     ...AlertConfig.error,
                     confirmButtonText: 'Aceptar'
                 });
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (password.value.length < 8) {
                 Swal.fire({
                     title: "Contraseña muy corta",
-                    text: "Mínimo 8 carácteres requeridos",
+                    text: "Mínimo 8 caracteres requeridos",
                     ...AlertConfig.error,
                     confirmButtonText: 'Aceptar'
                 });
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else if (password.value.length > 16) {
                 Swal.fire({
                     title: "Contraseña muy larga",
-                    text: "Máximo 16 carácteres",
+                    text: "Máximo 16 caracteres",
                     ...AlertConfig.error,
                     confirmButtonText: 'Aceptar'
                 });
@@ -161,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
-// Ejecuta autenticacion remota y persiste sesion local para navegacion protegida.
+// Ejecuta autenticación remota y persiste sesión local para navegación protegida.
 async function login(correo, contrasenna) {
     try {
         const response = await fetch('/api/login', {

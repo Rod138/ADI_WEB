@@ -102,15 +102,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (isNaN(year) || year < 2000) {
-            return notify('Ano invalido', 'Ingresa un ano valido (desde 2000).', 'warning');
+            return notify('Año inválido', 'Ingresa un año válido (desde 2000).', 'warning');
         }
 
-        if (isNaN(amountPaid) || amountPaid < 0) {
-            return notify('Cantidad invalida', 'Ingresa una cantidad pagada valida.', 'warning');
+            if (isNaN(amountPaid) || amountPaid < 0) {
+                return notify('Cantidad inválida', 'Ingresa una cantidad pagada válida.', 'warning');
         }
 
         if (isNaN(amountExpected) || amountExpected <= 0) {
-            return notify('Cantidad esperada invalida', 'Ingresa la cuota esperada.', 'warning');
+            return notify('Cantidad esperada inválida', 'Ingresa la cuota esperada.', 'warning');
         }
 
         if (!proofFile) {
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
-            return notify('Cloudinary no configurado', 'Falta configuracion de Cloudinary en el servidor.', 'error');
+            return notify('Cloudinary no configurado', 'Falta configuración de Cloudinary en el servidor.', 'error');
         }
 
         try {
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 return;
             }
 
-            await notify('Pago enviado', 'Tu comprobante quedo registrado y pendiente de validacion.', 'success', 1800);
+                await notify('Pago enviado', 'Tu comprobante quedó registrado y pendiente de validación.', 'success', 1800);
 
             amountPaidInput.value = '';
             proofInput.value = '';
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('proof-name').textContent = 'Selecciona un archivo';
             await refreshData();
         } catch (error) {
-            notify('Error de conexion', error.message || 'No se pudo registrar el pago.', 'error');
+                notify('Error de conexión', error.message || 'No se pudo registrar el pago.', 'error');
         } finally {
             // button state restored by withButtonLock
         }
@@ -231,7 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const items = rows.slice(start, start + PAGE_SIZE);
 
         paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
-        pageIndicator.textContent = `Pagina ${currentPage} de ${totalPages}`;
+        pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 
@@ -334,7 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function downloadCsv() {
         const rows = (filteredRows.length ? filteredRows : allRows).slice();
-        const header = ['Estado', 'Fecha', 'Mes', 'Ano', 'Monto pagado', 'Monto esperado', 'Comprobante'];
+        const header = ['Estado', 'Fecha', 'Mes', 'Año', 'Monto pagado', 'Monto esperado', 'Comprobante'];
         const body = rows.map(r => [
             statusKey(r.validated),
             r.created_at || '',

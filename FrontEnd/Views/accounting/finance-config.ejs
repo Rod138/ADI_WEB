@@ -14,7 +14,10 @@
     <title>ADI - Configuración Financiera</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        window.__ADI_SERVER_USER__ = <%- JSON.stringify(user || null) %>;
+        (function(){
+            const __adi_enc = '<%- encodeURIComponent(JSON.stringify(user || null) || "null") %>';
+            try { window.__ADI_SERVER_USER__ = __adi_enc ? JSON.parse(decodeURIComponent(__adi_enc)) : null; } catch(e) { window.__ADI_SERVER_USER__ = null; }
+        })();
     </script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/finance_config.js" defer></script>
@@ -74,7 +77,7 @@
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>

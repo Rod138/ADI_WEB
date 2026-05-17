@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (row) window.location.href = `/incident?id=${row.dataset.id}`;
     });
 
-    // Renderiza solo la pagina actual y actualiza controles de paginacion.
+    // Renderiza solo la página actual y actualiza controles de paginación.
     function renderTable(incidents) {
         if (!incidents.length) {
             tbody.innerHTML = `
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pageItems = incidents.slice(start, start + PAGE_SIZE);
 
         paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
-        pageIndicator.textContent = `Pagina ${currentPage} de ${totalPages}`;
+        pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 

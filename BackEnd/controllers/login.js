@@ -1,7 +1,7 @@
 /**
- * TESINA: Controlador de inicio de sesion y recuperacion de acceso.
- * Responsabilidad: autenticar usuario y enviar correo de recuperacion.
- * Integracion: usa Supabase y cliente Gmail OAuth cuando esta configurado.
+ * TESINA: Controlador de inicio de sesión y recuperación de acceso.
+ * Responsabilidad: autenticar usuario y enviar correo de recuperación.
+ * Integración: usa Supabase y cliente Gmail OAuth cuando está configurado.
  */
 
 import supabase from '../dbconfig.js'
@@ -74,7 +74,7 @@ const buildEmailMessage = (from, to, subject, text, html) => {
         .replace(/=+$/g, '')
 }
 
-// Valida credenciales y abre sesion devolviendo datos minimos del usuario.
+// Valida credenciales y abre sesión devolviendo datos mínimos del usuario.
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;

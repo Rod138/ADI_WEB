@@ -1,6 +1,6 @@
 /**
  * TESINA: Tablero de comprobantes para consulta masiva.
- * Responsabilidad: aplicar filtros por validacion/fecha/departamento y paginar.
+ * Responsabilidad: aplicar filtros por validación/fecha/departamento y paginar.
  * Objetivo: facilitar auditoria y seguimiento de evidencias de pago.
  */
 
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pageItems = receipts.slice(start, start + PAGE_SIZE);
 
         paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
-        pageIndicator.textContent = `Pagina ${currentPage} de ${totalPages}`;
+        pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 

@@ -25,7 +25,7 @@ const getRoleLabel = (roleId) => {
     }
 };
 
-// Normaliza el identificador de sesion y descarta valores invalidos.
+// Normaliza el identificador de sesión y descarta valores inválidos.
 const parseSessionUserId = (rawValue) => {
     const parsed = parseInt(rawValue, 10);
     if (Number.isNaN(parsed) || parsed <= 0) {

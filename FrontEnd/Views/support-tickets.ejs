@@ -14,7 +14,9 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
 </head>
-<body class="sidebar-expanded support-page" data-min-role="1">
+<body class="sidebar-expanded support-page" data-min-role="1"
+    data-cloudinary-cloud-name="<%= cloudinaryCloudName || '' %>"
+    data-cloudinary-upload-preset="<%= cloudinaryUploadPreset || '' %>">
     <nav class="top-nav">
         <div class="nav-brand">
             <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="true">
@@ -127,10 +129,15 @@
                     </div>
 
                     <div class="field-row">
-                        <label for="evidence_url">URL de evidencia (opcional)</label>
-                        <input id="evidence_url" name="evidence_url" type="url" placeholder="https://ejemplo.com/evidencia" autocomplete="off">
+                        <label for="evidence_upload">Evidencia (opcional)</label>
+                        <div class="evidence-upload-wrapper">
+                            <button type="button" class="evidence-upload-btn" id="evidence_upload">Seleccionar archivo</button>
+                            <span id="evidence_filename" class="evidence-filename">Sin archivo seleccionado</span>
+                            <input type="hidden" id="evidence_url" name="evidence_url" value="">
+                            <input type="file" id="evidence_file" accept="image/*" style="display:none">
+                        </div>
                         <div class="field-meta">
-                            <span>Adjunta evidencia si es relevante (captura, PDF, enlace, etc.)</span>
+                            <span>Sube una imagen o captura de pantalla como evidencia</span>
                         </div>
                     </div>
 
@@ -155,7 +162,7 @@
             </article>
         </section>
 
-        <div class="support-footer-actions">
+        <div class="bottom-actions">
             <a href="/support" class="btn-back">REGRESAR</a>
         </div>
     </main>

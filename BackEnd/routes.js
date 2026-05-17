@@ -127,6 +127,15 @@ router.get('/notifications', (req, res) => {
     res.render('notifications');
 });
 
+// Legal pages: served via EJS and accessible solo a usuarios autenticados
+router.get('/politicas', requireMinRole(1), (req, res) => {
+    res.render('politicas', { user: req.sessionUser });
+});
+
+router.get('/terminos', requireMinRole(1), (req, res) => {
+    res.render('terminos', { user: req.sessionUser });
+});
+
 router.get('/incident-board', (req, res) => {
     res.render('incidents/board');
 });
@@ -216,8 +225,13 @@ router.get('/support/faqs', requireMinRole(1), (req, res) => {
 });
 
 router.get('/support/tickets', requireMinRole(1), (req, res) => {
+    const cloudinaryCloudName = process.env.SUPPORT_CLOUDINARY_CLOUD_NAME || '';
+    const cloudinaryUploadPreset = process.env.SUPPORT_CLOUDINARY_UPLOAD_PRESET || '';
+
     res.render('support-tickets', {
-        user: req.sessionUser
+        user: req.sessionUser,
+        cloudinaryCloudName,
+        cloudinaryUploadPreset
     });
 });
 

@@ -146,16 +146,16 @@
             </div>
 
             <div class="form-group">
-                <label for="type">TIPO DE INCIDENCIA *</label>
-                <select id="type" name="type" required>
-                    <option value="">Selecciona un tipo...</option>
+                <label for="area">ÁREA *</label>
+                <select id="area" name="area" required>
+                    <option value="">Selecciona un área...</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label for="area">ÁREA *</label>
-                <select id="area" name="area" required>
-                    <option value="">Selecciona un área...</option>
+                <label for="type">TIPO DE INCIDENCIA *</label>
+                <select id="type" name="type" required>
+                    <option value="">Selecciona un tipo...</option>
                 </select>
             </div>
 
@@ -214,6 +214,17 @@
         let typesCatalog = [];
         let areasCatalog = [];
 
+        const parseNullableInt = (value) => {
+            if (value === null || value === undefined || value === '') return null;
+            const parsed = Number.parseInt(value, 10);
+            return Number.isNaN(parsed) ? null : parsed;
+        };
+
+        const typeBelongsToArea = (typeItem, selectedAreaId) => {
+            const typeAreaId = parseNullableInt(typeItem?.area_id);
+            return typeAreaId === null || typeAreaId === selectedAreaId;
+        };
+
         (async () => {
             const form = document.getElementById('create-form');
             const typeSelect = document.getElementById('type');
@@ -222,6 +233,49 @@
             const imagePreview = document.getElementById('image-preview');
             const descTextarea = document.getElementById('description');
             const descCounter = document.getElementById('desc-counter');
+
+            const resetTypeSelect = (placeholderText) => {
+                typeSelect.innerHTML = '';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = placeholderText;
+                typeSelect.appendChild(placeholder);
+                typeSelect.value = '';
+                typeSelect.disabled = true;
+            };
+
+            const renderTypesForArea = (selectedAreaRaw) => {
+                const selectedAreaId = parseNullableInt(selectedAreaRaw);
+                if (selectedAreaId === null) {
+                    resetTypeSelect('Primero selecciona un área...');
+                    return;
+                }
+
+                const availableTypes = typesCatalog
+                    .filter((typeItem) => typeBelongsToArea(typeItem, selectedAreaId))
+                    .sort((a, b) => Number(a.id) - Number(b.id));
+
+                if (!availableTypes.length) {
+                    resetTypeSelect('No hay tipos disponibles para esta área');
+                    return;
+                }
+
+                typeSelect.innerHTML = '';
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Selecciona un tipo...';
+                typeSelect.appendChild(placeholder);
+
+                availableTypes.forEach((typeItem) => {
+                    const opt = document.createElement('option');
+                    opt.value = typeItem.id;
+                    opt.textContent = typeItem.name || typeItem.type || typeItem.id;
+                    typeSelect.appendChild(opt);
+                });
+
+                typeSelect.value = '';
+                typeSelect.disabled = false;
+            };
 
             // Load catalogs
             try {
@@ -232,19 +286,17 @@
                 typesCatalog = (data.types || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
                 areasCatalog = (data.areas || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
 
-                // Populate selects
-                typesCatalog.forEach(t => {
-                    const opt = document.createElement('option');
-                    opt.value = t.id;
-                    opt.textContent = t.name || t.type || t.id;
-                    typeSelect.appendChild(opt);
-                });
+                resetTypeSelect('Primero selecciona un área...');
 
                 areasCatalog.forEach(a => {
                     const opt = document.createElement('option');
                     opt.value = a.id;
                     opt.textContent = a.name || a.area || a.id;
                     areaSelect.appendChild(opt);
+                });
+
+                areaSelect.addEventListener('change', () => {
+                    renderTypesForArea(areaSelect.value);
                 });
             } catch (e) {
                 Swal.fire({
@@ -283,10 +335,25 @@
                 const areaId = areaSelect.value;
                 const imageFile = imageInput.files?.[0];
 
-                if (!description || !typeId || !areaId) {
+                const parsedAreaId = parseNullableInt(areaId);
+                const parsedTypeId = parseNullableInt(typeId);
+
+                if (!description || parsedTypeId === null || parsedAreaId === null) {
                     Swal.fire({
                         title: 'Validación',
                         text: 'Completa todos los campos requeridos',
+                        icon: 'warning',
+                        confirmButtonColor: '#ED7A13',
+                        confirmButtonText: 'Aceptar'
+                    });
+                    return;
+                }
+
+                const selectedType = typesCatalog.find(t => Number(t.id) === parsedTypeId);
+                if (!selectedType || !typeBelongsToArea(selectedType, parsedAreaId)) {
+                    Swal.fire({
+                        title: 'Validación',
+                        text: 'Selecciona un tipo válido para el área elegida.',
                         icon: 'warning',
                         confirmButtonColor: '#ED7A13',
                         confirmButtonText: 'Aceptar'
@@ -349,8 +416,8 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             description,
-                            type_id: parseInt(typeId),
-                            area_id: parseInt(areaId),
+                            type_id: parsedTypeId,
+                            area_id: parsedAreaId,
                             image_url: imageUrl
                         })
                     });

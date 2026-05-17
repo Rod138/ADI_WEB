@@ -290,7 +290,7 @@ export const getUserById = async (req, res) => {
 };
 
 // PATCH /api/users/:id  — actualizar datos del usuario
-// Aplica actualizacion parcial permitiendo limpiar campos opcionales con null.
+// Aplica actualización parcial permitiendo limpiar campos opcionales con null.
 export const updateUser = async (req, res) => {
     const { id } = req.params;
     const allowed = ['name', 'email', 'phone', 'password', 'rol_id', 'dep_id', 'ap'];
@@ -401,10 +401,17 @@ export const updateUser = async (req, res) => {
     }
 
     try {
+        // Si se está actualizando la contraseña, aplicamos hash antes de guardar
+        if (updates.password !== undefined && updates.password !== null) {
+            const pwd = String(updates.password);
+            updates.password = await hashPassword(pwd);
+        }
+
         const { error } = await supabase.from('users').update(updates).eq('id', id);
         if (error) return res.status(500).json({ success: false, message: 'Error al actualizar usuario' });
         return res.status(200).json({ success: true });
-    } catch {
+    } catch (e) {
+        console.error('Error en updateUser:', e && e.message ? e.message : e);
         return res.status(500).json({ success: false, message: 'Error interno' });
     }
 };

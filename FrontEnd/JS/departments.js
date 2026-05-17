@@ -43,19 +43,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // ── Load departments into first select ───────────────────
     let departmentsCache = [];
     try {
-        await withLock('departments-load', async () => {
-            const res  = await fetch('/api/departments');
-            const data = await res.json();
-            if (data.success) {
-                departmentsCache = (data.departments || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
-                departmentsCache.forEach(d => {
-                    const opt = document.createElement('option');
-                    opt.value = d.id;
-                    opt.textContent = d.name;
-                    depSelect.appendChild(opt);
-                });
-            }
-        });
+        const res  = await fetch('/api/departments');
+        const data = await res.json();
+        if (data.success) {
+            departmentsCache = (data.departments || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+            departmentsCache.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.name;
+                depSelect.appendChild(opt);
+            });
+        }
     } catch {
         Swal.fire({
             title: 'Error al cargar',
@@ -79,40 +77,38 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (!depId) return;
 
-        return await withLock(`loadUsersForDep-${depId}`, async () => {
-            // Refresh dept card from backend so status is always current
-            await loadDeptCard(depId);
+        // Refresh dept card from backend so status is always current
+        await loadDeptCard(depId);
 
-            // Show create-user button for admins
-            if (session && Number(session.rol_id) >= 3) {
-                createUserBtn.style.display = 'inline-flex';
-                createUserBtn.onclick = () => withButtonLock(createUserBtn, async () => await showCreateUserForm(depId), { loadingText: 'CARGANDO...' });
-            }
+        // Show create-user button for admins
+        if (session && Number(session.rol_id) >= 3) {
+            createUserBtn.style.display = 'inline-flex';
+            createUserBtn.onclick = () => showCreateUserForm(depId);
+        }
 
-            // Load users for this dept
-            try {
-                const res  = await fetch(`/api/users?dep_id=${encodeURIComponent(depId)}`);
-                const data = await res.json();
-                if (data.success) {
-                    (data.users || []).slice().sort((a, b) => Number(a.id) - Number(b.id)).forEach(u => {
-                        const opt = document.createElement('option');
-                        opt.value = u.id;
-                        const fullName = u.name || '-';
-                        opt.textContent = fullName || (u.name ?? '-');
-                        userSelect.appendChild(opt);
-                    });
-                    if (data.users.length > 0) userSelect.disabled = false;
-                }
-            } catch {
-                Swal.fire({
-                    title: 'Error',
-                    text: 'No se pudieron cargar los usuarios.',
-                    icon: 'error',
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Aceptar'
+        // Load users for this dept
+        try {
+            const res  = await fetch(`/api/users?dep_id=${encodeURIComponent(depId)}`);
+            const data = await res.json();
+            if (data.success) {
+                (data.users || []).slice().sort((a, b) => Number(a.id) - Number(b.id)).forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    const fullName = u.name || '-';
+                    opt.textContent = fullName || (u.name ?? '-');
+                    userSelect.appendChild(opt);
                 });
+                if (data.users.length > 0) userSelect.disabled = false;
             }
-        });
+        } catch {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se pudieron cargar los usuarios.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+        }
     }
 
     // ── On department select change ──────────────────────────
@@ -147,7 +143,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 depWarning.style.display = !depInUseChk.checked ? 'block' : 'none';
             };
 
-            depSaveBtn.onclick = () => withButtonLock(depSaveBtn, async () => {
+            depSaveBtn.onclick = async () => {
                 if (!depConfirmChk.checked) {
                     Swal.fire({
                         title: 'Confirmación requerida',
@@ -159,40 +155,38 @@ document.addEventListener('DOMContentLoaded', async () => {
                     return;
                 }
                 const activating = depInUseChk.checked && !dep.is_in_use;
-                try {
-                    const r = await fetch(`/api/departments/${encodeURIComponent(dep.id)}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ is_in_use: depInUseChk.checked })
+                const r = await fetch(`/api/departments/${encodeURIComponent(dep.id)}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_in_use: depInUseChk.checked })
+                });
+                const result = await r.json();
+                if (result.success) {
+                    await Swal.fire({
+                        title: 'Actualizado',
+                        text: 'Departamento actualizado correctamente.',
+                        icon: 'success',
+                        timer: 1600,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        confirmButtonColor: '#6A8042'
                     });
-                    const result = await r.json();
-                    if (result.success) {
-                        await Swal.fire({
-                            title: 'Actualizado',
-                            text: 'Departamento actualizado correctamente.',
-                            icon: 'success',
-                            timer: 1600,
-                            timerProgressBar: true,
-                            showConfirmButton: false,
-                            confirmButtonColor: '#6A8042'
-                        });
-                        // Refresh users list without reloading la página
-                        await loadUsersForDep(dep.id);
-                        if (activating) {
-                            // Open the create form automatically after activating
-                            await showCreateUserForm(dep.id);
-                        }
-                    } else {
-                        Swal.fire({
-                            title: 'Error',
-                            text: result.message,
-                            icon: 'error',
-                            confirmButtonColor: '#d33',
-                            confirmButtonText: 'Aceptar'
-                        });
+                    // Refresh users list without reloading la página
+                    await loadUsersForDep(dep.id);
+                    if (activating) {
+                        // Open the create form automatically after activating
+                        await showCreateUserForm(dep.id);
                     }
+                } else {
+                    Swal.fire({
+                        title: 'Error',
+                        text: result.message,
+                        icon: 'error',
+                        confirmButtonColor: '#d33',
+                        confirmButtonText: 'Aceptar'
+                    });
                 }
-            }, { loadingText: 'GUARDANDO...' });
+            };
         } else {
             depEditSec.style.display = 'none';
         }
@@ -201,16 +195,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Consulta datos actualizados de departamento antes de pintar la tarjeta.
     async function loadDeptCard(depId) {
         try {
-            await withLock(`loadDeptCard-${depId}`, async () => {
-                const res  = await fetch('/api/departments');
-                const data = await res.json();
-                if (!data.success) return;
-                departmentsCache = data.departments;
-                const dep = data.departments.find(d => String(d.id) === String(depId));
-                if (!dep) return;
-                cardsRow.style.display = 'grid';
-                renderDeptCard(dep);
-            });
+            const res  = await fetch('/api/departments');
+            const data = await res.json();
+            if (!data.success) return;
+            departmentsCache = data.departments;
+            const dep = data.departments.find(d => String(d.id) === String(depId));
+            if (!dep) return;
+            cardsRow.style.display = 'grid';
+            renderDeptCard(dep);
         } catch { /* silent */ }
     }
 
@@ -268,8 +260,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             <button class="save-btn" id="new-user-submit-btn">Crear residente</button>
         `;
 
-        document.getElementById('new-user-submit-btn').onclick = () => withButtonLock(document.getElementById('new-user-submit-btn'), async () => {
-            const btn = document.getElementById('new-user-submit-btn');
+        document.getElementById('new-user-submit-btn').onclick = async () => {
             const nameInput = document.getElementById('new-name');
             const apInput = document.getElementById('new-ap');
             const emailInput = document.getElementById('new-email');
@@ -331,7 +322,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 body.ap = apPaternal;
             }
 
-            const emailRegex = /^[A-Za-z0-9!#$%&'*+\/=?.^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+\/=?.^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
+            const emailRegex = /^[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/i;
             if (!body.email) {
                 Swal.fire({
                     title: 'Email requerido',
@@ -487,38 +478,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                     confirmButtonText: 'Aceptar'
                 });
             }
-        }, { loadingText: 'CREANDO...' });
+        };
     }
 
-            if (btn) { btn.disabled = false; btn.textContent = originalText; }
-        };
+    // ── Load user card ───────────────────────────────────────
     // Recupera detalle de un usuario para vista detallada en tarjeta lateral.
     async function loadUserCard(userId) {
-        return await withLock(`loadUserCard-${userId}`, async () => {
-            try {
-                const res  = await fetch(`/api/users/${encodeURIComponent(userId)}`);
-                const data = await res.json();
-                if (!data.success) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: data.message,
-                        icon: 'error',
-                        confirmButtonColor: '#d33',
-                        confirmButtonText: 'Aceptar'
-                    });
-                    return;
-                }
-                renderUserCard(data.user, data.roles);
-            } catch {
+        try {
+            const res  = await fetch(`/api/users/${encodeURIComponent(userId)}`);
+            const data = await res.json();
+            if (!data.success) {
                 Swal.fire({
                     title: 'Error',
-                    text: 'Fallo de red.',
+                    text: data.message,
                     icon: 'error',
                     confirmButtonColor: '#d33',
                     confirmButtonText: 'Aceptar'
                 });
+                return;
             }
-        });
+            renderUserCard(data.user, data.roles);
+        } catch {
+            Swal.fire({
+                title: 'Error',
+                text: 'Fallo de red.',
+                icon: 'error',
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Aceptar'
+            });
+        }
     }
 
     // Construye vista de usuario y habilita acciones segun rol del sesionante.
@@ -574,8 +562,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             ).join('');
         }
 
-        userSaveBtn.onclick = () => withButtonLock(userSaveBtn, async () => {
-            const originalText = userSaveBtn.textContent || 'Guardar';
+        userSaveBtn.onclick = async () => {
             const confirmCheckbox = document.getElementById('user-confirm-chk');
             if (!confirmCheckbox.checked) {
                 Swal.fire({
@@ -633,10 +620,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                     confirmButtonText: 'Aceptar'
                 });
             }
-        }, { loadingText: 'GUARDANDO...' });
+        };
 
-        userDeleteBtn.onclick = () => withButtonLock(userDeleteBtn, async () => {
-            const originalText = userDeleteBtn.textContent || 'Eliminar';
+        userDeleteBtn.onclick = async () => {
             if (!canDelete) return;
 
             const confirm = await Swal.fire({
@@ -676,7 +662,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     confirmButtonText: 'Aceptar'
                 });
             }
-        }, { loadingText: 'ELIMINANDO...' });
+        };
     }
 
     // Sanea texto dinamico antes de inyectarlo en HTML.

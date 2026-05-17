@@ -121,8 +121,8 @@ body {
     width: 100%;
     margin-left: 16rem;
     margin-top: 5rem;
-    max-width: calc(100% - 16rem);
-    padding: 2rem 1.25rem 1.2rem;
+    padding: 2rem 1rem;
+    background: var(--page-bg, #f6f7fb);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -134,6 +134,56 @@ body {
 body.main-page .main-container {
     margin-top: 6.75rem;
     padding-top: 3rem;
+.legal-content {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 1.25rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(16,24,40,0.04);
+    color: #222;
+    line-height: 1.7;
+    font-size: 1rem;
+    box-sizing: border-box;
+    max-height: 62vh; /* keep card from growing full page */
+    overflow: auto; /* allow internal scrolling */
+}
+
+.legal-content h1,
+.legal-content h2,
+.legal-content h3 {
+    color: #111827;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.legal-content p {
+    color: #334155;
+    margin-bottom: 0.9rem;
+}
+
+.legal-content ul {
+    margin-left: 1.25rem;
+}
+
+.legal-actions-bottom {
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+.btn-back {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    background: linear-gradient(180deg,#0ea5a9,#047481);
+    color: white !important;
+    border-radius: 6px;
+    text-decoration: none !important;
+    font-weight: 600;
+}
+
+.btn-back:hover {
+    opacity: 0.95;
+}
 }
 
 body.sidebar-collapsed .main-container {
@@ -400,6 +450,94 @@ body.sidebar-collapsed .sidebar-header-copy {
     background: #fbfbfb;
 }
 
+/* Footer legal links styled as buttons */
+.site-legal {
+    margin-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-btn {
+    display: inline-block;
+    padding: 0.45rem 0.8rem;
+/* Plain footer links (text with subtle hover and underline animation) */
+    border-radius: 0.5rem;
+    background: var(--adi-olive);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 0.0625rem solid transparent;
+    transition: background 0.15s ease, transform 0.08s ease;
+}
+
+.footer-btn:hover,
+.footer-btn:focus {
+    background: var(--adi-olive-dark);
+    transform: translateY(-1px);
+}
+
+.footer-btn:active {
+    transform: translateY(0);
+}
+
+/* Plain footer links (text with subtle hover) */
+.footer-link {
+    color: var(--adi-olive-dark);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0 0.2rem;
+}
+.footer-link:hover,
+.footer-link:focus {
+    text-decoration: underline;
+    color: var(--adi-olive);
+}
+
+/* Legal pages: centered card with internal scroll */
+.legal-container {
+    width: min(100%, 980px);
+    margin: 6.75rem auto 3rem;
+    padding: 1.5rem 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.legal-content {
+    width: 100%;
+    background: #fff;
+    padding: 1.5rem 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    line-height: 1.75;
+    font-size: 1rem;
+    color: #222;
+    box-sizing: border-box;
+    max-height: calc(100vh - 14rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.legal-content h1 {
+     font-size: 1.8rem;
+     margin-bottom: 0.5rem;
+     color: var(--adi-olive-dark);
+     font-family: 'Outfit', sans-serif;
+}
+
+.legal-content h2 {
+     font-size: 1.125rem;
+     margin-top: 1.25rem;
+     margin-bottom: 0.5rem;
+     color: var(--adi-olive-dark);
+     padding-left: 0.75rem;
+     border-left: 4px solid var(--adi-olive);
+}
+
 .sidebar-header-link .material-symbols-outlined {
     color: #474747;
 }
@@ -408,6 +546,29 @@ body.sidebar-collapsed .sidebar-header-copy {
     background: linear-gradient(135deg, #fde5c1 0%, #fcd9a8 100%);
     border: 0.0625rem solid #e3a949;
     box-shadow: inset 0 0.125rem 0.25rem rgba(227,169,73,0.12);
+}
+
+.legal-actions-bottom {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.legal-actions-bottom .btn-back {
+    text-decoration: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
+}
+
+.legal-actions-bottom .btn-back:hover,
+.legal-actions-bottom .btn-back:focus,
+.legal-actions-bottom .btn-back:active {
+    text-decoration: none !important;
+    border-bottom: none !important;
+    box-shadow: none !important;
+    background-image: none !important;
 }
 
 /* make header copy text use same typography as sidebar links */
@@ -845,6 +1006,7 @@ a.page-btn {
 .btn-back {
     background-color: var(--adi-olive);
     color: var(--adi-cream);
+    text-decoration: none;
 }
 
 .btn-back:hover {

@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             currentFundText.textContent = formatCurrency(fund.initial_amount);
-            updatedAtText.textContent = `Ultima actualizacion: ${formatDateTime(fund.updated_at)}`;
+            updatedAtText.textContent = `Última actualización: ${formatDateTime(fund.updated_at)}`;
         } catch (error) {
             currentFundText.textContent = '$0.00';
             updatedAtText.textContent = 'Error de red al consultar el fondo actual';
@@ -120,11 +120,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Traduce fecha de actualizacion a formato de lectura administrativa.
+    // Traduce fecha de actualización a formato de lectura administrativa.
     function formatDateTime(value) {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) {
-            return 'Fecha invalida';
+            return 'Fecha inválida';
         }
 
         return date.toLocaleString('es-MX', {

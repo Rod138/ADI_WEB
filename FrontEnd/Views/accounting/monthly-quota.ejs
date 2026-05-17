@@ -11,10 +11,17 @@
     <link rel="stylesheet" href="/FrontEnd/CSS/monthly_quota.css">
     <link rel="stylesheet" href="/FrontEnd/CSS/accounting_common.css">
     <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
-    <title>ADI - Configuracion Financiera</title>
+    <title>ADI - Configuración Financiera</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        window.__ADI_SERVER_USER__ = <%- JSON.stringify(user || null) %>;
+        (function(){
+            const __adi_enc = '<%- encodeURIComponent(JSON.stringify(user || null) || "null") %>';
+            try {
+                window.__ADI_SERVER_USER__ = __adi_enc ? JSON.parse(decodeURIComponent(__adi_enc)) : null;
+            } catch (e) {
+                window.__ADI_SERVER_USER__ = null;
+            }
+        })();
     </script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/tower_fund.js" defer></script>
@@ -66,7 +73,7 @@
             </button>
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
         </div>
-        <div class="nav-title">CONFIGURACION FINANCIERA</div>
+        <div class="nav-title">CONFIGURACIÓN FINANCIERA</div>
         <div class="nav-actions">
             <div class="role-badge">
                 <span></span>
@@ -75,7 +82,7 @@
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesion">
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
@@ -203,7 +210,7 @@
         </section>
 
         <section class="history-panel">
-            <h2>Configuracion actual</h2>
+            <h2>Configuración actual</h2>
             <div class="table-container">
                 <table>
                     <thead>

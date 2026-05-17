@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorTypeSelect = document.getElementById('error_type_id');
     const descriptionInput = document.getElementById('description');
     const evidenceInput = document.getElementById('evidence_url');
+    const evidenceUploadBtn = document.getElementById('evidence_upload');
+    const evidenceFilename = document.getElementById('evidence_filename');
     const descCounter = document.getElementById('desc-counter');
     const ticketsList = document.getElementById('tickets-list');
     const refreshFormBtn = document.getElementById('refresh-form-btn');
@@ -24,6 +26,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const currentUser = window.ADIAuth?.getCurrentUser?.() || null;
     const isDesktop = window.innerWidth > 768;
+
+    // Evidence file upload (incidencias-style)
+    const evidenceFileInput = document.getElementById('evidence_file');
+    const CLOUDINARY_CLOUD_NAME = document.body.dataset.cloudinaryCloudName || '';
+    const CLOUDINARY_UPLOAD_PRESET = document.body.dataset.cloudinaryUploadPreset || '';
+    const CLOUDINARY_IMAGE_UPLOAD_URL = CLOUDINARY_CLOUD_NAME ? `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload` : '';
+
+    evidenceUploadBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        evidenceFileInput?.click();
+    });
+
+    evidenceFileInput?.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            await showMessage('Archivo muy grande', 'La imagen no debe superar 5MB.', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        if (!CLOUDINARY_IMAGE_UPLOAD_URL || !CLOUDINARY_UPLOAD_PRESET) {
+            await showMessage('Error', 'No está configurado el servicio de imágenes.', 'error');
+            e.target.value = '';
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+            const uploadRes = await fetch(CLOUDINARY_IMAGE_UPLOAD_URL, {
+                method: 'POST',
+                body: formData
+            });
+
+            const uploadData = await uploadRes.json();
+
+            if (uploadData.secure_url) {
+                evidenceInput.value = uploadData.secure_url;
+                const filename = uploadData.original_filename || uploadData.public_id || 'Archivo cargado';
+                evidenceFilename.textContent = filename;
+                await showMessage('Cargado', 'Imagen subida correctamente.', 'success');
+            } else {
+                throw new Error('No se recibió URL de la imagen');
+            }
+        } catch (err) {
+            await showMessage('Error', 'Fallo al subir la imagen.', 'error');
+        } finally {
+            e.target.value = '';
+        }
+    });
 
     const escapeHtml = (value) => String(value ?? '')
         .replace(/&/g, '&amp;')
@@ -221,6 +277,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const statusName = ticket?.status?.name || 'Sin estado';
             const priorityName = ticket?.priority?.name || 'Sin prioridad';
             const resolutionNote = ticket?.resolution_note || '';
+            const descriptionFull = String(ticket?.description || 'Sin descripción');
+            const descriptionShort = descriptionFull.length > 80
+                ? `${descriptionFull.slice(0, 80)}...`
+                : descriptionFull;
             const evidenceUrl = ticket?.evidence_url || '';
             const reopened = Number(ticket?.reopened_count || 0);
 
@@ -240,10 +300,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         ${reopened > 0 ? `<span><strong>Reabierto:</strong> ${reopened} vez${reopened === 1 ? '' : 'es'}</span>` : ''}
                     </div>
 
-                    <p class="ticket-description">${escapeHtml(ticket?.description || 'Sin descripción')}</p>
+                    <button type="button" class="ticket-description ticket-description-btn" data-description="${escapeHtml(descriptionFull)}">${escapeHtml(descriptionShort)}</button>
 
                     <div class="ticket-card__footer">
-                        ${evidenceUrl ? `<a href="${escapeHtml(evidenceUrl)}" target="_blank" rel="noreferrer">Ver evidencia</a>` : '<span class="ticket-muted">Sin evidencia adjunta</span>'}
+                        ${evidenceUrl ? `<button type="button" class="evidence-btn" data-image="${escapeHtml(evidenceUrl)}">Ver evidencia</button>` : '<span class="ticket-muted">Sin evidencia adjunta</span>'}
                     </div>
 
                     ${resolutionNote ? `
@@ -255,6 +315,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 </article>
             `;
         }).join('');
+
+        // After inserting HTML, attach handlers
+        attachEvidenceHandlers();
+    };
+
+    // Attach click handlers to evidence buttons after rendering
+    const attachEvidenceHandlers = () => {
+        document.querySelectorAll('.evidence-btn').forEach((btn) => {
+            if (btn._hasHandler) return;
+            btn._hasHandler = true;
+            btn.addEventListener('click', async () => {
+                const imageUrl = btn.dataset.image;
+                if (!imageUrl) return;
+
+                await Swal.fire({
+                    title: 'Evidencia',
+                    imageUrl: imageUrl,
+                    imageAlt: 'Evidencia adjunta',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.ticket-description-btn').forEach((btn) => {
+            if (btn._hasHandler) return;
+            btn._hasHandler = true;
+            btn.addEventListener('click', () => {
+                const description = btn.dataset.description || 'Sin descripción';
+                Swal.fire({
+                    title: 'Descripción completa',
+                    html: `<div style="text-align:left; white-space:pre-wrap; word-break:break-word; line-height:1.5;">${escapeHtml(description)}</div>`,
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#6A8042'
+                });
+            });
+        });
     };
 
     const loadAreas = async () => {
@@ -366,6 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 errorTypeSelect.innerHTML = '<option value="">Selecciona un área primero</option>';
                 errorTypeSelect.disabled = true;
                 descCounter.textContent = '0/250';
+                evidenceFilename.textContent = 'Sin archivo seleccionado';
 
                 await showMessage('Ticket creado', 'Tu ticket fue enviado correctamente.', 'success');
                 await loadTickets();
@@ -382,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
     areaSelect?.addEventListener('change', () => {
         loadErrorTypes(areaSelect.value);
     });
+
 
     refreshFormBtn?.addEventListener('click', loadAreas);
     refreshListBtn?.addEventListener('click', loadTickets);

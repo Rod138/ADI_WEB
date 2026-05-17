@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const pageItems = expenses.slice(start, start + PAGE_SIZE);
 
         paginationBox.style.display = totalPages > 1 ? 'flex' : 'none';
-        pageIndicator.textContent = `Pagina ${currentPage} de ${totalPages}`;
+        pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
         prevBtn.disabled = currentPage === 1;
         nextBtn.disabled = currentPage === totalPages;
 

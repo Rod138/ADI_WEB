@@ -85,6 +85,41 @@ const normalizeIncident = (incident) => {
     };
 };
 
+const parseNullableInt = (value) => {
+    if (value === null || value === undefined || value === '') return null;
+    const parsed = Number.parseInt(value, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const typeBelongsToArea = (typeAreaId, areaId) => {
+    const parsedTypeAreaId = parseNullableInt(typeAreaId);
+    return parsedTypeAreaId === null || parsedTypeAreaId === areaId;
+};
+
+const validateTypeForArea = async (typeId, areaId) => {
+    const { data: typeData, error: typeError } = await supabase
+        .from('inc_types')
+        .select('id, area_id')
+        .eq('id', typeId)
+        .single();
+
+    if (typeError || !typeData) {
+        return {
+            ok: false,
+            message: 'type_id inválido o inexistente'
+        };
+    }
+
+    if (!typeBelongsToArea(typeData.area_id, areaId)) {
+        return {
+            ok: false,
+            message: 'El tipo de incidencia no corresponde al área seleccionada'
+        };
+    }
+
+    return { ok: true };
+};
+
 // Obtiene incidencias y catalogos auxiliares para construir filtros en el cliente.
 export const getIncidents = async (req, res) => {
     try {
@@ -188,7 +223,7 @@ export const updateIncident = async (req, res) => {
     try {
         const { data: incident, error: fetchError } = await supabase
             .from('incidents')
-            .select('usr_id, created_at, area_id, image')
+            .select('usr_id, created_at, area_id, type_id, image')
             .eq('id', id)
             .single();
 
@@ -258,6 +293,18 @@ export const updateIncident = async (req, res) => {
             const parsed = parseInt(type_id, 10);
             if (isNaN(parsed)) return res.status(400).json({ success: false, message: 'type_id inválido' });
             updates.type_id = parsed;
+        }
+
+        if (hasReportChanges) {
+            const nextAreaId = updates.area_id ?? parseNullableInt(incident.area_id);
+            const nextTypeId = updates.type_id ?? parseNullableInt(incident.type_id);
+
+            if (nextAreaId !== null && nextTypeId !== null) {
+                const validation = await validateTypeForArea(nextTypeId, nextAreaId);
+                if (!validation.ok) {
+                    return res.status(400).json({ success: false, message: validation.message });
+                }
+            }
         }
 
         const normalizedImage = image !== undefined ? image : image_url;
@@ -365,16 +412,32 @@ export const createIncident = async (req, res) => {
         });
     }
 
+    const parsedUserId = parseNullableInt(userId);
+    const parsedTypeId = parseNullableInt(type_id);
+    const parsedAreaId = parseNullableInt(area_id);
+
+    if (parsedUserId === null || parsedTypeId === null || parsedAreaId === null) {
+        return res.status(400).json({
+            success: false,
+            message: 'Los campos user_id, type_id y area_id deben ser enteros válidos'
+        });
+    }
+
     try {
+        const validation = await validateTypeForArea(parsedTypeId, parsedAreaId);
+        if (!validation.ok) {
+            return res.status(400).json({ success: false, message: validation.message });
+        }
+
         const normalizedImage = image !== undefined ? image : image_url;
 
         const { data, error } = await supabase
             .from('incidents')
             .insert({
-                usr_id: parseInt(userId, 10),
+                usr_id: parsedUserId,
                 description: descriptionText,
-                type_id: parseInt(type_id, 10),
-                area_id: parseInt(area_id, 10),
+                type_id: parsedTypeId,
+                area_id: parsedAreaId,
                 status_id: 1, // Estado inicial
                 image: normalizedImage || null,
                 created_at: new Date().toISOString()
@@ -395,13 +458,13 @@ export const createIncident = async (req, res) => {
             const { data: userData } = await supabase
                 .from('users')
                 .select('name')
-                .eq('id', parseInt(userId, 10))
+                .eq('id', parsedUserId)
                 .single();
 
             const { data: areaData } = await supabase
                 .from('areas')
                 .select('name')
-                .eq('id', parseInt(area_id, 10))
+                .eq('id', parsedAreaId)
                 .single();
 
             const reporterName = userData?.name || 'Usuario';

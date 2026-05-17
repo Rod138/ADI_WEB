@@ -1,5 +1,5 @@
 /**
- * TESINA: Funciones de validacion centralizadas para toda la aplicacion.
+ * TESINA: Funciones de validación centralizadas para toda la aplicación.
  * Responsabilidad: validar emails, contraseñas, nombres, telefonos con patrones consistentes.
  * Uso: importar en controladores para validar entrada de datos de usuarios.
  */

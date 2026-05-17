@@ -1,6 +1,6 @@
 /**
- * TESINA: Middleware de autenticacion y autorizacion por rol.
- * Responsabilidad: validar sesion activa e impedir acceso no autorizado.
+ * TESINA: Middleware de autenticación y autorización por rol.
+ * Responsabilidad: validar sesión activa e impedir acceso no autorizado.
  * Uso: se aplica en rutas sensibles para proteger datos y operaciones.
  */
 
@@ -9,7 +9,7 @@ import { verifyAccessToken } from '../utils/validation.js';
 
 const SESSION_USER_ID_HEADER = 'x-session-user-id';
 
-// Convierte un valor de entrada en ID de sesion valido o null.
+// Convierte un valor de entrada en ID de sesión válido o null.
 const parseSessionUserId = (rawValue) => {
     const parsed = parseInt(rawValue, 10);
     if (Number.isNaN(parsed) || parsed <= 0) {
@@ -23,7 +23,7 @@ const respondUnauthorized = (req, res) => {
     if (isApi) {
         return res.status(401).json({
             success: false,
-            message: 'Sesion invalida. Inicia sesion nuevamente.'
+            message: 'Sesión inválida. Inicia sesión nuevamente.'
         });
     }
     return res.redirect('/session-invalid');
@@ -34,13 +34,13 @@ const respondForbidden = (req, res) => {
     if (isApi) {
         return res.status(403).json({
             success: false,
-            message: 'No tienes permisos para realizar esta accion.'
+            message: 'No tienes permisos para realizar esta acción.'
         });
     }
     return res.status(403).render('unauthorized');
 };
 
-// Carga y cachea en request el usuario de sesion para evitar consultas duplicadas.
+// Carga y cachea en request el usuario de sesión para evitar consultas duplicadas.
 const loadSessionUser = async (req) => {
     if (req.sessionUser !== undefined) {
         return req.sessionUser;
@@ -125,7 +125,7 @@ export const requireMinRole = (minRole) => {
         } catch (error) {
             return res.status(500).json({
                 success: false,
-                message: 'No se pudo validar la sesion del usuario.'
+                message: 'No se pudo validar la sesión del usuario.'
             });
         }
     };
@@ -154,7 +154,7 @@ export const requireSelfOrMinRole = (minRole, paramName = 'id') => {
         } catch (error) {
             return res.status(500).json({
                 success: false,
-                message: 'No se pudo validar la sesion del usuario.'
+                message: 'No se pudo validar la sesión del usuario.'
             });
         }
     };

@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, { loadingText: 'GUARDANDO...' }));
 
-    // Consulta configuraciones guardadas y renderiza el historico en tabla.
+    // Consulta configuraciones guardadas y renderiza el histórico en tabla.
     async function loadQuotas() {
         try {
             const response = await fetch('/api/accounting/monthly-quota');
@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function formatDateTime(value) {
         const date = new Date(value);
         if (Number.isNaN(date.getTime())) {
-            return 'Fecha invalida';
+            return 'Fecha inválida';
         }
 
         return date.toLocaleString('es-MX', {

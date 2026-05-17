@@ -43,7 +43,10 @@
     <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        window.__ADI_SERVER_USER__ = <%- JSON.stringify(user || null) %>;
+        (function(){
+            const __adi_enc = '<%- encodeURIComponent(JSON.stringify(user || null) || "null") %>';
+            try { window.__ADI_SERVER_USER__ = __adi_enc ? JSON.parse(decodeURIComponent(__adi_enc)) : null; } catch(e) { window.__ADI_SERVER_USER__ = null; }
+        })();
     </script>
     <script src="/FrontEnd/JS/session_manager.js"></script>
     <script src="/FrontEnd/JS/reports.js" defer></script>

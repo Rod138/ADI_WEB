@@ -1,7 +1,7 @@
 /**
  * TESINA: Gestion del perfil de usuario en cliente.
- * Responsabilidad: mostrar datos de sesion, habilitar edicion y guardar cambios.
- * Control: alterna modo lectura/edicion para evitar modificaciones accidentales.
+ * Responsabilidad: mostrar datos de sesión, habilitar edición y guardar cambios.
+ * Control: alterna modo lectura/edición para evitar modificaciones accidentales.
  */
 
 // Patrones de validación consistentes

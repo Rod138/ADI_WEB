@@ -1,6 +1,6 @@
 /**
  * TESINA: Vista detalle de comprobante de pago.
- * Responsabilidad: cargar comprobante por id y permitir validacion por rol.
+ * Responsabilidad: cargar comprobante por id y permitir validación por rol.
  * Regla: solo roles con permisos administrativos pueden validar.
  */
 
@@ -59,8 +59,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const observation = `Mes ${receipt.month || '-'} ${receipt.year || '-'} | Departamento ${receipt.department_name || `DEP ${receipt.dep_id}`}`;
         const imageUrl = String(receipt.url_image || '').trim();
         const hasImage = imageUrl && imageUrl.toLowerCase() !== 'null';
+        const isPdf = hasImage && imageUrl.toLowerCase().endsWith('.pdf');
         const imageMarkup = hasImage
-            ? `<img src="${escapeHtml(imageUrl)}" alt="Comprobante" class="receipt-image" title="Clic para ampliar">`
+            ? (isPdf
+                ? `<a href="${escapeHtml(imageUrl)}" class="pdf-link" title="Ver PDF" aria-label="Ver PDF"><span class="material-symbols-outlined">picture_as_pdf</span></a>`
+                : `<img src="${escapeHtml(imageUrl)}" alt="Comprobante" class="receipt-image" title="Clic para ampliar">`)
             : '<span class="material-symbols-outlined">image</span>';
 
         card.innerHTML = `
@@ -121,18 +124,42 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
 
         if (hasImage) {
-            const imageElement = card.querySelector('.receipt-image');
-            if (imageElement) {
-                imageElement.addEventListener('click', () => {
+            if (isPdf) {
+                // Abrir PDF embebido en modal
+                const pdfLink = card.querySelector('.pdf-link');
+                const pdfBox = card.querySelector('.pdf-preview');
+                const openPdf = (e) => {
+                    if (e) e.preventDefault();
                     Swal.fire({
-                        title: 'Comprobante',
-                        imageUrl,
-                        imageAlt: 'Comprobante de pago',
+                        title: 'Comprobante (PDF)',
+                        html: `
+                            <div style="width:100%;height:70vh;">
+                                <iframe src="${escapeHtml(imageUrl)}" style="width:100%;height:100%;border:0" frameborder="0"></iframe>
+                            </div>
+                        `,
+                        showConfirmButton: true,
                         confirmButtonText: 'Cerrar',
                         confirmButtonColor: '#6A8042',
-                        width: 'min(92vw, 62.5rem)'
+                        width: 'min(92vw, 92vw)'
                     });
-                });
+                };
+
+                if (pdfLink) pdfLink.addEventListener('click', openPdf);
+                if (pdfBox) pdfBox.addEventListener('click', openPdf);
+            } else {
+                const imageElement = card.querySelector('.receipt-image');
+                if (imageElement) {
+                    imageElement.addEventListener('click', () => {
+                        Swal.fire({
+                            title: 'Comprobante',
+                            imageUrl,
+                            imageAlt: 'Comprobante de pago',
+                            confirmButtonText: 'Cerrar',
+                            confirmButtonColor: '#6A8042',
+                            width: 'min(92vw, 62.5rem)'
+                        });
+                    });
+                }
             }
         }
 

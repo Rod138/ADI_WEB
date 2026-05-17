@@ -35,13 +35,13 @@ const isExpenseWithinWindow = (expenseDate) => {
 const validateExpensePayload = ({ description, amount, image_data, expense_date, requireImage = true }) => {
     const descriptionText = String(description || '').trim();
     if (!descriptionText) {
-        return 'La descripcion es obligatoria.';
+        return 'La descripción es obligatoria.';
     }
     if (descriptionText.length < 3) {
-        return 'La descripcion debe tener al menos 3 caracteres.';
+        return 'La descripción debe tener al menos 3 caracteres.';
     }
     if (descriptionText.length > 150) {
-        return 'La descripcion no puede pasar de 150 caracteres.';
+        return 'La descripción no puede pasar de 150 caracteres.';
     }
 
     const parsedAmount = parseFloat(amount);
@@ -54,14 +54,14 @@ const validateExpensePayload = ({ description, amount, image_data, expense_date,
         const isDataImage = /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(imageText);
         const isHttpImage = /^https?:\/\//i.test(imageText);
         if (!isDataImage && !isHttpImage) {
-            return 'La imagen debe ser un archivo de imagen valido.';
+            return 'La imagen debe ser un archivo de imagen válido.';
         }
     }
 
     if (expense_date !== undefined && expense_date !== null && String(expense_date).trim()) {
         const parsedDate = new Date(expense_date);
         if (Number.isNaN(parsedDate.getTime())) {
-            return 'La fecha del gasto es invalida.';
+            return 'La fecha del gasto es inválida.';
         }
     }
 
@@ -270,7 +270,7 @@ const calculateTowerBalance = async () => {
     }
 };
 
-// Obtiene la configuracion vigente del fondo inicial de torre.
+// Obtiene la configuración vigente del fondo inicial de torre.
 // Retrieves both tower fund and monthly quota configurations
 export const getFinanceConfig = async (req, res) => {
     try {
@@ -505,7 +505,7 @@ export const getPaymentReceiptById = async (req, res) => {
     }
 };
 
-// Actualiza el estado de validacion de un comprobante de pago.
+// Actualiza el estado de validación de un comprobante de pago.
 export const updatePaymentReceipt = async (req, res) => {
     const { id } = req.params;
     const { validated } = req.body;
@@ -613,7 +613,7 @@ export const getQuotaPaymentData = async (req, res) => {
     }
 };
 
-// Registra un pago mensual evitando duplicados por departamento, mes y anio.
+// Registra un pago mensual evitando duplicados por departamento, mes y año.
 export const createQuotaPayment = async (req, res) => {
     try {
         const { dep_id, year, month, amount_paid, amount_expected, url_image, is_cash } = req.body;
@@ -629,7 +629,7 @@ export const createQuotaPayment = async (req, res) => {
         const amountExpectedNum = parseFloat(amount_expected);
 
         if (isNaN(depIdNum)) {
-            return res.status(400).json({ success: false, message: 'Departamento invalido.' });
+            return res.status(400).json({ success: false, message: 'Departamento inválido.' });
         }
 
         if (isNaN(yearNum) || yearNum < 2000) {
@@ -641,11 +641,11 @@ export const createQuotaPayment = async (req, res) => {
         }
 
         if (isNaN(amountPaidNum) || amountPaidNum < 0) {
-            return res.status(400).json({ success: false, message: 'Cantidad pagada invalida.' });
+            return res.status(400).json({ success: false, message: 'Cantidad pagada inválida.' });
         }
 
         if (isNaN(amountExpectedNum) || amountExpectedNum <= 0) {
-            return res.status(400).json({ success: false, message: 'Cantidad esperada invalida.' });
+            return res.status(400).json({ success: false, message: 'Cantidad esperada inválida.' });
         }
 
         if (!isCashPayment && (!url_image || !String(url_image).trim())) {

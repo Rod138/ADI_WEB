@@ -17,7 +17,7 @@ const proxyJson = async (url, init = {}) => {
 export const getMyTickets = async (req, res) => {
     try {
         const user = req.sessionUser;
-        if (!user) return res.status(401).json({ success: false, message: 'Sesion invalida' });
+        if (!user) return res.status(401).json({ success: false, message: 'Sesión inválida' });
 
         const { response, data } = await proxyJson(
             `${SUPPORT_BASE}/api/tickets/user/${encodeURIComponent(user.id)}`
@@ -33,7 +33,7 @@ export const getMyTickets = async (req, res) => {
 export const postMyTicket = async (req, res) => {
     try {
         const user = req.sessionUser;
-        if (!user) return res.status(401).json({ success: false, message: 'Sesion invalida' });
+        if (!user) return res.status(401).json({ success: false, message: 'Sesión inválida' });
 
         const payload = {
             ...(req.body || {}),

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0..1" rel="stylesheet" />
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
+    <link rel="icon" type="image/png" href="/FrontEnd/IMG/favicon.png">
+    <title>Políticas de Privacidad</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/FrontEnd/JS/session_manager.js"></script>
+</head>
+
+<body class="sidebar-expanded main-page">
+    <nav class="top-nav">
+        <div class="nav-brand">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="true">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
+        </div>
+        <div class="nav-title">POLÍTICAS DE PRIVACIDAD</div>
+        <div class="nav-actions">
+            <div class="role-badge">
+                <span></span>
+                <%= user?.roleLabel || 'Usuario' %>
+            </div>
+            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+                <span class="material-symbols-outlined">logout</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="legal-container">
+        <div class="legal-content">
+            <%- include('politicas_content') %>
+        </div>
+
+        <div class="legal-actions-bottom">
+            <a href="/main" class="btn-back">REGRESAR</a>
+        </div>
+    </main>
+
+    <footer>
+        <p>X-CORP</p>
+        <p class="site-legal">
+            <a class="footer-link" href="/politicas">Políticas de Privacidad</a>
+            &nbsp;|&nbsp;
+            <a class="footer-link" href="/terminos">Términos y Condiciones</a>
+        </p>
+    </footer>
+
+    <script src="/FrontEnd/JS/notifications_menu.js"></script>
+</body>
+
+</html>
