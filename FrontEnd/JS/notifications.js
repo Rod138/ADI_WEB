@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         nextBtn.disabled = currentPage === totalPages;
 
         list.innerHTML = pageItems.map(n => {
-            const typeName = escapeHtml(typesMap[n.type_id] || `Tipo ${n.type_id || '-'}`);
+            const typeName = escapeHtml(typesMap[n.type_id] || n.type_label || `Tipo ${n.type_id || '-'}`);
             const description = escapeHtml(n.description || 'Sin descripción');
             const timeAgo = escapeHtml(formatTimeAgo(n.created_at));
             const unreadClass = n.read ? '' : ' unread';
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             allNotifications = result.notifications || [];
-            typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.name]));
+            typesMap = Object.fromEntries((result.types || []).map(t => [t.id, t.label || t.name]));
             currentPage = 1;
             applyFilters();
         });
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const alreadyRead = item.getAttribute('data-read') === 'true';
         // Show detail modal
         const notif = allNotifications.find(n => String(n.id) === String(notificationId));
-        const title = notif?.title || (typesMap[notif?.type_id] || 'Notificación');
+        const title = notif?.title || notif?.type_label || (typesMap[notif?.type_id] || 'Notificación');
         const description = notif?.description || '';
 
         await Swal.fire({

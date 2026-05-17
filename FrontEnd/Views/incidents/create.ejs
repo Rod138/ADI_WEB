@@ -214,6 +214,17 @@
         let typesCatalog = [];
         let areasCatalog = [];
 
+        // Ordena alfabéticamente por nombre (soporta acentos) y deja "Otro" siempre al final.
+        const sortTypesAlphaWithOtroLast = (list) => (list || []).slice().sort((a, b) => {
+            const nameA = String(a.name ?? a.type ?? '').trim().toLowerCase();
+            const nameB = String(b.name ?? b.type ?? '').trim().toLowerCase();
+            const aIsOtro = nameA === 'otro';
+            const bIsOtro = nameB === 'otro';
+            if (aIsOtro && !bIsOtro) return 1;
+            if (!aIsOtro && bIsOtro) return -1;
+            return nameA.localeCompare(nameB, 'es', { sensitivity: 'base' });
+        });
+
         const parseNullableInt = (value) => {
             if (value === null || value === undefined || value === '') return null;
             const parsed = Number.parseInt(value, 10);
@@ -251,9 +262,9 @@
                     return;
                 }
 
-                const availableTypes = typesCatalog
-                    .filter((typeItem) => typeBelongsToArea(typeItem, selectedAreaId))
-                    .sort((a, b) => Number(a.id) - Number(b.id));
+                const availableTypes = sortTypesAlphaWithOtroLast(
+                    typesCatalog.filter((typeItem) => typeBelongsToArea(typeItem, selectedAreaId))
+                );
 
                 if (!availableTypes.length) {
                     resetTypeSelect('No hay tipos disponibles para esta área');
@@ -283,7 +294,7 @@
                 const data = await res.json();
                 if (!data.success) throw new Error('No se pudieron cargar los catálogos');
 
-                typesCatalog = (data.types || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
+                typesCatalog = sortTypesAlphaWithOtroLast(data.types || []);
                 areasCatalog = (data.areas || []).slice().sort((a, b) => Number(a.id) - Number(b.id));
 
                 resetTypeSelect('Primero selecciona un área...');

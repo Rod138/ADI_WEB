@@ -77,20 +77,61 @@ export const getNotifications = async (req, res) => {
             });
         }
 
-        const normalizedNotifications = (notiRes.data || []).map(n => ({
-            id: n.id,
-            title: n.title ?? n.name ?? 'Sin titulo',
-            description: n.description ?? n.content ?? '',
-            type_id: n.type_id ?? n.notification_type_id ?? n.type ?? null,
-            usr_id: n.usr_id ?? n.user_id ?? usrId,
-            created_at: n.created_at ?? n.createdAt ?? null,
-            read: Boolean(n.read ?? n.is_read ?? false)
+        // Mapeo de tipos de notificación a etiquetas en español (con acentos).
+        const translateType = (key) => {
+            if (!key) return 'Otro';
+            const map = {
+                'incident_status_change': 'Cambio en el estado de la incidencia',
+                'quota_published': 'Cuota mensual publicada',
+                'quota_rejected': 'Cuota mensual rechazada',
+                'quota_validated': 'Cuota mensual aprobada',
+                'new_expense': 'Nuevo gasto',
+                'new_incident': 'Nueva incidencia',
+                'new_receipt': 'Nuevo recibo de pago de cuota mensual'
+            };
+
+            if (map[key]) return map[key];
+
+            // Fallback: convertir snake_case a título (sin acentos).
+            return String(key).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        };
+
+        const typesList = (typeRes.data || []).map(t => ({
+            ...t,
+            label: translateType(t.name ?? t.type ?? t.key)
         }));
+
+        const normalizedNotifications = (notiRes.data || []).map(n => {
+            const typeKey = n.type ?? n.name ?? null;
+            const resolvedTypeId = n.type_id ?? n.notification_type_id ?? null;
+            // Intenta obtener la etiqueta desde la lista de tipos por id, si existe.
+            let typeLabel = null;
+            if (resolvedTypeId && typesList.length) {
+                const found = typesList.find(tt => Number(tt.id) === Number(resolvedTypeId));
+                if (found) typeLabel = found.label;
+            }
+
+            // Si no se obtuvo por id, intenta traducir por key.
+            if (!typeLabel) {
+                typeLabel = translateType(typeKey || (n.type_name ?? n.name ?? null));
+            }
+
+            return {
+                id: n.id,
+                title: n.title ?? n.name ?? 'Sin titulo',
+                description: n.description ?? n.content ?? '',
+                type_id: resolvedTypeId,
+                type_label: typeLabel,
+                usr_id: n.usr_id ?? n.user_id ?? usrId,
+                created_at: n.created_at ?? n.createdAt ?? null,
+                read: Boolean(n.read ?? n.is_read ?? false)
+            };
+        });
 
         return res.status(200).json({
             success: true,
             notifications: normalizedNotifications,
-            types: typeRes.data || []
+            types: typesList
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: error?.message || 'Error interno' });
