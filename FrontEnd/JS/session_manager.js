@@ -1,3 +1,8 @@
+class Role {
+    static ROOT = 'root';
+    static ADMIN = 'admin';
+    static USER = 'user';
+}
 /**
  * TESINA: Utilidades compartidas para gestionar sesion y permisos en frontend.
  * Responsabilidad: interpretar usuario en sessionStorage y resolver rol activo.
@@ -49,6 +54,38 @@ function getRoleLabel(roleId) {
         default: return 'Usuario';
     }
 }
+
+function applyRootRoleClass(user) {
+    const root = document.documentElement;
+    if (!root) return;
+
+    root.classList.remove('adi-role-residente', 'adi-role-tesorero', 'adi-role-administrador', 'adi-role-tesorero-admin');
+    root.removeAttribute('data-adi-role');
+
+    const roleId = Number(user?.rol_id || 0);
+    if (!roleId) return;
+
+    root.setAttribute('data-adi-role', String(roleId));
+
+    switch (roleId) {
+        case ADI_ROLES.RESIDENTE:
+            root.classList.add('adi-role-residente');
+            break;
+        case ADI_ROLES.TESORERO:
+            root.classList.add('adi-role-tesorero');
+            break;
+        case ADI_ROLES.ADMINISTRADOR:
+            root.classList.add('adi-role-administrador');
+            break;
+        case ADI_ROLES.TESORERO_ADMIN:
+            root.classList.add('adi-role-tesorero-admin');
+            break;
+        default:
+            break;
+    }
+}
+
+applyRootRoleClass(safeParseUserSession());
 
 // Verifica autorizacion por jerarquia minima de rol.
 function hasMinRole(user, minRole) {
@@ -279,6 +316,20 @@ function patchApiFetchHeaders() {
 }
 
 // Oculta nodos restringidos cuando el rol del usuario no cumple requisitos.
+function getSidebarMinRoleFromHref(href) {
+    const normalizedHref = String(href || '').split('?')[0].split('#')[0];
+
+    switch (normalizedHref) {
+        case '/departments':
+            return ADI_ROLES.ADMINISTRADOR;
+        case '/accounting/finance-config':
+        case '/accounting/receipts-board':
+            return ADI_ROLES.TESORERO;
+        default:
+            return 0;
+    }
+}
+
 function applyRoleVisibility(user) {
     const roleLockedNodes = document.querySelectorAll('[data-min-role]');
     roleLockedNodes.forEach((node) => {
@@ -287,6 +338,42 @@ function applyRoleVisibility(user) {
 
         if (!hasMinRole(user, minRole)) {
             node.style.display = 'none';
+        }
+    });
+
+    const sidebarLinks = document.querySelectorAll('.adi-sidebar .sidebar-link[href], .adi-sidebar .sidebar-sublink[href]');
+    sidebarLinks.forEach((node) => {
+        const minRole = getSidebarMinRoleFromHref(node.getAttribute('href'));
+        if (!minRole) return;
+
+        const visible = hasMinRole(user, minRole);
+        node.hidden = !visible;
+        if (visible) {
+            node.removeAttribute('aria-hidden');
+        } else {
+            node.setAttribute('aria-hidden', 'true');
+        }
+    });
+
+    document.querySelectorAll('.adi-sidebar .sidebar-submenu').forEach((submenu) => {
+        const hasVisibleItems = submenu.querySelector('.sidebar-sublink:not([hidden])');
+        const trigger = submenu.previousElementSibling;
+        const shouldHideGroup = !hasVisibleItems;
+
+        submenu.hidden = shouldHideGroup;
+        if (shouldHideGroup) {
+            submenu.setAttribute('aria-hidden', 'true');
+        } else {
+            submenu.removeAttribute('aria-hidden');
+        }
+
+        if (trigger && trigger.classList.contains('has-submenu')) {
+            trigger.hidden = shouldHideGroup;
+            if (shouldHideGroup) {
+                trigger.setAttribute('aria-hidden', 'true');
+            } else {
+                trigger.removeAttribute('aria-hidden');
+            }
         }
     });
 }
@@ -485,6 +572,7 @@ function initializeSharedSidebarBehavior() {
         const allowed = await enforcePageRole(user);
         if (!allowed) return;
 
+        applyRootRoleClass(user);
         applyRoleVisibility(user);
         initializeSharedSidebarBehavior();
 
@@ -552,3 +640,4 @@ function initializeSharedSidebarBehavior() {
             });
         }
     });
+

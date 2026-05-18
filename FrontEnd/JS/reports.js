@@ -29,15 +29,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         expenses: [],
         quotas: [],
         departments: [],
-        incidents: []
+        incidents: [],
+        fundInitial: 0
     };
 
     monthSelect.innerHTML += MONTHS.map((m, idx) => `<option value="${idx + 1}">${m}</option>`).join('');
 
     try {
-        await withLock('reports-data', async () => {
-            const response = await fetch('/api/accounting/reports-data');
-            const data = await response.json();
+            await withLock('reports-data', async () => {
+            const [reportsRes, financeRes] = await Promise.all([
+                fetch('/api/accounting/reports-data'),
+                fetch('/api/accounting/finance-config')
+            ]);
+
+            const data = await reportsRes.json();
+            const finance = await financeRes.json().catch(() => null);
 
             if (!data.success) {
                 Swal.fire({
@@ -58,6 +64,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 incidents: data.incidents || [],
                 incidentTypes: data.incidentTypes || []
             };
+
+            // Load initial tower fund (used to compute balance)
+            if (finance && finance.success && finance.fund) {
+                reportsData.fundInitial = Number(finance.fund.initial_amount || 0);
+            } else {
+                reportsData.fundInitial = 0;
+            }
 
             populateYears();
             applyDefaultFilters();
@@ -286,7 +299,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 {
                     label: 'Balance',
-                    data: rows.map(r => round2(r.payments - r.expenses)),
+                    data: (function(){
+                        const initial = Number(reportsData.fundInitial || 0);
+                        let cum = initial;
+                        return rows.map(r => {
+                            cum += (Number(r.payments || 0) - Number(r.expenses || 0));
+                            return round2(cum);
+                        });
+                    })(),
                     borderColor: '#111111',
                     backgroundColor: 'rgba(17,17,17,0.12)',
                     tension: 0.25,
@@ -395,6 +415,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             renderedRows.forEach(row => {
                 totalAmount += Number(row[5] || 0);
             });
+
+            // Include initial tower fund in the accumulated balance
+            totalAmount += Number(reportsData.fundInitial || 0);
 
             if (renderedRows.length > 0) {
                 renderedRows.push(['TOTAL', 'Balance acumulado', '-', '-', formatSigned(totalAmount), 0]);

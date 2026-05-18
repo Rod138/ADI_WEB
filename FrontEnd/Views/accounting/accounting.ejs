@@ -198,26 +198,28 @@
                 </div>
             </a>
 
-            <a href="/accounting/receipts-board" class="menu-card button-4" data-admin-only="true">
-                <div class="card-content">
-                    <h2 class="card-title">CUOTAS DE RESIDENTES</h2>
-                    <p class="card-subtitle">Valida comprobantes de pago.</p>
-                </div>
-            </a>
+            <% if (user && Number(user.rol_id) >= 2) { %>
+                <a href="/accounting/receipts-board" class="menu-card button-4" data-admin-only="true">
+                    <div class="card-content">
+                        <h2 class="card-title">CUOTAS DE RESIDENTES</h2>
+                        <p class="card-subtitle">Valida comprobantes de pago.</p>
+                    </div>
+                </a>
 
-            <a href="/accounting/cash-payment" class="menu-card button-4" data-admin-only="true">
-                <div class="card-content">
-                    <h2 class="card-title">CUOTA EN EFECTIVO</h2>
-                    <p class="card-subtitle">Registra una cuota ajena pagada en efectivo.</p>
-                </div>
-            </a>
+                <a href="/accounting/cash-payment" class="menu-card button-4" data-admin-only="true">
+                    <div class="card-content">
+                        <h2 class="card-title">CUOTA EN EFECTIVO</h2>
+                        <p class="card-subtitle">Registra una cuota ajena pagada en efectivo.</p>
+                    </div>
+                </a>
 
-            <a href="/accounting/finance-config" class="menu-card button-5" data-admin-only="true">
-                <div class="card-content">
-                    <h2 class="card-title">CONFIGURACIÓN FINANCIERA</h2>
-                    <p class="card-subtitle">Ajusta fondo inicial y cuota mensual.</p>
-                </div>
-            </a>
+                <a href="/accounting/finance-config" class="menu-card button-5" data-admin-only="true">
+                    <div class="card-content">
+                        <h2 class="card-title">CONFIGURACIÓN FINANCIERA</h2>
+                        <p class="card-subtitle">Ajusta fondo inicial y cuota mensual.</p>
+                    </div>
+                </a>
+            <% } %>
         </section>
 
         <div class="bottom-actions">

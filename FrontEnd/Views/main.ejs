@@ -241,12 +241,6 @@
                         <strong>Finanzas</strong>
                     </div>
                 </a>
-                <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración">
-                    <span class="material-symbols-outlined">settings</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Configuración</strong>
-                    </div>
-                </a>
                 <a class="sidebar-sublink" href="/accounting/expenses-board" data-label="Gastos">
                     <span class="material-symbols-outlined">receipt_long</span>
                     <div class="sidebar-link-copy">
@@ -259,12 +253,20 @@
                         <strong>Mis cuotas</strong>
                     </div>
                 </a>
-                <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos">
-                    <span class="material-symbols-outlined">inventory_2</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Cuotas de residentes</strong>
-                    </div>
-                </a>
+                <% if (user && Number(user.rol_id) >= 2) { %>
+                    <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                        <div class="sidebar-link-copy">
+                            <strong>Cuotas de residentes</strong>
+                        </div>
+                    </a>
+                    <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración">
+                        <span class="material-symbols-outlined">settings</span>
+                        <div class="sidebar-link-copy">
+                            <strong>Configuración</strong>
+                        </div>
+                    </a>
+                <% } %>
             </nav>
             <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
                 <span class="material-symbols-outlined">warning</span>
@@ -278,12 +280,14 @@
                     <strong>Reportes</strong>
                 </div>
             </a>
-            <a class="sidebar-link" href="/departments" data-label="Departamentos">
-                <span class="material-symbols-outlined">apartment</span>
-                <div class="sidebar-link-copy">
-                    <strong>Departamentos</strong>
-                </div>
-            </a>
+            <% if (user && Number(user.rol_id) >= 3) { %>
+                <a class="sidebar-link" href="/departments" data-label="Departamentos">
+                    <span class="material-symbols-outlined">apartment</span>
+                    <div class="sidebar-link-copy">
+                        <strong>Departamentos</strong>
+                    </div>
+                </a>
+            <% } %>
             <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte">
                 <span class="material-symbols-outlined">support_agent</span>
                 <div class="sidebar-link-copy">

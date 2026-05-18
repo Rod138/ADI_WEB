@@ -29,17 +29,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const session = JSON.parse(sessionStorage.getItem('user'));
 
-    // ── Sidebar submenu toggle ───────────────────────────────
-    const accountingMenu = document.getElementById('accounting-menu');
-    const accountingSubmenu = document.getElementById('accounting-submenu');
-    if (accountingMenu && accountingSubmenu) {
-        accountingMenu.addEventListener('click', () => {
-            accountingSubmenu.classList.toggle('open');
-            const arrow = accountingMenu.querySelector('.toggle-arrow');
-            if (arrow) arrow.classList.toggle('rotated');
-        });
-    }
-
     // ── Load departments into first select ───────────────────
     let departmentsCache = [];
     try {

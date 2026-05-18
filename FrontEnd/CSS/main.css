@@ -828,6 +828,13 @@ body.sidebar-collapsed .sidebar-link:hover::after {
     color: #ed7a13;
 }
 
+html.adi-role-residente .adi-sidebar a[href="/accounting/finance-config"],
+html.adi-role-residente .adi-sidebar a[href="/accounting/receipts-board"],
+html.adi-role-residente .adi-sidebar a[href="/departments"],
+html.adi-role-tesorero .adi-sidebar a[href="/departments"] {
+    display: none !important;
+}
+
 /* Hide sublinks when collapsed */
 body.sidebar-collapsed .sidebar-sublink {
     display: none;

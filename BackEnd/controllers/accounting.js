@@ -244,14 +244,27 @@ const calculateTowerBalance = async () => {
 
         const initialAmount = fundData && fundData.length > 0 ? parseFloat(fundData[0].initial_amount || 0) : 0;
 
-        // Get total payments received from departments
-        const { data: paymentsData, error: paymentsError } = await supabase
-            .from('recipes_payment')
-            .select('amount_paid');
+        // Get occupied department ids
+        const { data: occupiedDeps, error: occupiedDepsError } = await supabase
+            .from('departments')
+            .select('id')
+            .eq('is_in_use', true);
 
-        const totalPayments = paymentsData
-            ? paymentsData.reduce((sum, p) => sum + (parseFloat(p.amount_paid || 0)), 0)
-            : 0;
+        const occupiedIds = Array.isArray(occupiedDeps) ? occupiedDeps.map(d => d.id) : [];
+
+        // Get total payments received from departments (only validated payments and only from occupied departments)
+        let totalPayments = 0;
+        if (occupiedIds.length > 0) {
+            const { data: paymentsData, error: paymentsError } = await supabase
+                .from('recipes_payment')
+                .select('amount_paid')
+                .eq('validated', true)
+                .in('dep_id', occupiedIds);
+
+            totalPayments = paymentsData
+                ? paymentsData.reduce((sum, p) => sum + (parseFloat(p.amount_paid || 0)), 0)
+                : 0;
+        }
 
         // Get total expenses
         const { data: expensesData, error: expensesError } = await supabase
@@ -447,7 +460,7 @@ export const getPaymentReceipts = async (req, res) => {
                 .order('created_at', { ascending: false }),
             supabase
                 .from('departments')
-                .select('id, name')
+                .select('id, name, is_in_use')
                 .order('id', { ascending: true })
         ]);
 
@@ -455,9 +468,13 @@ export const getPaymentReceipts = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Error al obtener comprobantes.' });
         }
 
-        const departmentsMap = Object.fromEntries((departmentsRes.data || []).map(d => [d.id, d.name]));
+        // Only include departments that are in use
+        const occupiedDepartments = (departmentsRes.data || []).filter(d => Boolean(d.is_in_use));
+        const occupiedIdsSet = new Set(occupiedDepartments.map(d => d.id));
+        const departmentsMap = Object.fromEntries(occupiedDepartments.map(d => [d.id, d.name]));
 
-        const receipts = (receiptsRes.data || []).map(r => ({
+        // Filter receipts to only those belonging to occupied departments
+        const receipts = (receiptsRes.data || []).filter(r => occupiedIdsSet.has(r.dep_id)).map(r => ({
             ...r,
             department_name: departmentsMap[r.dep_id] || `DEP ${r.dep_id}`
         }));
@@ -465,7 +482,7 @@ export const getPaymentReceipts = async (req, res) => {
         return res.status(200).json({
             success: true,
             receipts,
-            departments: departmentsRes.data || []
+            departments: occupiedDepartments
         });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno.' });
@@ -572,7 +589,7 @@ export const getQuotaPaymentData = async (req, res) => {
         const [departmentsRes, quotasRes, receiptsRes] = await Promise.all([
             supabase
                 .from('departments')
-                .select('id, name')
+                .select('id, name, is_in_use')
                 .order('id', { ascending: true }),
             supabase
                 .from('monthly_quota')
@@ -588,15 +605,19 @@ export const getQuotaPaymentData = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Error al obtener datos de pago de cuota.' });
         }
 
-        const departmentsMap = Object.fromEntries((departmentsRes.data || []).map(d => [d.id, d.name]));
-        const allReceipts = (receiptsRes.data || []).map(r => ({
+        // Only include departments that are in use
+        const occupiedDepartments = (departmentsRes.data || []).filter(d => Boolean(d.is_in_use));
+        const departmentsMap = Object.fromEntries(occupiedDepartments.map(d => [d.id, d.name]));
+        const occupiedIdsSet = new Set(occupiedDepartments.map(d => d.id));
+
+        const allReceipts = (receiptsRes.data || []).filter(r => occupiedIdsSet.has(r.dep_id)).map(r => ({
             ...r,
             department_name: departmentsMap[r.dep_id] || `DEP ${r.dep_id}`
         }));
 
         const visibleDepartments = isManager
-            ? (departmentsRes.data || [])
-            : (departmentsRes.data || []).filter(d => Number(d.id) === Number(sessionUser?.dep_id));
+            ? occupiedDepartments
+            : occupiedDepartments.filter(d => Number(d.id) === Number(sessionUser?.dep_id));
 
         const visibleReceipts = isManager
             ? allReceipts
@@ -656,7 +677,7 @@ export const createQuotaPayment = async (req, res) => {
 
         const { data: existing, error: existingError } = await supabase
             .from('recipes_payment')
-            .select('id')
+            .select('id, validated')
             .eq('dep_id', depIdNum)
             .eq('year', yearNum)
             .eq('month', normalizedMonth)
@@ -667,7 +688,13 @@ export const createQuotaPayment = async (req, res) => {
         }
 
         if (existing && existing.length > 0) {
-            return res.status(409).json({ success: false, message: 'Ese departamento ya tiene pago registrado para ese mes y año.' });
+            const prev = existing[0];
+            // Si el comprobante anterior fue rechazado (validated === false), permitir reintento
+            if (prev.validated === false) {
+                // allow new upload — no conflict
+            } else {
+                return res.status(409).json({ success: false, message: 'Ese departamento ya tiene pago registrado para ese mes y año.' });
+            }
         }
 
         const { error } = await supabase
@@ -720,6 +747,7 @@ export const getAccountingReportsData = async (req, res) => {
             supabase
                 .from('recipes_payment')
                 .select('id, dep_id, year, month, amount_paid, amount_expected, created_at, validated')
+                .eq('validated', true)
                 .order('created_at', { ascending: true }),
             supabase
                 .from('tower_expenses')
@@ -731,7 +759,7 @@ export const getAccountingReportsData = async (req, res) => {
                 .order('created_at', { ascending: true }),
             supabase
                 .from('departments')
-                .select('id, name')
+                .select('id, name, is_in_use')
                 .order('name', { ascending: true }),
             supabase
                 .from('incidents')
@@ -747,12 +775,17 @@ export const getAccountingReportsData = async (req, res) => {
             return res.status(500).json({ success: false, message: 'Error al obtener datos de reportes.' });
         }
 
+        // Exclude unoccupied departments and payments from unoccupied departments
+        const occupiedDepartments = (departmentsRes.data || []).filter(d => Boolean(d.is_in_use));
+        const occupiedIdsSet = new Set(occupiedDepartments.map(d => d.id));
+        const payments = (paymentsRes.data || []).filter(p => occupiedIdsSet.has(p.dep_id));
+
         return res.status(200).json({
             success: true,
-            payments: paymentsRes.data || [],
+            payments,
             expenses: expensesRes.data || [],
             quotas: quotasRes.data || [],
-            departments: departmentsRes.data || [],
+            departments: occupiedDepartments,
             incidents: incidentsRes.data || [],
             incidentTypes: incidentTypesRes.data || []
         });

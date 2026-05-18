@@ -44,12 +44,140 @@
         .role-badge #user-role {
             white-space: normal;
         }
+        /* Notificaciones: dropdown compacto usado en el menú principal */
+        .notifications-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        .notifications-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            min-width: 18px;
+            height: 18px;
+            background: #d33;
+            color: white;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            padding: 0 4px;
+        }
+        .notifications-dropdown {
+            position: absolute;
+            right: 0;
+            top: 2.5rem;
+            width: 320px;
+            max-height: 420px;
+            background: white;
+            border: 1px solid rgba(0,0,0,0.08);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1200;
+            display: flex;
+            flex-direction: column;
+        }
+        .notifications-dropdown.hidden {
+            display: none !important;
+        }
+        .notifications-dropdown .nd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8e8e8;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        .notifications-dropdown .nd-list {
+            overflow-y: auto;
+            padding: 8px;
+            max-height: 350px;
+        }
+        .nd-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 6px;
+            border-radius: 6px;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .nd-item:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+        .nd-item.unread {
+            background: rgba(106, 128, 66, 0.08);
+        }
+        .nd-item.unread:hover {
+            background: rgba(106, 128, 66, 0.12);
+        }
+        .nd-item .nd-left {
+            display: flex;
+            gap: 0;
+            align-items: flex-start;
+            flex: 1;
+            min-width: 0;
+        }
+        .nd-item .nd-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #222;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            line-clamp: 1;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+        .nd-item .nd-desc {
+            font-size: 0.8rem;
+            color: #555;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-top: 4px;
+            line-height: 1.3;
+            word-break: break-word;
+        }
+        .nd-item .nd-time {
+            font-size: 0.75rem;
+            color: #888;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .nd-item .nd-delete {
+            font-size: 1.5rem;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.6;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+        .nd-item .nd-delete:hover {
+            opacity: 1;
+        }
+        .nd-empty {
+            padding: 24px 16px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body class="sidebar-expanded" data-min-role="1">
     <nav class="top-nav">
         <div class="nav-brand">
-            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="false">
+            <button type="button" class="nav-icon-btn sidebar-toggle" id="sidebar-toggle" aria-label="Alternar barra lateral" aria-expanded="true">
                 <span class="material-symbols-outlined">menu</span>
             </button>
             <img src="/FrontEnd/IMG/logo_rectangle_h.png" alt="ADI_logo">
@@ -60,111 +188,31 @@
                 <span></span>
                 <span id="user-role">Rol</span>
             </div>
+            <div class="notifications-wrapper">
+                <button id="nav-notifications-btn" class="nav-icon-btn" aria-label="Notificaciones" aria-haspopup="true" aria-expanded="false">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <div id="notifications-dropdown" class="notifications-dropdown hidden">
+                    <div class="nd-header">
+                        <span>Notificaciones</span>
+                        <div>
+                            <button id="delete-all-btn-mini" class="nav-icon-btn" title="Borrar todas">Borrar</button>
+                        </div>
+                    </div>
+                    <div id="nav-noti-list" class="nd-list"></div>
+                    <a href="/notifications" style="padding:8px 12px; border-top:1px solid #f7f7f7; text-align:center; font-weight:600; text-decoration:none; color:inherit">Ver todas</a>
+                </div>
+            </div>
             <a href="/profile" class="nav-icon-btn" aria-label="Perfil">
                 <span class="material-symbols-outlined">person</span>
             </a>
-            <a id="logout-btn" class="nav-icon-btn" href="/" aria-label="Cerrar sesión">
+            <a id="logout-btn" class="nav-icon-btn logout-link" href="/" aria-label="Cerrar sesión">
                 <span class="material-symbols-outlined">logout</span>
             </a>
         </div>
     </nav>
 
-    <aside class="adi-sidebar" id="adi-sidebar" aria-label="Barra lateral de navegación">
-        <nav class="sidebar-nav" aria-label="Accesos rápidos">
-            <a class="sidebar-link" href="/main" data-label="Menú principal">
-                <span class="material-symbols-outlined">dashboard</span>
-                <div class="sidebar-link-copy">
-                    <strong>Menú principal</strong>
-                </div>
-            </a>
-            <div class="sidebar-link has-submenu" id="accounting-menu" data-label="Finanzas">
-                <span class="material-symbols-outlined">payments</span>
-                <div class="sidebar-link-copy">
-                    <strong>Finanzas</strong>
-                </div>
-                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
-            </div>
-            <nav class="sidebar-submenu" id="accounting-submenu">
-                <a class="sidebar-sublink" href="/accounting" data-label="Tablero">
-                    <span class="material-symbols-outlined">dashboard</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Finanzas</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/accounting/finance-config" data-label="Configuración">
-                    <span class="material-symbols-outlined">settings</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Configuración</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/accounting/expenses-board" data-label="Gastos">
-                    <span class="material-symbols-outlined">receipt_long</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Gastos del condominio</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/accounting/payment" data-label="Pagos">
-                    <span class="material-symbols-outlined">payment</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Mis cuotas</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/accounting/receipts-board" data-label="Recibos">
-                    <span class="material-symbols-outlined">inventory_2</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Cuotas de residentes</strong>
-                    </div>
-                </a>
-            </nav>
-            <a class="sidebar-link" href="/incident-board" data-label="Incidencias">
-                <span class="material-symbols-outlined">warning</span>
-                <div class="sidebar-link-copy">
-                    <strong>Incidencias</strong>
-                </div>
-            </a>
-            <a class="sidebar-link" href="/reports" data-label="Reportes">
-                <span class="material-symbols-outlined">bar_chart</span>
-                <div class="sidebar-link-copy">
-                    <strong>Reportes</strong>
-                </div>
-            </a>
-            <a class="sidebar-link" href="/departments" data-label="Departamentos">
-                <span class="material-symbols-outlined">apartment</span>
-                <div class="sidebar-link-copy">
-                    <strong>Departamentos</strong>
-                </div>
-            </a>
-            <div class="sidebar-link has-submenu" id="support-menu" data-label="Soporte">
-                <span class="material-symbols-outlined">support_agent</span>
-                <div class="sidebar-link-copy">
-                    <strong>Soporte</strong>
-                </div>
-                <span class="material-symbols-outlined toggle-arrow">expand_more</span>
-            </div>
-            <nav class="sidebar-submenu" id="support-submenu">
-                <a class="sidebar-sublink" href="/support" data-label="Centro de ayuda">
-                    <span class="material-symbols-outlined">space_dashboard</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Centro de ayuda</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/support/faqs" data-label="Preguntas frecuentes">
-                    <span class="material-symbols-outlined">quiz</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Preguntas frecuentes</strong>
-                    </div>
-                </a>
-                <a class="sidebar-sublink" href="/support/tickets" data-label="Tickets propios">
-                    <span class="material-symbols-outlined">confirmation_number</span>
-                    <div class="sidebar-link-copy">
-                        <strong>Tickets propios</strong>
-                    </div>
-                </a>
-            </nav>
-        </nav>
-    </aside>
-
-    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    <%- include('../partials/sidebar') %>
 
     <main class="main-container departments-page">
         <section class="deps-panel">
@@ -269,54 +317,20 @@
         </div>
     </main>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = window.ADIAuth?.getCurrentUser?.();
-            if (user) {
-                const roleSpan = document.getElementById('user-role');
-                if (roleSpan) roleSpan.textContent = window.ADIAuth.getRoleLabel(user.rol_id);
-            }
-
-            // Sidebar toggle functionality
-            const sidebar = document.getElementById('adi-sidebar');
-            const backdrop = document.getElementById('sidebar-backdrop');
-            const toggle = document.getElementById('sidebar-toggle');
-
-            const setSidebarOpen = (open) => {
-                document.body.classList.toggle('sidebar-open', open);
-                toggle?.setAttribute('aria-expanded', String(open));
-            };
-
-            toggle?.addEventListener('click', () => {
-                setSidebarOpen(!document.body.classList.contains('sidebar-open'));
+        document.querySelectorAll('.soon').forEach(function (card) {
+            card.addEventListener('click', function (e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: this.dataset.feature + ' próximamente',
+                    text: 'Esta sección aún no está disponible.',
+                    icon: 'info',
+                    confirmButtonText: 'Aceptar',
+                    confirmButtonColor: '#6A8042'
+                });
             });
-
-            backdrop?.addEventListener('click', () => setSidebarOpen(false));
-
-            sidebar?.addEventListener('click', (e) => {
-                if (window.innerWidth <= 768 && e.target.closest('a')) {
-                    setSidebarOpen(false);
-                }
-            });
-
-            if (window.innerWidth <= 768) {
-                setSidebarOpen(false);
-            }
-
-            // Highlight active sidebar link
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href === '/departments' && currentPath === '/departments') {
-                    link.classList.add('active');
-                }
-            });
-            const headerLink = document.querySelector('.sidebar-header-link');
-            if (headerLink && currentPath === '/main') headerLink.classList.add('active');
         });
     </script>
-    <footer>
-        <p>X-CORP</p>
-    </footer>
+    <script src="/FrontEnd/JS/notifications_menu.js"></script>
 </body>
 </html>
 
