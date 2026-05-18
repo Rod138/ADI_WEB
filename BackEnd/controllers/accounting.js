@@ -675,27 +675,9 @@ export const createQuotaPayment = async (req, res) => {
 
         const normalizedMonth = String(month).trim();
 
-        const { data: existing, error: existingError } = await supabase
-            .from('recipes_payment')
-            .select('id, validated')
-            .eq('dep_id', depIdNum)
-            .eq('year', yearNum)
-            .eq('month', normalizedMonth)
-            .limit(1);
-
-        if (existingError) {
-            return res.status(500).json({ success: false, message: 'No se pudo validar el estado de pago.' });
-        }
-
-        if (existing && existing.length > 0) {
-            const prev = existing[0];
-            // Si el comprobante anterior fue rechazado (validated === false), permitir reintento
-            if (prev.validated === false) {
-                // allow new upload — no conflict
-            } else {
-                return res.status(409).json({ success: false, message: 'Ese departamento ya tiene pago registrado para ese mes y año.' });
-            }
-        }
+        // Nota: Se permite subir múltiples comprobantes para un mismo departamento/mes/año
+        // incluso si ya existe un registro previo (pendiente o validado). Esto acomoda
+        // reenvíos o pagos adicionales según la solicitud del cliente.
 
         const { error } = await supabase
             .from('recipes_payment')
