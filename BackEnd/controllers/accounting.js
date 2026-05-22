@@ -25,6 +25,41 @@ const parseSessionUserId = (req) => {
 // Ventana de edición/eliminación de gastos: 30 días (en horas)
 const EXPENSE_EDIT_WINDOW_HOURS = 24 * 30; // 720 horas
 
+const MONTH_NAME_TO_INDEX = {
+    enero: 0,
+    febrero: 1,
+    marzo: 2,
+    abril: 3,
+    mayo: 4,
+    junio: 5,
+    julio: 6,
+    agosto: 7,
+    septiembre: 8,
+    octubre: 9,
+    noviembre: 10,
+    diciembre: 11
+};
+
+const isLateQuotaPayment = (year, monthName, referenceDate = new Date()) => {
+    const monthIndex = MONTH_NAME_TO_INDEX[String(monthName || '').trim().toLowerCase()];
+    if (!Number.isInteger(monthIndex) || !Number.isInteger(year)) {
+        return false;
+    }
+
+    const dueDate = new Date(year, monthIndex, 15, 23, 59, 59, 999);
+    return referenceDate.getTime() > dueDate.getTime();
+};
+
+const calculateExpectedQuotaAmount = (baseAmount, isLate) => {
+    const parsedBaseAmount = Number(baseAmount);
+    if (!Number.isFinite(parsedBaseAmount) || parsedBaseAmount <= 0) {
+        return null;
+    }
+
+    const total = isLate ? parsedBaseAmount * 1.10 : parsedBaseAmount;
+    return Math.round(total * 100) / 100;
+};
+
 const isExpenseWithinWindow = (expenseDate) => {
     const created = new Date(expenseDate);
     if (Number.isNaN(created.getTime())) return false;
@@ -648,6 +683,9 @@ export const createQuotaPayment = async (req, res) => {
         const yearNum = parseInt(year, 10);
         const amountPaidNum = parseFloat(amount_paid);
         const amountExpectedNum = parseFloat(amount_expected);
+        const hasAmountExpected = amount_expected !== undefined
+            && amount_expected !== null
+            && String(amount_expected).trim() !== '';
 
         if (isNaN(depIdNum)) {
             return res.status(400).json({ success: false, message: 'Departamento inválido.' });
@@ -665,7 +703,7 @@ export const createQuotaPayment = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Cantidad pagada inválida.' });
         }
 
-        if (isNaN(amountExpectedNum) || amountExpectedNum <= 0) {
+        if (hasAmountExpected && (isNaN(amountExpectedNum) || amountExpectedNum <= 0)) {
             return res.status(400).json({ success: false, message: 'Cantidad esperada inválida.' });
         }
 
@@ -674,6 +712,37 @@ export const createQuotaPayment = async (req, res) => {
         }
 
         const normalizedMonth = String(month).trim();
+
+        const { data: quotaRows, error: quotaError } = await supabase
+            .from('monthly_quota')
+            .select('amount, created_at')
+            .eq('month', normalizedMonth)
+            .eq('year', yearNum)
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+        if (quotaError) {
+            return res.status(500).json({ success: false, message: 'No se pudo consultar la cuota configurada.' });
+        }
+
+        const latestQuota = Array.isArray(quotaRows) && quotaRows.length > 0 ? quotaRows[0] : null;
+        if (!latestQuota) {
+            return res.status(400).json({ success: false, message: 'No existe cuota configurada para ese periodo.' });
+        }
+
+        const requiresLateFee = isLateQuotaPayment(yearNum, normalizedMonth);
+        const expectedAmount = calculateExpectedQuotaAmount(latestQuota.amount, requiresLateFee);
+
+        if (!Number.isFinite(expectedAmount) || expectedAmount <= 0) {
+            return res.status(500).json({ success: false, message: 'La cuota configurada para ese periodo es inválida.' });
+        }
+
+        if (hasAmountExpected && Math.abs(amountExpectedNum - expectedAmount) > 0.01) {
+            return res.status(400).json({
+                success: false,
+                message: `La cuota esperada para este periodo es ${expectedAmount.toFixed(2)}.`
+            });
+        }
 
         // Nota: Se permite subir múltiples comprobantes para un mismo departamento/mes/año
         // incluso si ya existe un registro previo (pendiente o validado). Esto acomoda
@@ -686,7 +755,7 @@ export const createQuotaPayment = async (req, res) => {
                 year: yearNum,
                 month: normalizedMonth,
                 amount_paid: amountPaidNum,
-                amount_expected: amountExpectedNum,
+                amount_expected: expectedAmount,
                 url_image: isCashPayment ? null : String(url_image).trim(),
                 validated: isCashPayment ? true : null,
                 created_at: new Date().toISOString()

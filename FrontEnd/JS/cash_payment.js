@@ -68,9 +68,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             String(q.month || '').toLowerCase() === month && Number(q.year) === year
         );
 
-        amountExpectedInput.value = quota && quota.amount !== null && quota.amount !== undefined
-            ? Number(quota.amount).toFixed(2)
+        if (!quota || quota.amount === null || quota.amount === undefined) {
+            amountExpectedInput.value = '';
+            amountExpectedInput.title = '';
+            return;
+        }
+
+        const amountWithSurcharge = calculateExpectedAmountWithLateFee(quota.amount, year, monthSelect.value);
+        amountExpectedInput.value = Number.isFinite(amountWithSurcharge)
+            ? amountWithSurcharge.toFixed(2)
             : '';
+
+        amountExpectedInput.title = isLatePayment(year, monthSelect.value)
+            ? 'Incluye recargo del 10% por pago después del día 15.'
+            : '';
+    }
+
+    function calculateExpectedAmountWithLateFee(baseAmount, year, monthName) {
+        const parsedBase = Number(baseAmount);
+        if (!Number.isFinite(parsedBase) || parsedBase <= 0) {
+            return null;
+        }
+
+        const total = isLatePayment(year, monthName) ? parsedBase * 1.10 : parsedBase;
+        return Number(total.toFixed(2));
+    }
+
+    function isLatePayment(year, monthName) {
+        const monthIndex = MONTHS.findIndex(m => String(m).toLowerCase() === String(monthName || '').trim().toLowerCase());
+        if (!Number.isInteger(monthIndex) || !Number.isInteger(year)) {
+            return false;
+        }
+
+        const dueDate = new Date(year, monthIndex, 15, 23, 59, 59, 999);
+        return Date.now() > dueDate.getTime();
     }
 
     async function saveCashPayment() {
